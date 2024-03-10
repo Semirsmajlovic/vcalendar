@@ -36,7 +36,7 @@
                                 :events="events"
                                 :event-height="100"
                                 :events-more="false"
-                                :show-week="true"
+                                :show-week="false"
                                 @click:event="showEvent"
                                 @click:date="createEvent"
                                 @click:day="createEvent"
