@@ -18,7 +18,7 @@ export default {
         return {
             show: false,
             message: "",
-            timeout: 2000,
+            timeout: 10000,
         };
     },
     created: function () {

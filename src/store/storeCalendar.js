@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { leadingZero, getFocus, getNamesInView, changeRecurringEnd, createAllEvents, makeRecurringEvents } from './storeCalendarHelpers';
-import axios from 'axios';
+
+import { collection, getDocs, addDoc } from "firebase/firestore";
+import { db } from '../main.js';
 
 /*
 [1] state.events - Array of recurring objects - Recurring objects have isRecurring and rruleString which is used to produce recurring instances at runtime using RRule. 
@@ -9,6 +11,11 @@ import axios from 'axios';
 
 [3] state.instances - Combination of state.events and state.exceptions that is calculated at runtime. The actual events shown in calendar
 */
+
+const sanitizeRRule = (rruleString) => {
+    // Example of removing newline characters and ensuring correct format
+    return rruleString.replace(/\n/g, '').trim();
+};
 
 const storeCalendar = {
 	namespaced : true,
@@ -81,23 +88,29 @@ const storeCalendar = {
 	actions    : {
 		async initInstances({ commit, state, dispatch }, payload) {
 			try {
-				/* In a real application, get events and exceptions from database and set the states. Since states are already set for this example, this is commented out
-				let { data: events } = await axios.get('process.env.API_URL/events');
-				let { data: exceptions } = await axios.get('process.env.API_URL/exceptions');
-				commit('SET_INIT_EVENTS', [events]);
-				commit('SET_INIT_EXCEPTIONS', [exceptions]);
-				*/
+				const eventsCollectionRef = collection(db, "events");
+				const eventsSnapshot = await getDocs(eventsCollectionRef);
+				const events = eventsSnapshot.docs.map(doc => {
+					let data = doc.data();
+					if (data.rruleString) {
+						data.rruleString = data.rruleString.replace(/\\n/g, '\n');
+					}
+					return { id: doc.id, ...data };
+				});
+				console.log("Fetched events from Firestore:", events);
 
-				// Create all the events from recurring, one time and diverged events
+				// Fetch exceptions from Firestore
+				const exceptionsCollectionRef = collection(db, "exceptions");
+				const exceptionsSnapshot = await getDocs(exceptionsCollectionRef);
+				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+				console.log("Fetched exceptions from Firestore:", exceptions);
+
+				commit('SET_INIT_EVENTS', events);
+				commit('SET_INIT_EXCEPTIONS', exceptions);
+
 				let allEvents = createAllEvents(
-					[
-						// using mock data
-						...state.events
-					],
-					[
-						// using mock data
-						...state.exceptions
-					],
+					events,
+					exceptions,
 					getFocus(payload.focus),
 					'',
 					''
