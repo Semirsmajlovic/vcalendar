@@ -175,15 +175,16 @@ const storeCalendar = {
 		async deleteEvent({ commit, state, getters, dispatch }, payload) {
 			try {
 				if (!payload.isRecurring) {
-					if (!payload.actionType) {
-						// Delete one time event
+					// Check for non-recurring events or exceptions, including those created by "updateInstance"
+					if (!payload.actionType || payload.actionType.description === 'updateInstance') {
+						// Handle deletion of one-time events and exceptions created by updating a single instance
 						let exceptionIndex = getters.getIndexException(payload);
 						if (exceptionIndex !== -1) {
 							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
 							commit('DELETE_EXCEPTION', exceptionIndex);
 						}
 					} else {
-						// Delete diverged event from recurring events
+						// Handle deletion of diverged events from recurring events
 						let index = getters.getIndexExceptionDiverged(payload);
 						if (index !== -1) {
 							await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
@@ -191,6 +192,7 @@ const storeCalendar = {
 						}
 					}
 				} else {
+					// Existing switch case for handling recurring events deletion
 					switch (payload.actionType.description) {
 						case 'deleteAll': {
 							let eventsFound = state.events.filter((element) => {

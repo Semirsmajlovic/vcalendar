@@ -44,17 +44,22 @@ const getCurrentUser = () => {
 };
 
 router.beforeEach(async (to, from, next) => {
-    if (to.matched.some((record) => record.meta.requiresAuth)) {
-        try {
-            await getCurrentUser(); // Attempt to get the current user
-            next(); // User is logged in, proceed to the route
-        } catch (error) {
-            console.error(error); // Log the error for debugging purposes
-            alert("You don't have permission to view this page."); // Inform the user
-            next('/'); // Redirect to the home page or login page
+    const isAuthenticated = await getCurrentUser().then(() => true).catch(() => false);
+
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+        if (!isAuthenticated) {
+            // User is not authenticated, redirect to login
+            next('/login');
+        } else {
+            // User is authenticated, proceed to the route
+            next();
         }
+    } else if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
+        // If the user is already authenticated and tries to access login or register, redirect them
+        next('/');
     } else {
-        next(); // No auth required, proceed to the route
+        // No specific auth rules for the route, proceed to the route
+        next();
     }
 });
 
