@@ -1,5 +1,5 @@
 <template>
-    <v-app>
+    <v-app id="myApp">
 
         <v-app-bar color="primary" app flat dark>
             <!-- Start: Logo & Heading -->

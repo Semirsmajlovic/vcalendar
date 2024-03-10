@@ -32,13 +32,12 @@
                     </v-list-item>
                 </v-list-item-group>
 
-                <v-list-group :value="true" dense>
+                <!-- Updated v-list-group for Caregivers -->
+                <v-list-group :value="namesCaregivers.length > 0" dense>
                     <template v-slot:activator>
                         <v-list-item-title
                             ><span class="mr-3">Caregivers</span>
-                            <span class="caption grey--text">{{
-                                namesCaregivers.length
-                            }}</span></v-list-item-title
+                            <span class="caption grey--text">{{ namesCaregivers.length }}</span></v-list-item-title
                         >
                     </template>
                     <v-virtual-scroll
@@ -63,23 +62,20 @@
                                             ? 'white--text'
                                             : ''
                                     "
-                                    >{{ item }}
-                                </v-list-item-title>
+                                    >{{ item }}</v-list-item-title>
                             </v-list-item>
                         </template>
                     </v-virtual-scroll>
                 </v-list-group>
 
-                <v-list-group :value="true">
+                <!-- Updated v-list-group for Clients -->
+                <v-list-group :value="namesClients.length > 0">
                     <template v-slot:activator>
                         <v-list-item-title
                             ><span class="mr-3">Clients</span>
-                            <span class="caption grey--text">{{
-                                namesClients.length
-                            }}</span></v-list-item-title
+                            <span class="caption grey--text">{{ namesClients.length }}</span></v-list-item-title
                         >
                     </template>
-
                     <v-virtual-scroll
                         :items="namesClients"
                         :item-height="40"
@@ -102,8 +98,7 @@
                                             ? 'white--text'
                                             : ''
                                     "
-                                    >{{ item }}
-                                </v-list-item-title>
+                                    >{{ item }}</v-list-item-title>
                             </v-list-item>
                         </template>
                     </v-virtual-scroll>
@@ -153,7 +148,7 @@ export default {
         },
         namesCaregivers: {
             get: function () {
-                return [...this.getNamesCaregivers, this.getTempCaregiver]
+                return [...this.getNamesCaregivers]
                     .filter((item) => item !== "")
                     .map((event) => event)
                     .sort((a, b) => {
@@ -163,7 +158,7 @@ export default {
         },
         namesClients: {
             get: function () {
-                return [...this.getNamesClients, this.getTempClient]
+                return [...this.getNamesClients]
                     .filter((item) => item !== "")
                     .map((event) => event)
                     .sort((a, b) => {
