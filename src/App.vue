@@ -1,56 +1,114 @@
 <template>
     <v-app>
-        <v-app-bar app color="primary" flat dark>
-            <v-spacer></v-spacer>
-            <div class="d-flex align-center">
+
+        <v-app-bar color="primary" app flat dark>
+            <!-- Start: Logo & Heading -->
+            <div class="d-flex align-left clickable-area" @click="navigateHome">
                 <v-img
                     alt="Vuetify Logo"
-                    class="shrink ml-12 mr-2"
+                    class="shrink mr-2"
                     contain
-                    src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
+                    src="https://i.ibb.co/ynd8rhz/hstl.png"
                     transition="scale-transition"
                     width="40"
                 />
-
-                <span class="font-weight-bold logo">VCARENDAR</span>
+                <span class="font-weight-bold logo">Volunteer Calendar</span>
             </div>
-
+            <!-- End: Logo & Heading -->
+            
+            <!-- Start: Spacing between Logo and Buttons -->
             <v-spacer></v-spacer>
-            <v-btn
-                depressed
-                small
-                color="blue"
-                @click.stop="changeDrawer"
-                class="hidden-lg-and-up"
-                >Menu
+            <!-- End: Spacing between Logo and Buttons -->
+
+            <!-- Conditional rendering based on isLoggedIn -->
+            <v-btn 
+                color="success" 
+                class="ma-2 white--text" 
+                @click="$router.push('/login')"
+                v-if="!isLoggedIn">
+                <v-icon left dark>mdi-login</v-icon>
+                Login
+            </v-btn>
+            <v-btn 
+                color="secondary" 
+                class="ma-2 white--text" 
+                @click="$router.push('/register')"
+                v-if="!isLoggedIn">
+                <v-icon left dark>mdi-account-plus</v-icon>
+                Signup
+            </v-btn>
+            <v-btn 
+                @click="handleSignOut" 
+                color="red" 
+                class="ma-2 white--text"
+                v-else>
+                <v-icon left dark>mdi-logout</v-icon>
+                Sign Out
             </v-btn>
         </v-app-bar>
 
+        <!-- Start: Main View -->
         <v-main>
-            <Calendar />
-            <Snackbar />
+            <v-container
+            id="main-container"
+            fluid
+            >
+                <router-view></router-view>
+            </v-container>
         </v-main>
+        <!-- End: Main View -->
+
     </v-app>
 </template>
 
 <script>
 import { mapMutations } from "vuex";
-import Calendar from "@/components/Calendar";
-import Snackbar from "@/components/Snackbar";
+import { onMounted } from "vue";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+
 export default {
     name: "App",
-    components: {
-        Calendar,
-        Snackbar,
+    data() {
+        return {
+            isLoggedIn: false
+        }
     },
-    data: () => ({
-        //
-    }),
+    mounted() {
+        let auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+            this.isLoggedIn = !!user;
+            if (user) {
+                console.log(`User is signed in with UID: ${user.uid} and Email: ${user.email}`);
+            } else {
+                console.log("User is signed out");
+            }
+        });
+    },
     methods: {
-        ...mapMutations(["drawerChange"]),
+        ...mapMutations(["navigationDrawerChange"]),
         changeDrawer() {
-            this.drawerChange();
+            try {
+                this.navigationDrawerChange();
+                console.log("Drawer state changed successfully.");
+            } catch (error) {
+                console.error("Failed to change drawer state:", error);
+            }
         },
+        handleSignOut() {
+            const auth = getAuth();
+            signOut(auth).then(() => {
+                console.log("Sign-out successful.");
+                this.isLoggedIn = false;
+                if (this.$router.currentRoute.path !== '/') {
+                    this.$router.push('/');
+                }
+            }).catch((error) => {
+                console.error("Sign-out error:", error);
+            });
+        },
+        navigateHome() {
+            this.$router.push('/');
+        }
     },
 };
 </script>
@@ -59,8 +117,10 @@ export default {
 .logo {
     font-size: 1.75rem;
 }
-
 .title--text {
     font-size: 1.5rem;
+}
+.clickable-area {
+    cursor: pointer;
 }
 </style>

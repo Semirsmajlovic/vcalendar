@@ -114,7 +114,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import { mapGetters, mapActions, mapMutations } from "vuex";
 export default {
     name: "CalendarSideBar",
@@ -129,9 +128,6 @@ export default {
             valid: false,
             loading: false,
             items: [],
-            newCaregiver: "",
-            newClient: "",
-            isDuplicateName: false,
             rulesName: [
                 (value) =>
                     !value ||
@@ -147,9 +143,7 @@ export default {
         ...mapGetters("storeCalendar", [
             "getSelectedPerson",
             "getNamesCaregivers",
-            "getTempCaregiver",
             "getNamesClients",
-            "getTempClient",
         ]),
         drawerSwitch: {
             get: function () {
@@ -190,27 +184,6 @@ export default {
         },
         checkDuplicateName(name, type) {
             return this[type].includes(name);
-        },
-        addNewPerson(name, type) {
-            // Store new temporary person in Vuex
-            let nameType =
-                type === "newCaregiver" ? "caregiverNames" : "clientNames";
-            this.ADD_NEW_TEMPORARY_PERSON({ name, nameType });
-
-            // Select this new person in sidebar
-            let personType = type === "newCaregiver" ? "caregiver" : "client";
-            this.eventsByName(name, personType);
-
-            // Clear the text field.
-            let formType =
-                type === "newCaregiver" ? "newCaregiverForm" : "newClientForm";
-            this.$refs[formType].reset();
-
-            this.newCaregiver = "";
-            this.newClient = "";
-            this.isDuplicateName = false;
-
-            this.updateSnackMessage(`Added new temporary person : ${name}`);
         },
         clearItems() {
             this.items = [];

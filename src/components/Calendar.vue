@@ -162,11 +162,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/*
-FIX
-Fix for multiple events in one day by stretching height
-https://github.com/vuetifyjs/vuetify/issues/9796
-*/
 .v-calendar-weekly {
     display: table;
     table-layout: fixed;
