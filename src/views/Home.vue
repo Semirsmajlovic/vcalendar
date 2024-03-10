@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="uniqueContainerId123">
         <Calendar />
         <Snackbar />
     </div>

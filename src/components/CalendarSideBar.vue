@@ -2,6 +2,7 @@
     <div>
         <v-navigation-drawer
             v-model="drawerSwitch"
+            width="100%"
             :permanent="$vuetify.breakpoint.lgAndUp"
             :absolute="$vuetify.breakpoint.mdAndDown"
             floating

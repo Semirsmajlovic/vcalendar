@@ -1,5 +1,5 @@
 <template>
-    <v-container>
+    <v-container id="dynamicContentArea456" fluid>
         <v-row class="fill-height">
             <v-col>
                 <calendar-tool-bar
@@ -14,7 +14,7 @@
                     @type4day="changeType('4day')"
                 ></calendar-tool-bar>
 
-                <v-container>
+                <v-container fluid>
                     <v-row>
                         <v-col cols="12" lg="10" id="calendarContent">
                             <v-overlay
