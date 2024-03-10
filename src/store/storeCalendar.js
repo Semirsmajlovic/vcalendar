@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { leadingZero, getFocus, getNamesInView, changeRecurringEnd, createAllEvents, makeRecurringEvents } from './storeCalendarHelpers';
 
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from '../main.js';
 
 /*
@@ -12,11 +12,6 @@ import { db } from '../main.js';
 [3] state.instances - Combination of state.events and state.exceptions that is calculated at runtime. The actual events shown in calendar
 */
 
-const sanitizeRRule = (rruleString) => {
-    // Example of removing newline characters and ensuring correct format
-    return rruleString.replace(/\n/g, '').trim();
-};
-
 const storeCalendar = {
 	namespaced : true,
 	state      : {
@@ -26,67 +21,9 @@ const storeCalendar = {
 		clientNames    : [], // Names of all the clients in view in view. Used in CalendarSideBar
 		selectedPerson : {}, // Sets the calendar's view to this person when clicking on names in CalendarSideBar
 		instances      : [], // All events shown in calendar view - calculated at runtime by combining state.events and state.exceptions
-		tempCaregiver  : '', // Temporary storage used when adding a new caregiver. Used in CalendarSideBar
-		tempClient     : '', // Temporary storage used when adding a new client. Used in CalendarSideBar
-		events         : [
-			// Recurring events
-			{
-				cal_id      : `${uuidv4()}`,
-				caregiver   : 'Sigourney Reaver',
-				client      : 'Michelle Milano',
-				start       : `${new Date().getFullYear()}-01-02 07:00`,
-				end         : `${new Date().getFullYear()}-01-02 11:00`,
-				duration    : '4',
-				isRecurring : true,
-				rruleString : 'DTSTART:20200102T070000Z\nRRULE:FREQ=WEEKLY;BYDAY=TU,TH;INTERVAL=1;UNTIL=20250101T080000Z'
-			},
-			{
-				cal_id      : `${uuidv4()}`,
-				caregiver   : 'Harry Berry',
-				client      : 'Randy Johnson',
-				start       : `${new Date().getFullYear()}-01-01 12:00`,
-				end         : `${new Date().getFullYear()}-01-01 20:00`,
-				duration    : '8',
-				isRecurring : true,
-				rruleString : 'DTSTART:20200101T120000Z\nRRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;INTERVAL=2;UNTIL=20250101T080000Z'
-			},
-			{
-				cal_id      : `${uuidv4()}`,
-				caregiver   : 'Walter Boyd',
-				client      : 'Sandy Webb',
-				start       : `${new Date().getFullYear()}-01-04 03:00`,
-				end         : `${new Date().getFullYear()}-01-04 09:30`,
-				duration    : '6.5',
-				isRecurring : true,
-				rruleString : 'DTSTART:20200104T030000Z\nRRULE:FREQ=WEEKLY;BYDAY=SA;INTERVAL=1;UNTIL=20250101T080000Z'
-			},
-			{
-				cal_id      : `${uuidv4()}`,
-				caregiver   : 'Courtney Rocks',
-				client      : 'Ben Carter',
-				start       : `${new Date().getFullYear()}-01-05 20:00`,
-				end         : `${new Date().getFullYear()}-01-06 08:00`,
-				duration    : '12',
-				isRecurring : true,
-				rruleString : 'DTSTART:20200105T200000Z\nRRULE:FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;UNTIL=20250101T080000Z'
-			}
-		],
-		exceptions     : [
-			// One off events or recurring event where data diverged from original data and turned to one time event
-			{
-				cal_id      : `${uuidv4()}`,
-				caregiver   : 'Randy Hart',
-				client      : 'Brad Pizza',
-				start       : `${new Date().getFullYear()}-${leadingZero(new Date().getMonth() + 1)}-10 18:00`,
-				end         : `${new Date().getFullYear()}-${leadingZero(new Date().getMonth() + 1)}-10 22:00`,
-				duration    : '4',
-				isRecurring : false,
-				rruleString : ''
-			}
-		]
 	},
 	actions    : {
-		async initInstances({ commit, state, dispatch }, payload) {
+		async initInstances({ commit, dispatch }, payload) {
 			try {
 				const eventsCollectionRef = collection(db, "events");
 				const eventsSnapshot = await getDocs(eventsCollectionRef);
@@ -137,169 +74,160 @@ const storeCalendar = {
 				dispatch('updateSnackMessage', `Error at ${e}`, { root: true });
 			}
 		},
-		async actionCreateNewEvent({ commit, state, dispatch }, payload) {
+		async actionCreateNewEvent({ commit, dispatch }, payload) {
 			try {
+				let collectionRef;
+				if (!payload.isRecurring) {
+					// Reference to the exceptions collection
+					collectionRef = collection(db, "exceptions");
+				} else {
+					// Reference to the events collection
+					collectionRef = collection(db, "events");
+				}
+				
+				// Ensure payload is a plain object
+				const plainPayload = { ...payload };
+		
+				// Add the new document to Firestore
+				const docRef = await addDoc(collectionRef, plainPayload);
+				console.log("Document written with ID: ", docRef.id);
+		
+				// Update the payload with the Firestore document ID
+				payload.id = docRef.id;
+		
+				// Commit the change again with the updated payload
 				if (!payload.isRecurring) {
 					commit('ADD_EXCEPTION', payload);
 				} else {
 					commit('ADD_EVENT', payload);
 				}
+		
 			} catch (e) {
+				console.error("Error adding document: ", e);
 				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 			}
 		},
 		async updateEvent({ commit, state, getters, dispatch }, payload) {
-			if (!payload.isRecurring) {
-				/* Updating non recurring exceptions have 2 types
-				[1] One time exception ( Regular one time event )
-				[2] Recurring event that has diverged and turned into one time exception
-				*/
-				if (!payload.actionType) {
-					// [1] One time event
-					try {
-						let exceptionIndex = getters.getIndexException(payload);
-
+			try {
+				let docRef;
+				if (!payload.isRecurring) {
+					// Handling non-recurring events (exceptions)
+					let exceptionIndex = getters.getIndexException(payload);
+					if (exceptionIndex !== -1) {
+						docRef = doc(db, "exceptions", payload.id); // Assuming payload.id is the Firestore document ID
+						await updateDoc(docRef, payload);
 						commit('UPDATE_EXCEPTION', {
 							exceptionIndex,
 							payload
 						});
-					} catch (e) {
-						dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 					}
 				} else {
-					//[2] Recurring event that has diverged and turned into one time exception
-					try {
-						let divergedIndex = getters.getIndexExceptionDiverged(payload);
-						commit('UPDATE_EXCEPTION', {
-							divergedIndex,
-							payload
-						});
-					} catch (e) {
-						dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
-					}
-				}
-			} else {
-				switch (payload.actionType.description) {
-					// Handle updating recurring events
-					case 'updateAll': {
-						try {
+					// Handling recurring events
+					switch (payload.actionType.description) {
+						case 'updateAll': {
 							let index = getters.getIndexEvent(payload);
-							let updatedEvent = { ...payload };
-							commit('UPDATE_EVENT', {
-								index,
-								updatedEvent
-							});
-						} catch (e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+							if (index !== -1) {
+								docRef = doc(db, "events", payload.id); // Assuming payload.id is the Firestore document ID
+								await updateDoc(docRef, payload);
+								commit('UPDATE_EVENT', {
+									index,
+									updatedEvent: payload
+								});
+							}
+							break;
 						}
-						break;
-					}
-					case 'updateInstance': {
-						try {
+						case 'updateInstance': {
+							// For updating a single instance of a recurring event, it's treated as an exception
 							payload.actionType.description = 'updateInstance';
 							payload.isRecurring = false;
 							payload.rruleString = '';
+							const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
+							payload.id = exceptionDocRef.id; // Update payload with new Firestore document ID
 							commit('ADD_EXCEPTION', payload);
-						} catch (e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+							break;
 						}
-						break;
-					}
-					case 'updateForward': {
-						try {
-							/* Update recurring event going forward splits the recurring event in 2. 
-							[1] Give new recurring object going forward a new id and add it to state.events
-							[2] Change the original recurrence object's UNTIL string to payload.start which is the start of new recurring object
-							*/
-
-							// [1]
-							let recurringObjGoingForward = { ...payload };
-							recurringObjGoingForward.cal_id = uuidv4();
-							commit('ADD_EVENT', recurringObjGoingForward);
-
-							// [2]
+						case 'updateForward': {
+							// Splitting the recurring event into two parts
 							let index = getters.getIndexEvent(payload);
-							let updatedEvent = changeRecurringEnd({ ...state.events[index] }, payload.start);
-							commit('UPDATE_EVENT', {
-								index,
-								updatedEvent
-							});
-						} catch (e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+							if (index !== -1) {
+								// Update the original event's UNTIL date
+								let updatedEvent = changeRecurringEnd({ ...state.events[index] }, payload.start);
+								let originalDocRef = doc(db, "events", state.events[index].id);
+								await updateDoc(originalDocRef, updatedEvent);
+		
+								// Create a new event for the forward part
+								let recurringObjGoingForward = { ...payload, cal_id: uuidv4() };
+								const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
+								recurringObjGoingForward.id = newEventDocRef.id; // Update with new Firestore document ID
+								commit('ADD_EVENT', recurringObjGoingForward);
+							}
+							break;
 						}
-						break;
+						default:
+							dispatch('updateSnackMessage', `Unknown actionType in updateEvent`, { root: true });
 					}
-					default:
-						dispatch('updateSnackMessage', `Unknown actionType in updateEvent`, { root: true });
 				}
+			} catch (e) {
+				console.error("Error updating document: ", e);
+				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 			}
 		},
 		async deleteEvent({ commit, state, getters, dispatch }, payload) {
-			if (!payload.isRecurring) {
-				if (!payload.actionType) {
-					// Delete one time event
-					try {
+			try {
+				if (!payload.isRecurring) {
+					if (!payload.actionType) {
+						// Delete one time event
 						let exceptionIndex = getters.getIndexException(payload);
-						commit('DELETE_EXCEPTION', exceptionIndex);
-					} catch (e) {
-						dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+						if (exceptionIndex !== -1) {
+							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
+							commit('DELETE_EXCEPTION', exceptionIndex);
+						}
+					} else {
+						// Delete diverged event from recurring events
+						let index = getters.getIndexExceptionDiverged(payload);
+						if (index !== -1) {
+							await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
+							commit('DELETE_EXCEPTION', index);
+						}
 					}
 				} else {
-					// Delete diverged event from recurring events
-					try {
-						let index = getters.getIndexExceptionDiverged(payload);
-						payload.actionType.description = 'deleteInstance';
-
-						commit('UPDATE_EXCEPTION', {
-							index,
-							payload
-						});
-					} catch (e) {
-						dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
-					}
-				}
-			} else {
-				switch (payload.actionType.description) {
-					case 'deleteAll': {
-						try {
+					switch (payload.actionType.description) {
+						case 'deleteAll': {
 							let eventsFound = state.events.filter((element) => {
 								return element.cal_id === payload.cal_id;
 							});
-
-							if (eventsFound) {
-								commit('DELETE_EVENTS_MULTIPLE', eventsFound);
+							for (let event of eventsFound) {
+								await deleteDoc(doc(db, "events", event.id));
 							}
-						} catch (e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+							commit('DELETE_EVENTS_MULTIPLE', eventsFound);
+							break;
 						}
-						break;
-					}
-					case 'deleteForward': {
-						try {
+						case 'deleteForward': {
 							let index = getters.getIndexEvent(payload);
-							let updatedEvent = changeRecurringEnd({ ...state.events[index] }, payload.start);
-							commit('UPDATE_EVENT', {
-								index,
-								updatedEvent
-							});
-						} catch (e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+							if (index !== -1) {
+								let updatedEvent = changeRecurringEnd({ ...state.events[index] }, payload.start);
+								await updateDoc(doc(db, "events", state.events[index].id), updatedEvent);
+								commit('UPDATE_EVENT', {
+									index,
+									updatedEvent
+								});
+							}
+							break;
 						}
-						break;
-					}
-					case 'deleteInstance': {
-						try {
-							payload.actionType.description = 'deleteInstance';
+						case 'deleteInstance': {
+							// For deleting a single instance of a recurring event, it's treated as an exception
+							const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
+							payload.id = exceptionDocRef.id; // Update payload with new Firestore document ID
 							commit('ADD_EXCEPTION', payload);
-						} catch (e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+							break;
 						}
-						break;
+						default:
+							dispatch('updateSnackMessage', `Unknown actionType in deleteEvent`, { root: true });
 					}
-
-					default:
-						dispatch('updateSnackMessage', `Unknown actionType in deleteEvent`, { root: true });
 				}
+			} catch (e) {
+				console.error("Error deleting document: ", e);
+				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 			}
 		},
 		updateSelectedPerson({ commit, state }, person) {
