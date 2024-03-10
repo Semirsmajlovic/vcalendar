@@ -1,5 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import { leadingZero, getFocus, getNamesInView, changeRecurringEnd, createAllEvents, makeRecurringEvents } from './storeCalendarHelpers';
+import { 
+	leadingZero, 
+	getFocus, 
+	getNamesInView, 
+	changeRecurringEnd, 
+	createAllEvents, 
+	makeRecurringEvents,
+	handleNonRecurringShift,
+	handleRecurringShift
+} from './storeCalendarHelpers';
 
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from '../main.js';
@@ -26,21 +35,26 @@ const storeCalendar = {
 		async initInstances({ commit, dispatch }, payload) {
 			try {
 				const eventsCollectionRef = collection(db, "events");
+				console.log("eventsCollectionRef:", eventsCollectionRef);
+
 				const eventsSnapshot = await getDocs(eventsCollectionRef);
+				console.log("eventsSnapshot:", eventsSnapshot);
+				
 				const events = eventsSnapshot.docs.map(doc => {
 					let data = doc.data();
+					console.log("data:", data);
 					if (data.rruleString) {
 						data.rruleString = data.rruleString.replace(/\\n/g, '\n');
 					}
 					return { id: doc.id, ...data };
 				});
-				console.log("Fetched events from Firestore:", events);
+				console.log("eventsSnapshot.docs:", eventsSnapshot.docs);
+				console.log("events:", events);
 
 				// Fetch exceptions from Firestore
 				const exceptionsCollectionRef = collection(db, "exceptions");
 				const exceptionsSnapshot = await getDocs(exceptionsCollectionRef);
 				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-				console.log("Fetched exceptions from Firestore:", exceptions);
 
 				commit('SET_INIT_EVENTS', events);
 				commit('SET_INIT_EXCEPTIONS', exceptions);
@@ -84,6 +98,7 @@ const storeCalendar = {
 					// Reference to the events collection
 					collectionRef = collection(db, "events");
 				}
+				console.log("actionCreateNewEvent -> collectionRef:", collectionRef);
 				
 				// Ensure payload is a plain object
 				const plainPayload = { ...payload };
@@ -109,6 +124,7 @@ const storeCalendar = {
 		},
 		async updateEvent({ commit, state, getters, dispatch }, payload) {
 			try {
+				console.log("updateEvent: " + payload);
 				let docRef;
 				if (!payload.isRecurring) {
 					// Handling non-recurring events (exceptions)
@@ -175,61 +191,13 @@ const storeCalendar = {
 		async deleteEvent({ commit, state, getters, dispatch }, payload) {
 			try {
 				if (!payload.isRecurring) {
-					// Check for non-recurring events or exceptions, including those created by "updateInstance"
-					if (!payload.actionType || payload.actionType.description === 'updateInstance') {
-						// Handle deletion of one-time events and exceptions created by updating a single instance
-						let exceptionIndex = getters.getIndexException(payload);
-						if (exceptionIndex !== -1) {
-							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
-							commit('DELETE_EXCEPTION', exceptionIndex);
-						}
-					} else {
-						// Handle deletion of diverged events from recurring events
-						let index = getters.getIndexExceptionDiverged(payload);
-						if (index !== -1) {
-							await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
-							commit('DELETE_EXCEPTION', index);
-						}
-					}
+					await handleNonRecurringShift({ commit, state, getters }, payload);
 				} else {
-					// Existing switch case for handling recurring events deletion
-					switch (payload.actionType.description) {
-						case 'deleteAll': {
-							let eventsFound = state.events.filter((element) => {
-								return element.cal_id === payload.cal_id;
-							});
-							for (let event of eventsFound) {
-								await deleteDoc(doc(db, "events", event.id));
-							}
-							commit('DELETE_EVENTS_MULTIPLE', eventsFound);
-							break;
-						}
-						case 'deleteForward': {
-							let index = getters.getIndexEvent(payload);
-							if (index !== -1) {
-								let updatedEvent = changeRecurringEnd({ ...state.events[index] }, payload.start);
-								await updateDoc(doc(db, "events", state.events[index].id), updatedEvent);
-								commit('UPDATE_EVENT', {
-									index,
-									updatedEvent
-								});
-							}
-							break;
-						}
-						case 'deleteInstance': {
-							// For deleting a single instance of a recurring event, it's treated as an exception
-							const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
-							payload.id = exceptionDocRef.id; // Update payload with new Firestore document ID
-							commit('ADD_EXCEPTION', payload);
-							break;
-						}
-						default:
-							dispatch('updateSnackMessage', `Unknown actionType in deleteEvent`, { root: true });
-					}
+					await handleRecurringShift({ commit, state, getters, dispatch }, payload);
 				}
 			} catch (e) {
-				console.error("Error deleting document: ", e);
-				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+				console.error("Error processing shift: ", e);
+				dispatch('updateSnackMessage', `Operation failed: ${e.message}`, { root: true });
 			}
 		},
 		updateSelectedPerson({ commit, state }, person) {

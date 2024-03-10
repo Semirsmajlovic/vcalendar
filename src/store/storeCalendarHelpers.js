@@ -2,6 +2,9 @@ import { RRule, RRuleSet, rrulestr } from 'rrule';
 import { format, parseISO, differenceInMinutes, addMinutes, startOfMonth, endOfMonth, addDays } from 'date-fns';
 import { DateTime } from 'luxon';
 
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { db } from '../main.js';
+
 export function leadingZero(num) {
 	return ('0' + num).slice(-2);
 }
@@ -162,4 +165,68 @@ export function makeRecurringEvents(payload, rruleString, focus) {
 	}
 
 	return recurringEvents;
+}
+
+// async deleteShift Helpers:
+export async function handleNonRecurringShift({ commit, state, getters }, payload) {
+    if (!payload.actionType || payload.actionType.description === 'updateInstance') {
+        await deleteOneTimeShift({ commit, state, getters }, payload);
+    } else {
+        await deleteDivergedShift({ commit, state, getters }, payload);
+    }
+}
+
+export async function handleRecurringShift({ commit, state, getters, dispatch }, payload) {
+    switch (payload.actionType.description) {
+        case 'deleteAll':
+            await deleteAllRecurringShifts({ commit, state }, payload);
+            break;
+        case 'deleteForward':
+            await deleteForwardRecurringShift({ commit, state, getters }, payload);
+            break;
+        case 'deleteInstance':
+            await deleteSingleRecurringInstance({ commit }, payload);
+            break;
+        default:
+            dispatch('updateSnackMessage', 'Unknown actionType for recurring shift', { root: true });
+    }
+}
+
+async function deleteOneTimeShift({ commit, state, getters }, payload) {
+    let exceptionIndex = getters.getIndexException(payload);
+    if (exceptionIndex !== -1) {
+        await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
+        commit('DELETE_EXCEPTION', exceptionIndex);
+    }
+}
+
+async function deleteDivergedShift({ commit, state, getters }, payload) {
+    let index = getters.getIndexExceptionDiverged(payload);
+    if (index !== -1) {
+        await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
+        commit('DELETE_EXCEPTION', index);
+    }
+}
+
+async function deleteAllRecurringShifts({ commit, state }, payload) {
+    let shiftsFound = state.events.filter(element => element.cal_id === payload.cal_id);
+    for (let shift of shiftsFound) {
+        await deleteDoc(doc(db, "events", shift.id));
+    }
+    commit('DELETE_EVENTS_MULTIPLE', shiftsFound);
+}
+
+async function deleteForwardRecurringShift({ commit, state, getters }, payload) {
+    let index = getters.getIndexEvent(payload);
+    if (index !== -1) {
+        let updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
+        await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
+        commit('UPDATE_EVENT', { index, updatedEvent: updatedShift });
+    }
+}
+
+async function deleteSingleRecurringInstance({ commit }, payload) {
+    const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
+    payload.id = exceptionDocRef.id; // Update payload with new Firestore document ID
+    commit('ADD_EXCEPTION', payload);
 }
