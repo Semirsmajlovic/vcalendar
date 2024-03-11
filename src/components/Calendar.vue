@@ -1,5 +1,11 @@
 <template>
     <v-container id="dynamicContentArea456" fluid>
+        <v-row>
+            <v-col>
+                <organization-banner @openDialog="openOrgDialog"></organization-banner>
+                <organization-dialog ref="orgDialog"></organization-dialog>
+            </v-col>
+        </v-row>
         <v-row class="fill-height">
             <v-col>
                 <calendar-tool-bar
@@ -74,6 +80,8 @@ import CalendarDay from "./CalendarDay.vue";
 import CalendarToolBar from "./CalendarToolBar.vue";
 import CalendarSideBar from "./CalendarSideBar.vue";
 import CalendarEventDialog from "./CalendarEventDialog.vue";
+import OrganizationBanner from './OrganizationBanner.vue';
+import OrganizationDialog from './OrganizationDialog.vue';
 
 export default {
     name: "Calendar",
@@ -82,6 +90,8 @@ export default {
         CalendarToolBar,
         CalendarSideBar,
         CalendarEventDialog,
+        OrganizationBanner,
+        OrganizationDialog,
     },
     data() {
         return {
@@ -156,6 +166,9 @@ export default {
         },
         changeType(newType) {
             this.type = newType;
+        },
+        openOrgDialog() {
+            this.$refs.orgDialog.open();
         },
     },
 };
