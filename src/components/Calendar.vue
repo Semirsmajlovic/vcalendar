@@ -1,5 +1,5 @@
 <template>
-    <v-container id="dynamicContentArea456" fluid>
+    <v-container id="dynamicContentArea456">
         <v-row>
             <v-col>
                 <organization-banner @openDialog="openOrgDialog"></organization-banner>
@@ -20,7 +20,7 @@
                     @type4day="changeType('4day')"
                 ></calendar-tool-bar>
 
-                <v-container fluid>
+                <v-container>
                     <v-row>
                         <v-col cols="12" lg="10" id="calendarContent">
                             <v-overlay

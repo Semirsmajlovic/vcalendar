@@ -51,7 +51,6 @@
         <v-main>
             <v-container
             id="main-container"
-            fluid
             >
                 <router-view></router-view>
             </v-container>
