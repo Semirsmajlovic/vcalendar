@@ -2,32 +2,25 @@
     <v-form ref="form" v-model="valid">
         <v-dialog v-model="eventOpen" persistent max-width="1080">
             <v-card>
+
+                <!-- Start: Toolbar -->
                 <v-toolbar
                     flat
-                    :color="
-                        localSelectedEvent.isRecurring ? 'primary' : 'green'
-                    "
+                    color="primary"
                     class="white--text mb-6"
                 >
                     <v-spacer></v-spacer>
                     <v-toolbar-title>
-                        <span class="title--text ml-10">{{
-                            formatDateYYYYMMDD(localSelectedEvent.start)
-                        }}</span>
-
-                        <span
-                            class="font-weight-normal uppercase white--text caption ml-2 labelW"
-                        >
-                            {{ getWeekdayInitial(selectedWeekdayNum) }}</span
-                        >
+                        <span class="title--text ml-10">
+                            {{ formatDateYYYYMMDD(localSelectedEvent.start) }}
+                        </span>
+                        <span class="font-weight-normal uppercase white--text caption ml-2 labelW">
+                            {{ getWeekdayInitial(selectedWeekdayNum) }}
+                        </span>
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-btn
-                        :color="
-                            localSelectedEvent.isRecurring
-                                ? 'primary darken-1'
-                                : 'green darken-1'
-                        "
+                        color="secondary"
                         small
                         depressed
                         @click="closeDialog(false)"
@@ -35,10 +28,10 @@
                         <v-icon color="white">mdi-close</v-icon>
                     </v-btn>
                 </v-toolbar>
+                <!-- End: Toolbar -->
 
-                <calendar-event-dialog-info
-                    :event="localSelectedEvent"
-                ></calendar-event-dialog-info>
+                <!-- Component: CalendarEventDialogInfo.vue -->
+                <calendar-event-dialog-info :event="localSelectedEvent"></calendar-event-dialog-info>
 
                 <v-container>
                     <v-row>
@@ -52,10 +45,7 @@
                                     <v-text-field
                                         v-model="localSelectedEvent.caregiver"
                                         label="caregiver"
-                                        :disabled="
-                                            getSelectedPerson.type ===
-                                            'caregiver'
-                                        "
+                                        :disabled="getSelectedPerson.type === 'caregiver'"
                                         :rules="rulesName"
                                     ></v-text-field>
                                 </v-col>
@@ -63,9 +53,7 @@
                                     <v-text-field
                                         v-model="localSelectedEvent.client"
                                         label="client"
-                                        :disabled="
-                                            getSelectedPerson.type === 'client'
-                                        "
+                                        :disabled="getSelectedPerson.type === 'client'"
                                         :rules="rulesName"
                                     ></v-text-field>
                                 </v-col>
@@ -80,15 +68,8 @@
                                 :event="localSelectedEvent"
                                 @startTimeChanged="
                                     (...args) => {
-                                        changeDTSTARTtime(...args),
-                                            changeUNTIL(
-                                                ...args,
-                                                formatUNTILtoType(
-                                                    localUNTIL,
-                                                    '-',
-                                                    'yyyymmdd'
-                                                )
-                                            );
+                                        changeDTSTARTtime(...args), 
+                                        changeUNTIL(...args, formatUNTILtoType(localUNTIL, '-', 'yyyymmdd'));
                                     }
                                 "
                             ></calendar-event-time>
@@ -104,24 +85,14 @@
                         <v-col cols="12" sm="1">
                             <v-checkbox
                                 v-model="localSelectedEvent.isRecurring"
-                                :label="`Recur`"
-                                :disabled="
-                                    localSelectedEvent.isRecurring && !newEvent
-                                "
+                                :label="`Recurring`"
+                                :disabled="localSelectedEvent.isRecurring && !newEvent"
                             ></v-checkbox>
                         </v-col>
-                        <v-col
-                            cols="12"
-                            sm="11"
-                            md="7"
-                            v-if="localSelectedEvent.isRecurring"
-                        >
+                        <v-col cols="12" sm="11" md="7" v-if="localSelectedEvent.isRecurring">
                             <v-container>
                                 <v-row no-gutters class="mt-n6">
-                                    <div
-                                        v-for="dayName in weekdayNames"
-                                        :key="dayName"
-                                    >
+                                    <div v-for="dayName in weekdayNames" :key="dayName">
                                         <v-col cols="12" sm="1" class="mr-1">
                                             <v-checkbox
                                                 multiple
@@ -129,9 +100,7 @@
                                                 :label="dayName"
                                                 :value="dayName"
                                                 :rules="rulesCheckBoxMandatory"
-                                                @change="
-                                                    changeBYDAY(localBYDAY)
-                                                "
+                                                @change="changeBYDAY(localBYDAY)"
                                             ></v-checkbox>
                                         </v-col>
                                     </div>
@@ -139,12 +108,7 @@
                             </v-container>
                         </v-col>
 
-                        <v-col
-                            cols="12"
-                            sm="12"
-                            md="2"
-                            v-if="localSelectedEvent.isRecurring"
-                        >
+                        <v-col cols="12" sm="12" md="2" v-if="localSelectedEvent.isRecurring">
                             <v-select
                                 v-model="localINTERVAL"
                                 :hint="`Interval`"
@@ -156,30 +120,11 @@
                                 @change="changeINTERVAL"
                             ></v-select>
                         </v-col>
-                        <v-col
-                            cols="12"
-                            sm="12"
-                            md="2"
-                            v-if="localSelectedEvent.isRecurring"
-                        >
+                        <v-col cols="12" sm="12" md="2" v-if="localSelectedEvent.isRecurring">
                             <calendar-until-date-picker
-                                :until="
-                                    formatUNTILtoType(
-                                        localUNTIL,
-                                        '/',
-                                        'mmddyyyy'
-                                    )
-                                "
-                                :minimumEventDate="
-                                    formatDateYYYYMMDD(localSelectedEvent.start)
-                                "
-                                @untilPicked="
-                                    (...args) =>
-                                        changeUNTIL(
-                                            localSelectedEvent.start,
-                                            ...args
-                                        )
-                                "
+                                :until="formatUNTILtoType(localUNTIL, '/', 'mmddyyyy')"
+                                :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
+                                @untilPicked="(...args) => changeUNTIL(localSelectedEvent.start, ...args)"
                             ></calendar-until-date-picker>
                         </v-col>
                     </v-row>
@@ -204,30 +149,20 @@
                             </template>
 
                             <v-list>
-                                <v-list-item
-                                    v-for="(item, index) in deleteOptions"
-                                    :key="index"
-                                    @click="
-                                        removeEvent(
-                                            localSelectedEvent,
-                                            item.action
-                                        )
-                                    "
+                                <v-list-item 
+                                    v-for="(item, index) in deleteOptions" 
+                                    :key="index" 
+                                    @click="removeEvent(localSelectedEvent, item.action)"
                                 >
-                                    <v-list-item-title>{{
-                                        item.title
-                                    }}</v-list-item-title>
+                                    <v-list-item-title>
+                                        {{ item.title }}
+                                    </v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
                     </div>
                     <div v-else>
-                        <v-btn
-                            :disabled="newEvent"
-                            text
-                            color="orange"
-                            @click="removeEvent(localSelectedEvent)"
-                        >
+                        <v-btn :disabled="newEvent" text color="orange" @click="removeEvent(localSelectedEvent)">
                             Delete
                             <v-icon right dark> mdi-trash-can-outline </v-icon>
                         </v-btn>
@@ -247,10 +182,9 @@
                             <v-icon right dark>mdi-content-save</v-icon>
                         </v-btn>
                     </div>
+                
                     <!-- Button to create new onetime event -->
-                    <div
-                        v-else-if="!localSelectedEvent.isRecurring && newEvent"
-                    >
+                    <div v-else-if="!localSelectedEvent.isRecurring && newEvent">
                         <v-btn
                             :disabled="!valid && newEvent"
                             depressed
@@ -262,18 +196,12 @@
                         </v-btn>
                     </div>
                     <!-- Button update recurring event in store -->
-                    <div
-                        v-else-if="localSelectedEvent.isRecurring && !newEvent"
-                    >
+                    <div v-else-if="localSelectedEvent.isRecurring && !newEvent">
                         <v-menu bottom offset-y>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn
                                     depressed
-                                    :color="
-                                        localSelectedEvent.isRecurring
-                                            ? 'primary darken-1 white--text'
-                                            : 'green darken-1 white--text'
-                                    "
+                                    :color="localSelectedEvent.isRecurring ? 'primary darken-1 white--text' : 'green darken-1 white--text'"
                                     v-bind="attrs"
                                     v-on="on"
                                     :disabled="!valid"
@@ -290,16 +218,11 @@
                                 <v-list-item
                                     v-for="(item, index) in saveOptions"
                                     :key="index"
-                                    @click="
-                                        patchEvent(
-                                            localSelectedEvent,
-                                            item.action
-                                        )
-                                    "
+                                    @click="patchEvent(localSelectedEvent, item.action)"
                                 >
-                                    <v-list-item-title>{{
-                                        item.title
-                                    }}</v-list-item-title>
+                                    <v-list-item-title>
+                                        {{ item.title }}
+                                    </v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
