@@ -31,7 +31,49 @@
                 <!-- End: Toolbar -->
 
                 <!-- Component: CalendarEventDialogInfo.vue -->
-                <calendar-event-dialog-info :event="localSelectedEvent"></calendar-event-dialog-info>
+                <v-container>
+                    <v-row no-gutters>
+                        <v-col cols="12" sm="2" class="mb-6">
+                            <div v-if="selectedEvent.isRecurring">
+                                <v-icon color="blue">mdi-calendar-refresh-outline </v-icon>
+                                <span class="mr-6 ml-2 blue--text">Recurring Event</span>
+                            </div>
+                            <div v-else>
+                                <v-icon color="green darken-1">mdi-calendar </v-icon>
+                                <span class="mr-8 ml-2 green--text">One time event</span>
+                            </div>
+                        </v-col>
+                        <v-col cols="12" sm="8">
+                            <span class="mr-2">{{ selectedEvent.caregiver }}</span>
+                            <v-icon small class="mb-1 mr-2"> mdi-arrow-right </v-icon>
+                            <span class="mr-4">{{ selectedEvent.client }}</span>
+
+                            <span class="mr-1">
+                                {{ showStartTime(selectedEvent.start) }}
+                                -
+                                {{ showEndTime(selectedEvent.end) }}
+                            </span>
+                        </v-col>
+                    </v-row>
+                    <v-row no-gutters>
+                        <v-col cols="12" sm="12">
+                            <span class="mr-1 grey--text text--darken-2 body-2">
+                                <div v-if="selectedEvent.isRecurring">
+                                    Starts
+                                    {{ dateStartSentence(selectedEvent.rruleString) }}
+                                    {{ rruleDescription(selectedEvent.rruleString) }}
+                                </div>
+                                <div v-else>
+                                    <div v-if="selectedEvent.hasOwnProperty('actionType')">
+                                        Diverged
+                                    </div>
+                                    <div v-else>Single</div>
+                                </div>
+                            </span>
+                        </v-col>
+                    </v-row>
+                </v-container>
+                <!-- Component: CalendarEventDialogInfo.vue -->
 
                 <v-container>
                     <v-row>
@@ -252,13 +294,11 @@ import { format, parseISO } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import CalendarEventTime from "./CalendarEventTime.vue";
 import CalendarUntilDatePicker from "./CalendarUntilDatePicker.vue";
-import CalendarEventDialogInfo from "./CalendarEventDialogInfo.vue";
 
 export default {
     components: {
         CalendarEventTime,
         CalendarUntilDatePicker,
-        CalendarEventDialogInfo,
     },
     props: {
         selectedEvent: {
@@ -765,6 +805,34 @@ export default {
             };
 
             return actionType;
+        },
+        showStartTime(startTime) {
+            if (!startTime) {
+                return;
+            }
+            return startTime.slice(-5) || "";
+        },
+        showEndTime(endTime) {
+            if (!endTime) {
+                return;
+            }
+            return endTime.slice(-5) || "";
+        },
+        rruleDescription(ruleString) {
+            if (!ruleString) {
+                return;
+            }
+            return RRule.fromString(ruleString).toText();
+        },
+        dateStartSentence(rruleString) {
+            if (!rruleString) {
+                return;
+            }
+
+            return format(
+                RRule.fromString(rruleString).origOptions.dtstart,
+                "MMM d, yyyy"
+            );
         },
     },
 };
