@@ -29,7 +29,7 @@
                                 :events-more="false"
                                 :event-margin-bottom="5"
                                 :show-week="false"
-                                @click:event="showEvent"
+                                @click:event="openUpdateShiftDialog"
                                 @click:date="createEvent"
                                 @click:day="createEvent"
                                 @change="refreshEvents"
@@ -113,7 +113,7 @@ export default {
             this.newDay = day;
             this.dialogOpen(true);
         },
-        showEvent({ nativeEvent, event, eventParsed }) {
+        openUpdateShiftDialog({ nativeEvent, event, eventParsed }) {
             // Only allow logged in users to view "CalendarEventDialog" in "Update Event" status.
             if (!this.isLoggedIn) {
                 return;
