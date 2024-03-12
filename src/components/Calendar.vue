@@ -2,6 +2,8 @@
     <v-container id="dynamicContentArea456">
         <v-row class="fill-height">
             <v-col>
+
+                <!-- Start: Calendar Toolbar -->
                 <calendar-tool-bar
                     :reference="this.$refs.calendar"
                     :focus="focus"
@@ -13,11 +15,12 @@
                     @typeMonth="changeType('month')"
                     @type4day="changeType('4day')"
                 ></calendar-tool-bar>
+                <!-- End: Calendar Toolbar -->
 
                 <v-container>
                     <v-row>
                         <v-col cols="12" lg="10" id="calendarContent">
-                            <v-overlay
+                            <!-- <v-overlay
                                 :value="isBusy"
                                 :opacity="0.6"
                                 color="white"
@@ -28,13 +31,13 @@
                                     size="128"
                                 ></v-progress-circular>
                             </v-overlay>
-                            <div class="printInformationArea"></div>
+                            <div class="printInformationArea"></div> -->
                             <v-calendar
                                 ref="calendar"
                                 v-model="focus"
                                 :type="type"
                                 :events="events"
-                                :event-height="130"
+                                :event-height="127"
                                 :events-more="false"
                                 :show-week="false"
                                 @click:event="showEvent"
@@ -156,9 +159,6 @@ export default {
         },
         changeType(newType) {
             this.type = newType;
-        },
-        openOrgDialog() {
-            this.$refs.orgDialog.open();
         },
     },
 };

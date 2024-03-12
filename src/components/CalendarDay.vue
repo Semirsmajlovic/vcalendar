@@ -4,7 +4,6 @@
             <v-col cols="12">
                 <div class="text-caption font-weight-bold">Available Spots:</div>
                 <div class="text-caption mb-n1">Volunteers: <strong>3</strong></div>
-                <div class="text-caption mb-n1">Organizations: <strong>2</strong></div>
                 <div class="text-caption mb-1">Drivers: <strong>2</strong></div>
             </v-col>
         </v-row>
