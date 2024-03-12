@@ -34,7 +34,7 @@
                                 v-model="focus"
                                 :type="type"
                                 :events="events"
-                                :event-height="100"
+                                :event-height="130"
                                 :events-more="false"
                                 :show-week="false"
                                 @click:event="showEvent"
