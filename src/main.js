@@ -30,6 +30,7 @@ Vue.config.productionTip = false;
 let app;
 
 getAuth().onAuthStateChanged(user => {
+  store.dispatch('setUser', user); // Dispatch action to update user state
   if (!app) {
     app = new Vue({
       vuetify,

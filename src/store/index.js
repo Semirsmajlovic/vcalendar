@@ -9,6 +9,7 @@ const state = {
   snackOpen: false,
   snackMessage: '',
   drawer: null,
+  user: null,
 };
 
 // Mutations
@@ -18,6 +19,9 @@ const mutations = {
   },
   TOGGLE_DRAWER(state) {
     state.drawer = !state.drawer;
+  },
+  SET_USER(state, user) {
+    state.user = user;
   },
 };
 
@@ -36,6 +40,9 @@ const actions = {
     } catch (error) {
       console.error('Failed to toggle drawer:', error);
     }
+  },
+  setUser({ commit }, user) {
+    commit('SET_USER', user);
   },
 };
 

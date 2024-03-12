@@ -107,6 +107,9 @@ export default {
             "getExceptions",
             "getSelectedPerson",
         ]),
+        isLoggedIn() {
+            return !!this.$store.state.user;
+        },
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
@@ -115,6 +118,10 @@ export default {
             this.focus = "";
         },
         createEvent(day) {
+            // Only allow logged in users to view "CalendarEventDialog" in "Create Event" status.
+            if (!this.isLoggedIn) {
+                return;
+            }
             this.selectedWeekdayNum = day.weekday;
             this.selectedEvent = {};
             this.originalData = {};
@@ -122,6 +129,10 @@ export default {
             this.dialogOpen(true);
         },
         showEvent({ nativeEvent, event, eventParsed }) {
+            // Only allow logged in users to view "CalendarEventDialog" in "Update Event" status.
+            if (!this.isLoggedIn) {
+                return;
+            }
             this.selectedWeekdayNum = eventParsed.start.weekday;
             this.selectedEvent = this.getCurrentEvent(event);
 
