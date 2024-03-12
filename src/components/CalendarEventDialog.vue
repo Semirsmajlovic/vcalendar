@@ -19,7 +19,7 @@
 
                 <v-card-text>
                     <v-container>
-                        <v-row no-gutters>
+                        <v-row>
                             <h3>Shift Details</h3>
                             <v-col cols="12">
                                 <!-- Removed: :rules="rulesName" -->
@@ -39,6 +39,7 @@
                                 label="Volunteer Limit"
                                 single-line
                                 type="number"
+                                :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
                             ></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6">
@@ -47,6 +48,7 @@
                                 label="Driver / Helper Limit"
                                 single-line
                                 type="number"
+                                :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
                             ></v-text-field>
                             </v-col>
                         </v-row>
@@ -66,65 +68,89 @@
                         </v-row>
 
 
-                        <v-row v-if="localSelectedEvent.isRecurring || newEvent">
-                        <v-col cols="12" sm="1">
-                            <v-checkbox
-                                v-model="localSelectedEvent.isRecurring"
-                                :label="`Recurring`"
-                                :disabled="localSelectedEvent.isRecurring && !newEvent"
-                            ></v-checkbox>
-                        </v-col>
-                        <v-col cols="12" sm="11" md="7" v-if="localSelectedEvent.isRecurring">
-                            <v-container>
-                                <v-row no-gutters class="mt-n6">
-                                    <div v-for="dayName in weekdayNames" :key="dayName">
-                                        <v-col cols="12" sm="1" class="mr-1">
-                                            <v-checkbox
-                                                multiple
-                                                v-model="localBYDAY"
-                                                :label="dayName"
-                                                :value="dayName"
-                                                :rules="rulesCheckBoxMandatory"
-                                                @change="changeBYDAY(localBYDAY)"
-                                            ></v-checkbox>
-                                        </v-col>
-                                    </div>
-                                </v-row>
-                            </v-container>
-                        </v-col>
-
-                        <v-col cols="12" sm="12" md="2" v-if="localSelectedEvent.isRecurring">
-                            <v-select
-                                v-model="localINTERVAL"
-                                :hint="`Interval`"
-                                :items="intervalValues"
-                                label="Interval"
-                                value="localINTERVAL"
-                                persistent-hint
-                                single-line
-                                @change="changeINTERVAL"
-                            ></v-select>
-                        </v-col>
-                        <v-col cols="12" sm="12" md="2" v-if="localSelectedEvent.isRecurring">
-                            <calendar-until-date-picker
-                                :until="formatUNTILtoType(localUNTIL, '/', 'mmddyyyy')"
-                                :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
-                                @untilPicked="(...args) => changeUNTIL(localSelectedEvent.start, ...args)"
-                            ></calendar-until-date-picker>
-                        </v-col>
-                    </v-row>
-
-
-                    </v-container>
-                </v-card-text>
-
-                <v-card-text>
-                    <v-container>
-                        <v-row>
+                        <v-row 
+                            v-if="localSelectedEvent.isRecurring || newEvent"
+                            align="start"
+                        >
                             <v-col cols="12">
-                                <h3>Shift Details</h3>
+                                <span>Choose Shift Type:</span>
+                                <v-switch
+                                    v-model="localSelectedEvent.isRecurring"
+                                    :label="localSelectedEvent.isRecurring ? 'Recurring Shift' : 'Single Shift'"
+                                    :disabled="localSelectedEvent.isRecurring && !newEvent"
+                                ></v-switch>
                             </v-col>
                         </v-row>
+
+                        <!-- Start: List of dates for recurring shifts -->
+                        <v-expand-transition>
+    <v-row v-if="localSelectedEvent.isRecurring" no-gutters>
+        <v-col cols="12">
+            <v-chip-group
+                v-model="localBYDAY"
+                multiple
+                active-class="primary--text"
+                column
+            >
+                <v-chip
+                    v-for="dayName in weekdayNames"
+                    :key="dayName"
+                    :value="dayName"
+                    class="ma-2"
+                >
+                    {{ dayName }}
+                </v-chip>
+            </v-chip-group>
+        </v-col>
+    </v-row>
+</v-expand-transition>
+
+                        <!-- <v-expand-transition>
+    <v-row v-if="localSelectedEvent.isRecurring" no-gutters>
+        <v-col cols="12">
+            <v-row justify="space-around" align="center">
+                <v-col cols="12" sm="1" v-for="dayName in weekdayNames" :key="dayName" class="d-flex justify-center">
+                    <v-checkbox
+                        v-model="localBYDAY"
+                        :label="dayName"
+                        :value="dayName"
+                        :rules="rulesCheckBoxMandatory"
+                        @change="changeBYDAY(localBYDAY)"
+                        class="my-checkbox"
+                    ></v-checkbox>
+                </v-col>
+            </v-row>
+        </v-col>
+    </v-row>
+</v-expand-transition> -->
+                        <!-- End: List of dates for recurring shifts -->
+
+                        <v-expand-transition>
+                            <v-row v-if="localSelectedEvent.isRecurring">
+                                <v-col cols="6" sm="6">
+                                    <v-select
+                                        v-model="localINTERVAL"
+                                        :items="intervalValues"
+                                        label="Recurring Shift Interval"
+                                        hint="Select how often the shift recurs. For example, selecting '2' means the shift will recur every 2 weeks."
+                                        persistent-hint
+                                        single-line
+                                        @change="changeINTERVAL"
+                                        :rules="[v => !!v || 'Interval selection is required']"
+                                    ></v-select>
+                                </v-col>
+                                <v-col cols="6" sm="6">
+                                    <calendar-until-date-picker
+                                        :until="formatUNTILtoType(localUNTIL, '/', 'mmddyyyy')"
+                                        :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
+                                        @untilPicked="(...args) => changeUNTIL(localSelectedEvent.start, ...args)"
+                                    ></calendar-until-date-picker>
+                                </v-col>
+                            </v-row>
+                        </v-expand-transition>
+
+
+
                     </v-container>
                 </v-card-text>
 
@@ -288,7 +314,7 @@ export default {
             valid: false,
             localSelectedEvent: {},
             newEvent: false,
-            weekdayNames: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"],
+            weekdayNames: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
             intervalValues: ["1", "2", "3", "4"],
             localINTERVAL: "",
             localUNTIL: "",

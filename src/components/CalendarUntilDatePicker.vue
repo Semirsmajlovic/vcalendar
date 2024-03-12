@@ -12,14 +12,15 @@
         >
             <template v-slot:activator="{ on, attrs }">
                 <v-text-field
-                    slot="activator"
                     v-model="compDate"
-                    label="Until"
-                    hint="MM/DD/YYYY"
+                    label="Select Date"
+                    hint="Choose a date until which the event is valid"
                     persistent-hint
                     v-bind="attrs"
                     v-on="on"
                     @blur="localDate = compDate"
+                    append-icon="mdi-calendar"
+                    @click:append="untilMenu = !untilMenu"
                 ></v-text-field>
             </template>
             <v-date-picker
