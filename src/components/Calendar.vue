@@ -20,25 +20,14 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12" lg="10" id="calendarContent">
-                            <!-- <v-overlay
-                                :value="isBusy"
-                                :opacity="0.6"
-                                color="white"
-                            >
-                                <v-progress-circular
-                                    indeterminate
-                                    color="blue"
-                                    size="128"
-                                ></v-progress-circular>
-                            </v-overlay>
-                            <div class="printInformationArea"></div> -->
                             <v-calendar
                                 ref="calendar"
                                 v-model="focus"
                                 :type="type"
                                 :events="events"
-                                :event-height="127"
+                                :event-height="112"
                                 :events-more="false"
+                                :event-margin-bottom="5"
                                 :show-week="false"
                                 @click:event="showEvent"
                                 @click:date="createEvent"
@@ -51,11 +40,7 @@
                             </v-calendar>
                         </v-col>
                         <v-col cols="12" lg="2">
-                            <calendar-side-bar
-                                @selectedPerson="refreshEvents()"
-                                :focus="focus"
-                            >
-                            </calendar-side-bar>
+                            <calendar-side-bar @selectedPerson="refreshEvents()" :focus="focus"></calendar-side-bar>
                         </v-col>
                     </v-row>
                 </v-container>
