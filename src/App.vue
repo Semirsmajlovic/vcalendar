@@ -106,7 +106,17 @@ export default {
             });
         },
         navigateHome() {
-            this.$router.push('/');
+            // Check if the current route is already '/' to avoid redundant navigation
+            if (this.$router.currentRoute.path !== '/') {
+                this.$router.push('/').catch(err => {
+                    // Handle the error here if it's not a NavigationDuplicated error
+                    if (err.name !== 'NavigationDuplicated') {
+                        // Possibly throw an error or handle it in some other way
+                        console.error(err);
+                    }
+                    // If it's a NavigationDuplicated error, you might just ignore it or handle it specifically
+                });
+            }
         }
     },
 };
