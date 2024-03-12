@@ -1,129 +1,72 @@
 <template>
     <v-form ref="form" v-model="valid">
-        <v-dialog v-model="eventOpen" persistent max-width="1080">
+        <v-dialog v-model="eventOpen" persistent max-width="720">
+        
             <v-card>
 
-                <!-- Start: Toolbar -->
-                <v-toolbar
-                    flat
-                    color="primary"
-                    class="white--text mb-6"
-                >
-                    <v-spacer></v-spacer>
+                <v-toolbar>
                     <v-toolbar-title>
-                        <span class="title--text ml-10">
-                            {{ formatDateYYYYMMDD(localSelectedEvent.start) }}
-                        </span>
-                        <span class="font-weight-normal uppercase white--text caption ml-2 labelW">
-                            {{ getWeekdayInitial(selectedWeekdayNum) }}
-                        </span>
+                        {{ newEvent ? 'Create Event' : 'Update Event' }}
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-btn
-                        color="secondary"
-                        small
                         depressed
                         @click="closeDialog(false)"
                     >
-                        <v-icon color="white">mdi-close</v-icon>
+                        <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </v-toolbar>
-                <!-- End: Toolbar -->
 
-                <!-- Component: CalendarEventDialogInfo.vue -->
-                <v-container>
-                    <v-row no-gutters>
-                        <v-col cols="12" sm="2" class="mb-6">
-                            <div v-if="selectedEvent.isRecurring">
-                                <v-icon color="blue">mdi-calendar-refresh-outline </v-icon>
-                                <span class="mr-6 ml-2 blue--text">Recurring Event</span>
-                            </div>
-                            <div v-else>
-                                <v-icon color="green darken-1">mdi-calendar </v-icon>
-                                <span class="mr-8 ml-2 green--text">One time event</span>
-                            </div>
-                        </v-col>
-                        <v-col cols="12" sm="8">
-                            <span class="mr-2">{{ selectedEvent.caregiver }}</span>
-                            <v-icon small class="mb-1 mr-2"> mdi-arrow-right </v-icon>
-                            <span class="mr-4">{{ selectedEvent.client }}</span>
+                <v-card-text>
+                    <v-container>
+                        <v-row no-gutters>
+                            <h3>Shift Details</h3>
+                            <v-col cols="12">
+                                <!-- Removed: :rules="rulesName" -->
+                                <v-text-field
+                                    v-model="localSelectedEvent.caregiver"
+                                    label="Shift Title (Optional)"
+                                    hint="Enter a descriptive title for the shift, if desired."
+                                    single-line
+                                    :disabled="getSelectedPerson.type === 'caregiver'"
+                                ></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="12" sm="6">
+                            <v-text-field
+                                hint="Provide number of allowed volunteers."
+                                label="Volunteer Limit"
+                                single-line
+                                type="number"
+                            ></v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                            <v-text-field
+                                hint="Provide number of allowed drivers and/or helpers."
+                                label="Driver / Helper Limit"
+                                single-line
+                                type="number"
+                            ></v-text-field>
+                            </v-col>
+                        </v-row>
 
-                            <span class="mr-1">
-                                {{ showStartTime(selectedEvent.start) }}
-                                -
-                                {{ showEndTime(selectedEvent.end) }}
-                            </span>
-                        </v-col>
-                    </v-row>
-                    <v-row no-gutters>
-                        <v-col cols="12" sm="12">
-                            <span class="mr-1 grey--text text--darken-2 body-2">
-                                <div v-if="selectedEvent.isRecurring">
-                                    Starts
-                                    {{ dateStartSentence(selectedEvent.rruleString) }}
-                                    {{ rruleDescription(selectedEvent.rruleString) }}
-                                </div>
-                                <div v-else>
-                                    <div v-if="selectedEvent.hasOwnProperty('actionType')">
-                                        Diverged
-                                    </div>
-                                    <div v-else>Single</div>
-                                </div>
-                            </span>
-                        </v-col>
-                    </v-row>
-                </v-container>
-                <!-- Component: CalendarEventDialogInfo.vue -->
+                        <v-row>
+                            <v-col cols="12" sm="6">
+                                <calendar-event-time
+                                    :event="localSelectedEvent"
+                                    @startTimeChanged="
+                                        (...args) => {
+                                            changeDTSTARTtime(...args), 
+                                            changeUNTIL(...args, formatUNTILtoType(localUNTIL, '-', 'yyyymmdd'));
+                                        }
+                                    "
+                                ></calendar-event-time>
+                            </v-col>
+                        </v-row>
 
-                <v-container>
-                    <v-row>
-                        <v-col cols="12" sm="6">
-                            <span
-                                class="font-weight-bold caption uppercase grey--text text--lighten-1"
-                                >Names</span
-                            >
-                            <v-row>
-                                <v-col cols="12" sm="6">
-                                    <v-text-field
-                                        v-model="localSelectedEvent.caregiver"
-                                        label="caregiver"
-                                        :disabled="getSelectedPerson.type === 'caregiver'"
-                                        :rules="rulesName"
-                                    ></v-text-field>
-                                </v-col>
-                                <v-col cols="12" sm="6">
-                                    <v-text-field
-                                        v-model="localSelectedEvent.client"
-                                        label="client"
-                                        :disabled="getSelectedPerson.type === 'client'"
-                                        :rules="rulesName"
-                                    ></v-text-field>
-                                </v-col>
-                            </v-row>
-                        </v-col>
-                        <v-col cols="12" sm="6">
-                            <span
-                                class="font-weight-bold caption uppercase grey--text text--lighten-1"
-                                >Shift time</span
-                            >
-                            <calendar-event-time
-                                :event="localSelectedEvent"
-                                @startTimeChanged="
-                                    (...args) => {
-                                        changeDTSTARTtime(...args), 
-                                        changeUNTIL(...args, formatUNTILtoType(localUNTIL, '-', 'yyyymmdd'));
-                                    }
-                                "
-                            ></calendar-event-time>
-                        </v-col>
-                    </v-row>
-                </v-container>
 
-                <v-container
-                    :class="$vuetify.breakpoint.mdAndUp ? 'heightKeep' : ''"
-                    ><!-- set explicit css height to stop dialog height jankiness when toggling recur checkbox on/off-->
-
-                    <v-row v-if="localSelectedEvent.isRecurring || newEvent">
+                        <v-row v-if="localSelectedEvent.isRecurring || newEvent">
                         <v-col cols="12" sm="1">
                             <v-checkbox
                                 v-model="localSelectedEvent.isRecurring"
@@ -170,7 +113,20 @@
                             ></calendar-until-date-picker>
                         </v-col>
                     </v-row>
-                </v-container>
+
+
+                    </v-container>
+                </v-card-text>
+
+                <v-card-text>
+                    <v-container>
+                        <v-row>
+                            <v-col cols="12">
+                                <h3>Shift Details</h3>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-card-text>
 
                 <v-card-actions>
                     <div v-if="localSelectedEvent.isRecurring">
@@ -282,7 +238,10 @@
                         </v-btn>
                     </div>
                 </v-card-actions>
+
+
             </v-card>
+        
         </v-dialog>
     </v-form>
 </template>
@@ -334,6 +293,8 @@ export default {
             localINTERVAL: "",
             localUNTIL: "",
             localBYDAY: [],
+            // selectedRole: 'Volunteer',
+            // roles: ['Volunteer', 'Driver / Helper', 'Organization'],
             deleteOptions: [
                 {
                     title: "Delete this instance",
