@@ -1,3 +1,16 @@
+<!-- 
+
+    - EventDialog:
+      - Shift Title (Optional): shiftTitle
+      - Volunteer Limit: volunteerLimit
+      - Driver Limit: driverLimit
+
+
+
+
+
+ -->
+
 <template>
     <v-form ref="form" v-model="valid">
         <v-dialog v-model="eventOpen" persistent max-width="1080">
@@ -76,7 +89,6 @@
                                         v-model="localSelectedEvent.caregiver"
                                         label="caregiver"
                                         :disabled="getSelectedPerson.type === 'caregiver'"
-                                        :rules="rulesName"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="6">
@@ -84,7 +96,6 @@
                                         v-model="localSelectedEvent.client"
                                         label="client"
                                         :disabled="getSelectedPerson.type === 'client'"
-                                        :rules="rulesName"
                                     ></v-text-field>
                                 </v-col>
                             </v-row>
@@ -129,7 +140,6 @@
                                                 v-model="localBYDAY"
                                                 :label="dayName"
                                                 :value="dayName"
-                                                :rules="rulesCheckBoxMandatory"
                                                 @change="changeBYDAY(localBYDAY)"
                                             ></v-checkbox>
                                         </v-col>
@@ -160,6 +170,7 @@
                     </v-row>
                 </v-container>
 
+                <!-- Start: Delete / Update / Create Button -->
                 <v-card-actions>
                     <div v-if="localSelectedEvent.isRecurring">
                         <v-menu bottom offset-y>
@@ -270,6 +281,8 @@
                         </v-btn>
                     </div>
                 </v-card-actions>
+                <!-- End: Delete / Update / Create Button -->
+
             </v-card>
         </v-dialog>
     </v-form>
@@ -349,16 +362,6 @@ export default {
                     title: "Update All",
                     action: "updateAll",
                 },
-            ],
-            rulesName: [
-                (value) =>
-                    !value ||
-                    /^[a-zA-Z&-]+\s{1}[a-zA-Z-]+$/.test(value) ||
-                    "Names must be 2 words separated by space",
-                (value) => !!value || "Required",
-            ],
-            rulesCheckBoxMandatory: [
-                (value) => !value || value.length > 0 || "",
             ],
         };
     },
