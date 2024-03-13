@@ -1,19 +1,17 @@
 <!-- 
-
     - EventDialog:
       - Shift Title (Optional): shiftTitle
       - Volunteer Limit: volunteerLimit
       - Driver Limit: driverLimit
-
-
-
-
-
  -->
 
 <template>
     <v-form ref="form" v-model="valid">
-        <v-dialog v-model="eventOpen" persistent max-width="1080">
+        <v-dialog 
+            v-model="eventOpen" 
+            persistent 
+            max-width="1080"
+        >
             <v-card>
 
                 <!-- Start: Toolbar -->
@@ -30,6 +28,43 @@
                     </v-btn>
                 </v-toolbar>
                 <!-- End: Toolbar -->
+
+
+                <v-card-text>
+                    <v-row>
+                        <v-col cols="12">
+                            <v-text-field
+                                v-model="localSelectedEvent.shiftTitle"
+                                label="Shift Title (Optional)"
+                                hint="Enter a descriptive title for the shift, if desired."
+                                single-line
+                            ></v-text-field>
+                        </v-col>
+                    </v-row>
+
+                    <v-row>
+                        <v-col cols="12" sm="6">
+                            <v-text-field
+                                v-model="localSelectedEvent.volunteerLimit"
+                                hint="Provide number of allowed volunteers."
+                                label="Volunteer Limit"
+                                single-line
+                                type="number"
+                                :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
+                            ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field
+                                v-model="localSelectedEvent.driverHelperLimit"
+                                hint="Provide number of allowed drivers and/or helpers."
+                                label="Driver / Helper Limit"
+                                single-line
+                                type="number"
+                                :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
+                            ></v-text-field>
+                        </v-col>
+                    </v-row>
+
 
                 <!-- Component: CalendarEventDialogInfo.vue -->
                 <v-container>
@@ -118,10 +153,7 @@
                     </v-row>
                 </v-container>
 
-                <v-container
-                    :class="$vuetify.breakpoint.mdAndUp ? 'heightKeep' : ''"
-                    ><!-- set explicit css height to stop dialog height jankiness when toggling recur checkbox on/off-->
-
+                <v-container :class="$vuetify.breakpoint.mdAndUp ? 'heightKeep' : ''">
                     <v-row v-if="localSelectedEvent.isRecurring || newEvent">
                         <v-col cols="12" sm="1">
                             <v-checkbox
@@ -147,7 +179,6 @@
                                 </v-row>
                             </v-container>
                         </v-col>
-
                         <v-col cols="12" sm="12" md="2" v-if="localSelectedEvent.isRecurring">
                             <v-select
                                 v-model="localINTERVAL"
@@ -169,6 +200,10 @@
                         </v-col>
                     </v-row>
                 </v-container>
+
+
+                </v-card-text>
+
 
                 <!-- Start: Delete / Update / Create Button -->
                 <v-card-actions>
@@ -328,7 +363,11 @@ export default {
     data() {
         return {
             valid: false,
-            localSelectedEvent: {},
+            localSelectedEvent: {
+                shiftTitle: "",
+                volunteerLimit: 3,
+                driverHelperLimit: 2
+            },
             newEvent: false,
             weekdayNames: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"],
             intervalValues: ["1", "2", "3", "4"],
