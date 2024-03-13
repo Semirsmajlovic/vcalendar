@@ -61,14 +61,14 @@
         </v-row>
         <calendar-event-dialog
             :newDay="newDay"
-            :selectedEvent="selectedEvent"
+            :selectedEvent="selectedShift"
             :selectedWeekdayNum="selectedWeekdayNum"
             :originalData="originalData"
             @refresh="refreshEvents()"
         ></calendar-event-dialog>
         <calendar-volunteer-dialog
             v-model="showVolunteerDialog"
-            :selected-event="selectedEvent"
+            :selectedEvent="selectedShift"
         ></calendar-volunteer-dialog>
     </v-container>
 </template>
@@ -95,7 +95,7 @@ export default {
             menu: false,
             focus: "",
             type: "month",
-            selectedEvent: {},
+            selectedShift: {},
             originalData: {}, // Keep the original data for reference before user updates form. Used in updateInstance for recurring events
             selectedWeekdayNum: 0,
             newDay: {},
@@ -134,20 +134,20 @@ export default {
         // New method to handle click on dates conditionally
         handleClickDate(day) {
             if (this.isLoggedIn) {
-                this.createShift(day);
+                this.prepareAndOpenShiftCreationDialog(day);
             }
         },
 
         /**
          * This method is triggered when a day (day number on map) is clicked in the calendar. It checks if the user is logged in.
-         * If the user is logged in, it proceeds to create an event for the clicked day by calling the `createShift` method.
+         * If the user is logged in, it proceeds to create an event for the clicked day by calling the `prepareAndOpenShiftCreationDialog` method.
          * 
          * It's referenced in the `<v-calendar>` component within the same file, specifically bound to the `@click:day` event.
          * This means whenever a day is clicked in the calendar, this method is invoked to handle the action conditionally based on the user's authentication status.
          */
         handleClickDay(day) {
             if (this.isLoggedIn) {
-                this.createShift(day);
+                this.prepareAndOpenShiftCreationDialog(day);
             }
         },
 
@@ -157,7 +157,7 @@ export default {
          * Initiates the process to create a new event based on the selected day. It sets up necessary data for the event creation dialog.
          * 
          * - `selectedWeekdayNum` is set to the weekday number of the clicked day, useful for any logic that depends on the day of the week.
-         * - `selectedEvent` is reset to an empty object, preparing for a new event creation.
+         * - `selectedShift` is reset to an empty object, preparing for a new event creation.
          * - `originalData` is also reset, ensuring no residual data from previous events affects the new event.
          * - `newDay` is set to the day object received from the click, containing all the day's relevant data.
          * - Finally, it opens the event creation dialog by setting `dialogOpen` to true.
@@ -165,9 +165,9 @@ export default {
          * This method is called from `handleClickDay` when a day is clicked in the calendar by a logged-in user, facilitating the creation of a new event for that day.
          */
         /* OLD SCENARIO
-        createShift(day) {
+        prepareAndOpenShiftCreationDialog(day) {
             this.selectedWeekdayNum = day.weekday;
-            this.selectedEvent = {};
+            this.selectedShift = {};
             this.originalData = {};
             this.newDay = day;
             this.dialogOpen(true);
@@ -178,7 +178,7 @@ export default {
         // NEW SCENARIO
         resetShiftData() {
             this.selectedWeekdayNum = 0;
-            this.selectedEvent = {};
+            this.selectedShift = {};
             this.originalData = {};
             this.newDay = {};
 
@@ -187,29 +187,23 @@ export default {
         },
 
         // NEW SCENARIO
-        createShift(day) {
+        prepareAndOpenShiftCreationDialog(day) {
             try {
-                // Validation (example, ensure day.weekday exists)
-                if (typeof day.weekday === 'undefined') {
+                if (typeof day.weekday === 'undefined') { // Validation (example, ensure day.weekday exists)
                     throw new Error('Invalid day object: missing weekday');
                 }
-
                 this.selectedWeekdayNum = day.weekday;
-                this.selectedEvent = {};
+                this.selectedShift = {};
                 this.originalData = {};
                 this.newDay = day;
-
-                // Dispatch the Vuex action
-                this.$store.dispatch("storeCalendar/dialogOpen", true)
+                this.$store.dispatch("storeCalendar/dialogOpen", true) // Dispatch the Vuex action
                     .then(() => {
                         console.log('Dialog opened successfully');
                     })
                     .catch(error => {
                         console.error('Failed to open dialog:', error);
-                        // Optionally, reset event data on failure
-                        this.resetShiftData();
-                        // Handle error (e.g., show user feedback)
-                        this.updateSnackMessage(`Error: ${error.message}`);
+                        this.resetShiftData(); // Optionally, reset event data on failure
+                        this.updateSnackMessage(`Error: ${error.message}`); // Handle error (e.g., show user feedback)
                     });
             } catch (error) {
                 console.error('Failed to create event:', error);
@@ -222,10 +216,10 @@ export default {
 
         updateShift({ nativeEvent, event, eventParsed }) {
             this.selectedWeekdayNum = eventParsed.start.weekday;
-            this.selectedEvent = this.getCurrentEvent(event);
+            this.selectedShift = this.getCurrentEvent(event);
 
             // Keep the original data before user interacts with form.  Used in updateInstance for recurring events
-            this.originalData = { ...this.selectedEvent };
+            this.originalData = { ...this.selectedShift };
 
             // Reset newDay to empty object and stop propagation or opening dialog will not be current when clicking on new date and selected date
             this.newDay = {};
@@ -253,14 +247,14 @@ export default {
 
                 // Clear props
                 this.newDay = {};
-                this.selectedEvent = {};
+                this.selectedShift = {};
             }
         },
         changeType(newType) {
             this.type = newType;
         },
         openVolunteerDialog(event) {
-            this.selectedEvent = event.event; // Set the selectedEvent with the event data
+            this.selectedShift = event.event; // Set the selectedShift with the event data
             this.showVolunteerDialog = true; // This will open the dialog
         },
     },
