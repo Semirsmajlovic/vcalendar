@@ -10,10 +10,9 @@
         <v-divider class="grey darken-1 mb-2"></v-divider>
         <v-row no-gutters>
             <v-col cols="12"> <!-- Use full width for the column -->
-                <v-btn color="primary" x-small @click="showVolunteerDialog">Click to Volunteer</v-btn> <!-- Add the button -->
+                <v-btn color="primary" x-small>Click to Volunteer</v-btn> <!-- Add the button -->
             </v-col>
         </v-row>
-        <CalendarVolunteerDialog v-model="volunteerDialogVisible"></CalendarVolunteerDialog>
     </v-container>
 </template>
 
@@ -49,17 +48,12 @@
 
 <script>
 import { parseISO, differenceInMinutes } from "date-fns";
-import CalendarVolunteerDialog from './CalendarVolunteerDialog.vue';
 
 export default {
     name: "CalendarDay",
-    components: {
-        CalendarVolunteerDialog
-    },
+    components: {},
     data() {
-        return {
-            volunteerDialogVisible: false,
-        };
+        return {};
     },
     props: {
         event: {
@@ -77,9 +71,6 @@ export default {
         },
         displayTime(time) {
             return time.slice(11);
-        },
-        showVolunteerDialog() {
-            this.volunteerDialogVisible = true; // Method to show the dialog
         },
     },
 };

@@ -1,5 +1,5 @@
 <template>
-    <v-form ref="form" v-model="valid">
+    <v-form ref="form">
         <v-dialog v-model="dialog" persistent max-width="600px">
             <v-card>
                 <v-card-title>
@@ -59,13 +59,21 @@ export default {
     },
     data() {
         return {
-            valid: false,
-            dialog: false,
+            dialog: this.value,
             selectedRole: 'Volunteer',
             roles: ['Volunteer', 'Driver / Helper', 'Organization'],
         };
     },
-    watch: {},
+    watch: {
+        value(newVal) {
+            this.dialog = newVal; // Sync dialog visibility with prop change
+        },
+        dialog(newVal) {
+            if (!newVal) {
+                this.$emit('input', newVal); // Notify parent when dialog is closed
+            }
+        }
+    },
     methods: {
         close() {
             this.dialog = false;

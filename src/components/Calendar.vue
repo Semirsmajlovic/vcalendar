@@ -29,9 +29,9 @@
                                 :events-more="false"
                                 :event-margin-bottom="5"
                                 :show-week="false"
-                                @click:event="updateShift"
-                                @click:date="createEvent"
-                                @click:day="createEvent"
+                                @click:event="handleClickEvent"
+                                @click:date="handleClickDate"
+                                @click:day="handleClickDay"
                                 @change="refreshEvents"
                             >
                                 <template v-slot:event="{ event }">
@@ -53,6 +53,7 @@
             :originalData="originalData"
             @refresh="refreshEvents()"
         ></calendar-event-dialog>
+        <calendar-volunteer-dialog v-model="showVolunteerDialog"></calendar-volunteer-dialog>
     </v-container>
 </template>
 
@@ -62,6 +63,7 @@ import CalendarDay from "./CalendarDay.vue";
 import CalendarToolBar from "./CalendarToolBar.vue";
 import CalendarSideBar from "./CalendarSideBar.vue";
 import CalendarEventDialog from "./CalendarEventDialog.vue";
+import CalendarVolunteerDialog from "./CalendarVolunteerDialog.vue";
 
 export default {
     name: "Calendar",
@@ -70,6 +72,7 @@ export default {
         CalendarToolBar,
         CalendarSideBar,
         CalendarEventDialog,
+        CalendarVolunteerDialog,
     },
     data() {
         return {
@@ -82,6 +85,7 @@ export default {
             newDay: {},
             events: [],
             isBusy: false,
+            showVolunteerDialog: false,
         };
     },
     computed: {
@@ -102,11 +106,29 @@ export default {
         viewToday() {
             this.focus = "";
         },
-        createEvent(day) {
-            // Only allow logged in users to view "CalendarEventDialog" in "Create Event" status.
-            if (!this.isLoggedIn) {
-                return;
+        // New method to handle click events conditionally
+        handleClickEvent(event) {
+            if (this.isLoggedIn) {
+                this.updateShift(event);
+            } else {
+                this.openVolunteerDialog();
             }
+        },
+
+        // New method to handle click on dates conditionally
+        handleClickDate(day) {
+            if (this.isLoggedIn) {
+                this.createEvent(day);
+            }
+        },
+
+        // New method to handle click on days conditionally
+        handleClickDay(day) {
+            if (this.isLoggedIn) {
+                this.createEvent(day);
+            }
+        },
+        createEvent(day) {
             this.selectedWeekdayNum = day.weekday;
             this.selectedEvent = {};
             this.originalData = {};
@@ -114,10 +136,6 @@ export default {
             this.dialogOpen(true);
         },
         updateShift({ nativeEvent, event, eventParsed }) {
-            // Only allow logged in users to view "CalendarEventDialog" in "Update Event" status.
-            if (!this.isLoggedIn) {
-                return;
-            }
             this.selectedWeekdayNum = eventParsed.start.weekday;
             this.selectedEvent = this.getCurrentEvent(event);
 
@@ -155,6 +173,9 @@ export default {
         },
         changeType(newType) {
             this.type = newType;
+        },
+        openVolunteerDialog() {
+            this.showVolunteerDialog = true; // This will open the dialog
         },
     },
 };
