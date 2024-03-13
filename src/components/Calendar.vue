@@ -53,7 +53,10 @@
             :originalData="originalData"
             @refresh="refreshEvents()"
         ></calendar-event-dialog>
-        <calendar-volunteer-dialog v-model="showVolunteerDialog"></calendar-volunteer-dialog>
+        <calendar-volunteer-dialog
+            v-model="showVolunteerDialog"
+            :selected-event="selectedEvent"
+        ></calendar-volunteer-dialog>
     </v-container>
 </template>
 
@@ -111,7 +114,7 @@ export default {
             if (this.isLoggedIn) {
                 this.updateShift(event);
             } else {
-                this.openVolunteerDialog();
+                this.openVolunteerDialog(event);
             }
         },
 
@@ -174,7 +177,8 @@ export default {
         changeType(newType) {
             this.type = newType;
         },
-        openVolunteerDialog() {
+        openVolunteerDialog(event) {
+            this.selectedEvent = event.event; // Set the selectedEvent with the event data
             this.showVolunteerDialog = true; // This will open the dialog
         },
     },

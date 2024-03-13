@@ -56,6 +56,12 @@ export default {
     name: 'CalendarVolunteerDialog',
     props: {
         value: Boolean,
+        selectedEvent: {
+            type: Object,
+            default() {
+                return {};
+            },
+        },
     },
     data() {
         return {
@@ -69,6 +75,9 @@ export default {
             this.dialog = newVal; // Sync dialog visibility with prop change
         },
         dialog(newVal) {
+            if (newVal) {
+                console.log(this.selectedEvent); // Log the event prop when the dialog opens
+            }
             if (!newVal) {
                 this.$emit('input', newVal); // Notify parent when dialog is closed
             }
