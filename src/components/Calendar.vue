@@ -176,14 +176,16 @@ export default {
 
         // Method to reset event data
         // NEW SCENARIO
-        resetEventData() {
+        resetShiftData() {
             this.selectedWeekdayNum = 0;
             this.selectedEvent = {};
             this.originalData = {};
             this.newDay = {};
+
+            // Logging for debugging purposes
+            console.log('Calendar[resetShiftData]: Shift data has been reset');
         },
 
-        // Refactored createShift method
         // NEW SCENARIO
         createShift(day) {
             try {
@@ -205,13 +207,13 @@ export default {
                     .catch(error => {
                         console.error('Failed to open dialog:', error);
                         // Optionally, reset event data on failure
-                        this.resetEventData();
+                        this.resetShiftData();
                         // Handle error (e.g., show user feedback)
                         this.updateSnackMessage(`Error: ${error.message}`);
                     });
             } catch (error) {
                 console.error('Failed to create event:', error);
-                this.resetEventData();
+                this.resetShiftData();
                 this.updateSnackMessage(`Error: ${error.message}`);
             }
         },
