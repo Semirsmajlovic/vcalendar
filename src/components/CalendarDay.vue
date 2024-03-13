@@ -10,41 +10,16 @@
         <v-divider class="grey darken-1 mb-2"></v-divider>
         <v-row no-gutters>
             <v-col cols="12"> <!-- Use full width for the column -->
-                <v-btn color="primary" x-small>Click to Volunteer</v-btn> <!-- Add the button -->
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Volunteer</v-btn>
+                    </template>
+                    <span>Sign up to help with the shift.</span>
+                </v-tooltip>
             </v-col>
         </v-row>
     </v-container>
 </template>
-
-<!-- <template>
-    <div
-        class="event__inner"
-        :class="event.isRecurring ? '' : 'nonRecurringEvent'"
-    >
-        <v-container class="ma-0 pa-0">
-            <v-row no-gutters>
-                <v-col cols="12" class="mb-2">
-                    <span class="body-2 mb-6">{{ event.caregiver }}</span>
-                </v-col>
-
-                <v-col cols="12" class="mb-2">
-                    <span class="body-2">{{ event.client }}</span>
-                </v-col>
-
-                <v-col cols="12">
-                    <span class="body-2">{{ displayTime(event.start) }}</span> -
-                    <span class="body-2">{{ displayTime(event.end) }}</span>
-
-                    <span
-                        class="ml-5 font-weight-normal blue--text text--darken-3"
-                        ><span class="mr-1">HRS</span
-                        >{{ duration(event) }}</span
-                    >
-                </v-col>
-            </v-row>
-        </v-container>
-    </div>
-</template> -->
 
 <script>
 import { parseISO, differenceInMinutes } from "date-fns";

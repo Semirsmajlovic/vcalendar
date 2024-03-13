@@ -134,23 +134,90 @@ export default {
         // New method to handle click on dates conditionally
         handleClickDate(day) {
             if (this.isLoggedIn) {
-                this.createEvent(day);
+                this.createShift(day);
             }
         },
 
-        // New method to handle click on days conditionally
+        /**
+         * This method is triggered when a day (day number on map) is clicked in the calendar. It checks if the user is logged in.
+         * If the user is logged in, it proceeds to create an event for the clicked day by calling the `createShift` method.
+         * 
+         * It's referenced in the `<v-calendar>` component within the same file, specifically bound to the `@click:day` event.
+         * This means whenever a day is clicked in the calendar, this method is invoked to handle the action conditionally based on the user's authentication status.
+         */
         handleClickDay(day) {
             if (this.isLoggedIn) {
-                this.createEvent(day);
+                this.createShift(day);
             }
         },
-        createEvent(day) {
+
+        // ========================================================================================== //
+
+        /**
+         * Initiates the process to create a new event based on the selected day. It sets up necessary data for the event creation dialog.
+         * 
+         * - `selectedWeekdayNum` is set to the weekday number of the clicked day, useful for any logic that depends on the day of the week.
+         * - `selectedEvent` is reset to an empty object, preparing for a new event creation.
+         * - `originalData` is also reset, ensuring no residual data from previous events affects the new event.
+         * - `newDay` is set to the day object received from the click, containing all the day's relevant data.
+         * - Finally, it opens the event creation dialog by setting `dialogOpen` to true.
+         * 
+         * This method is called from `handleClickDay` when a day is clicked in the calendar by a logged-in user, facilitating the creation of a new event for that day.
+         */
+        /* OLD SCENARIO
+        createShift(day) {
             this.selectedWeekdayNum = day.weekday;
             this.selectedEvent = {};
             this.originalData = {};
             this.newDay = day;
             this.dialogOpen(true);
         },
+        */
+
+        // Method to reset event data
+        // NEW SCENARIO
+        resetEventData() {
+            this.selectedWeekdayNum = 0;
+            this.selectedEvent = {};
+            this.originalData = {};
+            this.newDay = {};
+        },
+
+        // Refactored createShift method
+        // NEW SCENARIO
+        createShift(day) {
+            try {
+                // Validation (example, ensure day.weekday exists)
+                if (typeof day.weekday === 'undefined') {
+                    throw new Error('Invalid day object: missing weekday');
+                }
+
+                this.selectedWeekdayNum = day.weekday;
+                this.selectedEvent = {};
+                this.originalData = {};
+                this.newDay = day;
+
+                // Dispatch the Vuex action
+                this.$store.dispatch("storeCalendar/dialogOpen", true)
+                    .then(() => {
+                        console.log('Dialog opened successfully');
+                    })
+                    .catch(error => {
+                        console.error('Failed to open dialog:', error);
+                        // Optionally, reset event data on failure
+                        this.resetEventData();
+                        // Handle error (e.g., show user feedback)
+                        this.updateSnackMessage(`Error: ${error.message}`);
+                    });
+            } catch (error) {
+                console.error('Failed to create event:', error);
+                this.resetEventData();
+                this.updateSnackMessage(`Error: ${error.message}`);
+            }
+        },
+
+        // ========================================================================================== //
+
         updateShift({ nativeEvent, event, eventParsed }) {
             this.selectedWeekdayNum = eventParsed.start.weekday;
             this.selectedEvent = this.getCurrentEvent(event);
