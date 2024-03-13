@@ -20,12 +20,7 @@
                 <v-container>
                     <v-row>
                         <v-row>
-                            <!-- Calendar Column -->
-                            <v-col
-                                :cols="isLoggedIn ? '12' : '10'"
-                                :lg="isLoggedIn ? '10' : '12'"
-                                id="calendarContent"
-                            >
+                            <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
                                 <v-calendar
                                     ref="calendar"
                                     v-model="focus"
@@ -45,13 +40,7 @@
                                     </template>
                                 </v-calendar>
                             </v-col>
-
-                            <!-- Sidebar Column -->
-                            <v-col
-                                v-if="isLoggedIn"
-                                cols="12"
-                                lg="2"
-                            >
+                            <v-col v-if="isLoggedIn" cols="12" lg="2">
                                 <calendar-side-bar @selectedPerson="refreshEvents()" :focus="focus"></calendar-side-bar>
                             </v-col>
                         </v-row>
