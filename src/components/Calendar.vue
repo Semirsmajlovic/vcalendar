@@ -19,29 +19,42 @@
 
                 <v-container>
                     <v-row>
-                        <v-col cols="12" lg="10" id="calendarContent">
-                            <v-calendar
-                                ref="calendar"
-                                v-model="focus"
-                                :type="type"
-                                :events="events"
-                                :event-height="112"
-                                :events-more="false"
-                                :event-margin-bottom="5"
-                                :show-week="false"
-                                @click:event="handleClickEvent"
-                                @click:date="handleClickDate"
-                                @click:day="handleClickDay"
-                                @change="refreshEvents"
+                        <v-row>
+                            <!-- Calendar Column -->
+                            <v-col
+                                :cols="isLoggedIn ? '12' : '10'"
+                                :lg="isLoggedIn ? '10' : '12'"
+                                id="calendarContent"
                             >
-                                <template v-slot:event="{ event }">
-                                    <calendar-day :event="event"></calendar-day>
-                                </template>
-                            </v-calendar>
-                        </v-col>
-                        <v-col cols="12" lg="2">
-                            <calendar-side-bar @selectedPerson="refreshEvents()" :focus="focus"></calendar-side-bar>
-                        </v-col>
+                                <v-calendar
+                                    ref="calendar"
+                                    v-model="focus"
+                                    :type="type"
+                                    :events="events"
+                                    :event-height="112"
+                                    :events-more="false"
+                                    :event-margin-bottom="5"
+                                    :show-week="false"
+                                    @click:event="handleClickEvent"
+                                    @click:date="handleClickDate"
+                                    @click:day="handleClickDay"
+                                    @change="refreshEvents"
+                                >
+                                    <template v-slot:event="{ event }">
+                                        <calendar-day :event="event"></calendar-day>
+                                    </template>
+                                </v-calendar>
+                            </v-col>
+
+                            <!-- Sidebar Column -->
+                            <v-col
+                                v-if="isLoggedIn"
+                                cols="12"
+                                lg="2"
+                            >
+                                <calendar-side-bar @selectedPerson="refreshEvents()" :focus="focus"></calendar-side-bar>
+                            </v-col>
+                        </v-row>
                     </v-row>
                 </v-container>
             </v-col>
