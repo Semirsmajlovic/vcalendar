@@ -9,7 +9,7 @@
                                 reference.title
                             }}</span>
                             <span class="title--text blue--text ml-2">
-                                {{ getSelectedPerson.name || "All" }}
+                                {{ getSelectedParticipant.name || "All" }}
                             </span>
                         </v-toolbar-title>
                     </v-col>
@@ -31,7 +31,7 @@
                         <v-btn
                             text
                             color="blue darken-1"
-                            @click="PDFCalendar(getSelectedPerson.name, focus)"
+                            @click="PDFCalendar(getSelectedParticipant.name, focus)"
                         >
                             <v-icon> mdi-file-pdf-outline </v-icon>PDF
                         </v-btn>
@@ -148,7 +148,7 @@ export default {
         },
     },
     computed: {
-        ...mapGetters("storeCalendar", ["getSelectedPerson"]),
+        ...mapGetters("storeCalendar", ["getSelectedParticipant"]),
         totalHours: {
             get: function () {
                 if (!this.events.length) {

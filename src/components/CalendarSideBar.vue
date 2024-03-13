@@ -15,16 +15,16 @@
                         @click="eventsByName('', '')"
                         class="mt-n2"
                         :class="
-                            getSelectedPerson.name === '' ||
-                            !getSelectedPerson.name
+                            getSelectedParticipant.name === '' ||
+                            !getSelectedParticipant.name
                                 ? 'blue'
                                 : 'white'
                         "
                     >
                         <v-list-item-title
                             :class="
-                                getSelectedPerson.name === '' ||
-                                !getSelectedPerson.name
+                                getSelectedParticipant.name === '' ||
+                                !getSelectedParticipant.name
                                     ? 'white--text'
                                     : ''
                             "
@@ -52,14 +52,14 @@
                                 dense
                                 @click="eventsByName(item, 'caregiver')"
                                 :class="
-                                    item === getSelectedPerson.name
+                                    item === getSelectedParticipant.name
                                         ? 'blue'
                                         : ''
                                 "
                             >
                                 <v-list-item-title
                                     :class="
-                                        item === getSelectedPerson.name
+                                        item === getSelectedParticipant.name
                                             ? 'white--text'
                                             : ''
                                     "
@@ -88,14 +88,14 @@
                                 dense
                                 @click="eventsByName(item, 'client')"
                                 :class="
-                                    item === getSelectedPerson.name
+                                    item === getSelectedParticipant.name
                                         ? 'blue'
                                         : ''
                                 "
                             >
                                 <v-list-item-title
                                     :class="
-                                        item === getSelectedPerson.name
+                                        item === getSelectedParticipant.name
                                             ? 'white--text'
                                             : ''
                                     "
@@ -137,7 +137,7 @@ export default {
     computed: {
         ...mapGetters(["drawerStatus"]),
         ...mapGetters("storeCalendar", [
-            "getSelectedPerson",
+            "getSelectedParticipant",
             "getNamesCaregivers",
             "getNamesClients",
         ]),

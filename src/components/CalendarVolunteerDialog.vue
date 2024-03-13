@@ -57,12 +57,11 @@
 <script>
 import { db } from '../main.js';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-
 export default {
     name: 'CalendarVolunteerDialog',
     props: {
         value: Boolean,
-        selectedEvent: {
+        selectedShift: {
             type: Object,
             default() {
                 return {};
@@ -83,7 +82,7 @@ export default {
         },
         dialog(newVal) {
             if (newVal) {
-                console.log(this.selectedEvent);
+                console.log(this.selectedShift);
             }
             if (!newVal) {
                 this.$emit('input', newVal);
@@ -93,7 +92,7 @@ export default {
     methods: {
         async updateEvent() {
             if (this.volunteerName) {
-                const eventRef = doc(db, "events", this.selectedEvent.id);
+                const eventRef = doc(db, "events", this.selectedShift.cal_id);
                 try {
                     await updateDoc(eventRef, {
                         volunteerNames: arrayUnion(this.volunteerName)

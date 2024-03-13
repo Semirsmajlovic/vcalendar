@@ -88,14 +88,14 @@
                                     <v-text-field
                                         v-model="localSelectedEvent.caregiver"
                                         label="caregiver"
-                                        :disabled="getSelectedPerson.type === 'caregiver'"
+                                        :disabled="getSelectedParticipant.type === 'caregiver'"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="6">
                                     <v-text-field
                                         v-model="localSelectedEvent.client"
                                         label="client"
-                                        :disabled="getSelectedPerson.type === 'client'"
+                                        :disabled="getSelectedParticipant.type === 'client'"
                                     ></v-text-field>
                                 </v-col>
                             </v-row>
@@ -369,7 +369,7 @@ export default {
         ...mapGetters("storeCalendar", [
             "eventOpen",
             "getIndexEvent", // Previous: getEventIndex
-            "getSelectedPerson",
+            "getSelectedParticipant",
             "newEventSignal",
         ]),
     },
@@ -479,13 +479,13 @@ export default {
 
             this.localSelectedEvent = new initEvent(
                 uuidv4(),
-                this.getSelectedPerson.type === "caregiver" &&
-                this.getSelectedPerson.name
-                    ? this.getSelectedPerson.name
+                this.getSelectedParticipant.type === "caregiver" &&
+                this.getSelectedParticipant.name
+                    ? this.getSelectedParticipant.name
                     : "",
-                this.getSelectedPerson.type === "client" &&
-                this.getSelectedPerson.name
-                    ? this.getSelectedPerson.name
+                this.getSelectedParticipant.type === "client" &&
+                this.getSelectedParticipant.name
+                    ? this.getSelectedParticipant.name
                     : "",
                 `${date} 12:00`,
                 `${date} 16:00`,

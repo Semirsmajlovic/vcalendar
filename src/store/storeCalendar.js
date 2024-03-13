@@ -270,7 +270,7 @@ const storeCalendar = {
 		getNamesCaregivers        : (state) => state.caregiverNames,
 		getNamesClients           : (state) => state.clientNames,
 		newEventSignal            : (state) => state.newEventSignal,
-		getSelectedPerson         : (state) => state.selectedPerson,
+		getSelectedParticipant         : (state) => state.selectedPerson,
 		getCurrentEvent           : (state) => (data) => {
 			return state.instances.find((element) => {
 				return element.cal_id === data.cal_id && element.start === data.start;

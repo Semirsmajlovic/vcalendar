@@ -68,7 +68,7 @@
         ></calendar-event-dialog>
         <calendar-volunteer-dialog
             v-model="showVolunteerDialog"
-            :selectedEvent="selectedShift"
+            :selectedShift="selectedShift"
         ></calendar-volunteer-dialog>
     </v-container>
 </template>
@@ -110,7 +110,7 @@ export default {
             "getCurrentEvent",
             "getInstances",
             "getExceptions",
-            "getSelectedPerson",
+            "getSelectedParticipant",
         ]),
         isLoggedIn() {
             return !!this.$store.state.user;
@@ -232,8 +232,8 @@ export default {
             try {
                 await this.initInstances({
                     focus: this.focus,
-                    name: this.getSelectedPerson.name,
-                    type: this.getSelectedPerson.type,
+                    name: this.getSelectedParticipant.name,
+                    type: this.getSelectedParticipant.type,
                 });
             } catch (e) {
                 this.updateSnackMessage(`Error loading ${e} `);
@@ -241,8 +241,8 @@ export default {
                 this.isBusy = false;
                 this.events = this.getInstances(
                     this.focus,
-                    this.getSelectedPerson.name,
-                    this.getSelectedPerson.type
+                    this.getSelectedParticipant.name,
+                    this.getSelectedParticipant.type
                 );
 
                 // Clear props
