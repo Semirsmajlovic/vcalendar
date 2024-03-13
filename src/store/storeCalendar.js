@@ -9,56 +9,46 @@ import {
 	handleNonRecurringShift,
 	handleRecurringShift
 } from './storeCalendarHelpers';
-
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from '../main.js';
-
-/*
-[1] state.events - Array of recurring objects - Recurring objects have isRecurring and rruleString which is used to produce recurring instances at runtime using RRule. 
-
-[2] state.exceptions - Array of one time events, diverged recurring event turned to one time event or deleted recurring event turned to one time event
-
-[3] state.instances - Combination of state.events and state.exceptions that is calculated at runtime. The actual events shown in calendar
-*/
 
 const storeCalendar = {
 	namespaced : true,
 	state      : {
 		eventOpen      : false, // Dialog open/closed status
 		newEventSignal : false, // Signal to components that an event has been created or deleted to repopulate names
-		caregiverNames : [], // Names of all possible caregivers in view. Used in CalendarSideBar
-		clientNames    : [], // Names of all the clients in view in view. Used in CalendarSideBar
+		volunteerNames: [], // Previous: caregiverNames | Names of all possible caregivers in view. Used in CalendarSideBar
+		driverHelperNames: [], // Previous: clientNames | Names of all the clients in view in view. Used in CalendarSideBar
 		selectedPerson : {}, // Sets the calendar's view to this person when clicking on names in CalendarSideBar
 		instances      : [], // All events shown in calendar view - calculated at runtime by combining state.events and state.exceptions
 	},
 	actions    : {
 		async initInstances({ commit, dispatch }, payload) {
 			try {
-				const eventsCollectionRef = collection(db, "events");
-				console.log("eventsCollectionRef:", eventsCollectionRef);
 
+				// Fetch events from Firestore
+				const eventsCollectionRef = collection(db, "events");
 				const eventsSnapshot = await getDocs(eventsCollectionRef);
-				console.log("eventsSnapshot:", eventsSnapshot);
-				
 				const events = eventsSnapshot.docs.map(doc => {
 					let data = doc.data();
-					console.log("data:", data);
 					if (data.rruleString) {
 						data.rruleString = data.rruleString.replace(/\\n/g, '\n');
 					}
-					return { id: doc.id, ...data };
+					return { id: data.cal_id, ...data }; // Use cal_id instead of Firestore document id
 				});
-				console.log("eventsSnapshot.docs:", eventsSnapshot.docs);
-				console.log("events:", events);
+				console.log("[storeCalendar.js/initInstances/events]: ", events);
 
 				// Fetch exceptions from Firestore
 				const exceptionsCollectionRef = collection(db, "exceptions");
 				const exceptionsSnapshot = await getDocs(exceptionsCollectionRef);
-				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.cal_id, ...doc.data() }));
+				console.log("[storeCalendar.js/initInstances/exceptions]: ", exceptions);
 
-				commit('SET_INIT_EVENTS', events);
+				// Set the Vuex state.
+				commit('SET_INIT_RECURRING_SHIFTS', events);
 				commit('SET_INIT_EXCEPTIONS', exceptions);
 
+				// 
 				let allEvents = createAllEvents(
 					events,
 					exceptions,
@@ -66,11 +56,13 @@ const storeCalendar = {
 					'',
 					''
 				);
+				console.log("[storeCalendar.js/initInstances/allEvents]: ", allEvents);
 
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
-				let cgNames = getNamesInView(allEvents, payload.focus, 'caregiver');
-				let clNames = getNamesInView(allEvents, payload.focus, 'client');
+				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteer'); // Previous: caregiver
+				let clNames = getNamesInView(allEvents, payload.focus, 'driver_helper'); // Previous: client
 
+				// Set the names.
 				commit('SET_NAMES', [
 					cgNames,
 					clNames
@@ -211,7 +203,7 @@ const storeCalendar = {
 		SET_INIT_INSTANCES(state, payload) {
 			state.instances = payload;
 		},
-		SET_INIT_EVENTS(state, payload) {
+		SET_INIT_RECURRING_SHIFTS(state, payload) {
 			state.events = payload;
 		},
 		SET_INIT_EXCEPTIONS(state, payload) {
@@ -225,11 +217,11 @@ const storeCalendar = {
 		},
 		SET_NAMES(state, namesArray) {
 			let [
-				caregiverNames,
-				clientNames
+				volunteerNames,
+				driverHelperNames
 			] = namesArray;
-			state.caregiverNames = caregiverNames;
-			state.clientNames = clientNames;
+			state.volunteerNames = volunteerNames;
+			state.driverHelperNames = driverHelperNames;
 		},
 		SET_DIALOG(state, dialogStatus) {
 			state.eventOpen = dialogStatus;
@@ -267,8 +259,8 @@ const storeCalendar = {
 			return state.exceptions;
 		},
 		eventOpen                 : (state) => state.eventOpen,
-		getNamesCaregivers        : (state) => state.caregiverNames,
-		getNamesClients           : (state) => state.clientNames,
+		getNamesCaregivers        : (state) => state.volunteerNames,
+		getNamesClients           : (state) => state.driverHelperNames,
 		newEventSignal            : (state) => state.newEventSignal,
 		getSelectedParticipant         : (state) => state.selectedPerson,
 		getCurrentEvent           : (state) => (data) => {

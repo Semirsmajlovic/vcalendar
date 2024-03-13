@@ -21,27 +21,64 @@ export function getFocus(focus) {
 	return focus.substr(0, 7);
 }
 
+// ================================================================================= //
+
 /**
- * Get all possible names in view 
- * @param {Array} allEvents - All events in view
- * @param {string} current - The month to filter the names by
- * @param {string} type - caregiver or client
- * @return {Array}
+ * Get all possible names in view
  */
+// export function getNamesInView(allEvents, current, type) {
+// 	return [
+// 		...new Set(
+// 			allEvents
+// 				.filter((event) => {
+// 					return event.start.includes(getFocus(current));
+// 				})
+// 				.map((event) => event[type])
+// 				.sort((a, b) => {
+// 					return a.split(' ')[1].localeCompare(b.split(' ')[1]);
+// 				})
+// 		)
+// 	];
+// }
+
+/*
+	Data:
+	- current: empty
+	- type: driver_helper
+*/
 export function getNamesInView(allEvents, current, type) {
-	return [
-		...new Set(
-			allEvents
-				.filter((event) => {
-					return event.start.includes(getFocus(current));
-				})
-				.map((event) => event[type])
-				.sort((a, b) => {
-					return a.split(' ')[1].localeCompare(b.split(' ')[1]);
-				})
-		)
-	];
+    try {
+		// Output: 2024-03
+        const focusedMonth = getFocus(current);
+
+		// Output: [{"duration":"4","start":"2024-03-11 12:00","volunteerLimit":"4","shiftTitle":"Test","rruleString":"","driverHelperLimit":"4","client":"","isRecurring":false,"cal_id":"279b775f-abd5-4b28-b2c4-7ad08c17e640","caregiver":"","end":"2024-03-11 16:00"}]
+        const filteredEvents = allEvents.filter((event) => {
+            return event.start.includes(focusedMonth);
+        });
+        // console.log(`Filtered events: ${JSON.stringify(filteredEvents)}`);
+
+		// Output: Mapped events (before sort): [null]
+        const mappedEvents = filteredEvents.map((event) => event[type]);
+        // console.log(`Mapped events (before sort): ${JSON.stringify(mappedEvents)}`);
+
+		// Output: Sorted events: [null]
+        const sortedEvents = mappedEvents.sort((a, b) => {
+            return a.split(' ')[1].localeCompare(b.split(' ')[1]);
+        });
+        // console.log(`Sorted events: ${JSON.stringify(sortedEvents)}`);
+
+		// Output: Unique names in view: [null]
+        const uniqueNames = [...new Set(sortedEvents)];
+        // console.log(`Unique names in view: ${JSON.stringify(uniqueNames)}`);
+
+        return uniqueNames;
+    } catch (error) {
+        console.error(`Error in getNamesInView: ${error}`);
+        throw error;
+    }
 }
+
+// ================================================================================= //
 
 /**
  * Change the event's until time to newEndDate. Used in updating events going forward and deleting events going forward
