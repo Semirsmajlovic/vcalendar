@@ -72,14 +72,14 @@ export default {
     },
     watch: {
         value(newVal) {
-            this.dialog = newVal; // Sync dialog visibility with prop change
+            this.dialog = newVal;
         },
         dialog(newVal) {
             if (newVal) {
-                console.log(this.selectedEvent); // Log the event prop when the dialog opens
+                console.log(this.selectedEvent);
             }
             if (!newVal) {
-                this.$emit('input', newVal); // Notify parent when dialog is closed
+                this.$emit('input', newVal);
             }
         }
     },
