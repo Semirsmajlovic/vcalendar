@@ -451,49 +451,21 @@ export default {
             }
             return format(parseISO(date), "yyyy-MM-dd");
         },
-        createEvent({ date, time, hour, year, weekday }) {
+        createEvent({ date }) {
             this.valid = false;
             this.newEvent = true;
-
-            class initEvent {
-                constructor(
-                    cal_id,
-                    caregiver,
-                    client,
-                    start,
-                    end,
-                    duration,
-                    isRecurring,
-                    rruleString
-                ) {
-                    this.cal_id = cal_id;
-                    this.caregiver = caregiver;
-                    this.client = client;
-                    this.start = start;
-                    this.end = end;
-                    this.duration = duration;
-                    this.isRecurring = false;
-                    this.rruleString = "";
-                }
-            }
-
-            this.localSelectedEvent = new initEvent(
-                uuidv4(),
-                this.getSelectedParticipant.type === "caregiver" &&
-                this.getSelectedParticipant.name
-                    ? this.getSelectedParticipant.name
-                    : "",
-                this.getSelectedParticipant.type === "client" &&
-                this.getSelectedParticipant.name
-                    ? this.getSelectedParticipant.name
-                    : "",
-                `${date} 12:00`,
-                `${date} 16:00`,
-                "4",
-                false,
-                ""
-            );
-
+            const caregiverName = this.getSelectedParticipant.type === "caregiver" ? this.getSelectedParticipant.name : "";
+            const clientName = this.getSelectedParticipant.type === "client" ? this.getSelectedParticipant.name : "";
+            this.localSelectedEvent = {
+                cal_id: uuidv4(),
+                caregiver: caregiverName,
+                client: clientName,
+                start: `${date} 12:00`,
+                end: `${date} 16:00`,
+                duration: "4",
+                isRecurring: false,
+                rruleString: ""
+            };
             this.dialogOpen(true);
         },
         async patchEvent(payload, patchType) {
