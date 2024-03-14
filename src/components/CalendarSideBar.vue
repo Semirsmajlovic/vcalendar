@@ -33,16 +33,16 @@
                     </v-list-item>
                 </v-list-item-group>
 
-                <!-- Updated v-list-group for Caregivers -->
-                <v-list-group :value="namesCaregivers.length > 0" dense>
+                <!-- Updated v-list-group for volunteers -->
+                <v-list-group :value="namesVolunteers.length > 0" dense>
                     <template v-slot:activator>
                         <v-list-item-title
-                            ><span class="mr-3">Caregivers</span>
-                            <span class="caption grey--text">{{ namesCaregivers.length }}</span></v-list-item-title
+                            ><span class="mr-3">Volunteers</span>
+                            <span class="caption grey--text">{{ namesVolunteers.length }}</span></v-list-item-title
                         >
                     </template>
                     <v-virtual-scroll
-                        :items="namesCaregivers"
+                        :items="namesVolunteers"
                         :item-height="40"
                         height="220"
                     >
@@ -50,7 +50,7 @@
                             <v-list-item
                                 link
                                 dense
-                                @click="eventsByName(item, 'caregiver')"
+                                @click="eventsByName(item, 'volunteer')"
                                 :class="
                                     item === getSelectedParticipant.name
                                         ? 'blue'
@@ -69,16 +69,16 @@
                     </v-virtual-scroll>
                 </v-list-group>
 
-                <!-- Updated v-list-group for Clients -->
-                <v-list-group :value="namesClients.length > 0">
+                <!-- Updated v-list-group for Driver / Driver Helper -->
+                <v-list-group :value="namesDriverHelpers.length > 0">
                     <template v-slot:activator>
                         <v-list-item-title
-                            ><span class="mr-3">Clients</span>
-                            <span class="caption grey--text">{{ namesClients.length }}</span></v-list-item-title
+                            ><span class="mr-3">Drivers / Driver Helpers</span>
+                            <span class="caption grey--text">{{ namesDriverHelpers.length }}</span></v-list-item-title
                         >
                     </template>
                     <v-virtual-scroll
-                        :items="namesClients"
+                        :items="namesDriverHelpers"
                         :item-height="40"
                         height="220"
                     >
@@ -86,7 +86,7 @@
                             <v-list-item
                                 link
                                 dense
-                                @click="eventsByName(item, 'client')"
+                                @click="eventsByName(item, 'driverHelper')"
                                 :class="
                                     item === getSelectedParticipant.name
                                         ? 'blue'
@@ -147,7 +147,7 @@ export default {
             },
             set: function () {},
         },
-        namesCaregivers: {
+        namesVolunteers: {
             get: function () {
                 return [...this.getNamesVolunteers]
                     .filter((item) => item !== "")
@@ -157,7 +157,7 @@ export default {
                     });
             },
         },
-        namesClients: {
+        namesDriverHelpers: {
             get: function () {
                 return [...this.getNamesDriverHelpers]
                     .filter((item) => item !== "")
@@ -187,6 +187,3 @@ export default {
     },
 };
 </script>
-
-<style scoped>
-</style>

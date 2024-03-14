@@ -59,13 +59,13 @@ const storeCalendar = {
 				console.log("[storeCalendar.js/initInstances/allEvents]: ", allEvents);
 
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
-				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteer'); // Previous: caregiver
-				let clNames = getNamesInView(allEvents, payload.focus, 'driver_helper'); // Previous: client
+				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteerNames'); // Previous: caregiver
+				// let clNames = getNamesInView(allEvents, payload.focus, 'driverHelperNames'); // Previous: client
 
 				// Set the names.
 				commit('SET_NAMES', [
 					cgNames,
-					clNames
+					// clNames
 				]);
 
 				// If name and type is provided, filter allEvents to that person only
@@ -221,9 +221,9 @@ const storeCalendar = {
 		},
 		SET_NAMES(state, namesArray) {
 			let [
-				volunteerNames,
-				driverHelperNames
-			] = namesArray;
+				volunteerNames = [], // Default to empty array if undefined
+				driverHelperNames = [] // Default to empty array if undefined
+			] = Array.isArray(namesArray) ? namesArray : [[], []]; // Ensure namesArray is an array
 			state.volunteerNames = volunteerNames;
 			state.driverHelperNames = driverHelperNames;
 		},
