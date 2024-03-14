@@ -20,13 +20,11 @@
                         <v-text-field
                             v-model="volunteerName"
                             label="Volunteer Name"
-                            :rules="[v => !!v || 'Name is required']"
                             required
                         ></v-text-field>
                         <v-text-field
                             v-model="volunteerEmail"
                             label="Volunteer Email (Optional)"
-                            :rules="[v => !!v || 'Email is optional', v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
                         ></v-text-field>
                     </div>
                     <!-- End: Volunteer Section -->
@@ -37,14 +35,13 @@
                         <!-- Add your Driver / Helper specific fields here -->
                         <v-text-field
                             v-model="driverHelperName"
-                            label="Volunteer Name"
-                            :rules="[v => !!v || 'Name is required']"
+                            label="Driver or Driver Helper Name"
                             required
                         ></v-text-field>
                         <v-text-field
                             v-model="driverHelperEmail"
-                            label="Volunteer Email (Optional)"
-                            :rules="[v => !!v || 'Email is optional', v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
+                            label="Driver or Driver Helper Email"
+                            required
                         ></v-text-field>
                     </div>
                 </v-card-text>
@@ -102,6 +99,11 @@ export default {
             if (!newVal) {
                 this.$emit('input', newVal); // Emits an event to update the parent component about the dialog's closure
             }
+        },
+        selectedRole(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                this.clearFields(); // Call clearFields method when the selected role changes
+            }
         }
     },
     methods: {
@@ -114,20 +116,41 @@ export default {
                 } else {
                     docRef = doc(db, "exceptions", shift.id); // Sets docRef to a Firestore document reference in the "exceptions" collection if the shift is not recurring
                 }
-                const updatePayload = {
-                    volunteerNames: arrayUnion({ 
-                        name: this.volunteerName, 
-                        email: this.volunteerEmail 
-                    }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
-                };
-                await updateDoc(docRef, updatePayload); // Updates the Firestore document with the new volunteer information
+                let updatePayload = {};
+                if (this.selectedRole === 'Volunteer') {
+                    updatePayload = {
+                        volunteerNames: arrayUnion({ 
+                            name: this.volunteerName, 
+                            email: this.volunteerEmail 
+                        }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
+                    };
+                } else if (this.selectedRole === 'Driver / Driver Helper') {
+                    updatePayload = {
+                        driverHelperNames: arrayUnion({ 
+                            name: this.driverHelperName, 
+                            email: this.driverHelperEmail 
+                        }) // Prepares the payload to add a new driver/helper to the driverHelperNames array in the document
+                    };
+                }
+                await updateDoc(docRef, updatePayload); // Updates the Firestore document with the new volunteer or driver/helper information
                 this.close(); // Closes the dialog after successful update
             } catch (error) {
                 console.error("Failed to update event: ", error); // Logs an error if the update fails
             }
         },
+        resetDialog() {
+            this.clearFields(); // Clears all input fields
+            this.dialog = false; // Closes the dialog
+            this.selectedRole = 'Volunteer'; // Resets the selected role to its default value if needed
+        },
+        clearFields() {
+            this.volunteerName = '';
+            this.volunteerEmail = '';
+            this.driverHelperName = '';
+            this.driverHelperEmail = '';
+        },
         close() {
-            this.dialog = false; // Set dialog data property to false, closing the dialog
+            this.resetDialog();
         },
     },
 };
