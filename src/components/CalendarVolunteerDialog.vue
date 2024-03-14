@@ -25,9 +25,8 @@
                         ></v-text-field>
                         <v-text-field
                             v-model="volunteerEmail"
-                            label="Volunteer Email"
+                            label="Volunteer Email (Optional)"
                             :rules="[v => !!v || 'Email is optional', v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
-                            required
                         ></v-text-field>
                     </div>
                     <!-- End: Volunteer Section -->
@@ -36,6 +35,17 @@
                         <h3>Driver / Helper Volunteer</h3>
                         <p>As a driver or helper, you play a crucial role in logistics and transportation, ensuring resources and people reach where they are needed most.</p>
                         <!-- Add your Driver / Helper specific fields here -->
+                        <v-text-field
+                            v-model="driverHelperName"
+                            label="Volunteer Name"
+                            :rules="[v => !!v || 'Name is required']"
+                            required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="driverHelperEmail"
+                            label="Volunteer Email (Optional)"
+                            :rules="[v => !!v || 'Email is optional', v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
+                        ></v-text-field>
                     </div>
                 </v-card-text>
 
@@ -76,6 +86,8 @@ export default {
             selectedRole: 'Volunteer',
             volunteerName: '',
             volunteerEmail: '',
+            driverHelperName: '',
+            driverHelperEmail: '',
             roles: ['Volunteer', 'Driver / Driver Helper'],
         };
     },
