@@ -14,13 +14,13 @@ import { db } from '../main.js';
 
 const storeCalendar = {
 	namespaced : true,
-	state      : {
-		eventOpen      : false, // Dialog open/closed status
-		newEventSignal : false, // Signal to components that an event has been created or deleted to repopulate names
+	state: {
+		eventOpen: false, // Dialog open/closed status
+		newEventSignal: false, // Signal to components that an event has been created or deleted to repopulate names
 		volunteerNames: [], // Previous: caregiverNames | Names of all possible caregivers in view. Used in CalendarSideBar
 		driverHelperNames: [], // Previous: clientNames | Names of all the clients in view in view. Used in CalendarSideBar
-		selectedPerson : {}, // Sets the calendar's view to this person when clicking on names in CalendarSideBar
-		instances      : [], // All events shown in calendar view - calculated at runtime by combining state.events and state.exceptions
+		selectedPerson: {}, // Sets the calendar's view to this person when clicking on names in CalendarSideBar
+		instances: [], // All events shown in calendar view - calculated at runtime by combining state.events and state.exceptions
 	},
 	actions    : {
 		async initInstances({ commit, dispatch }, payload) {
@@ -86,12 +86,12 @@ const storeCalendar = {
 		async actionCreateNewEvent({ commit, dispatch }, payload) {
 			try {
 				let collectionRef; // Set the collectionRef
-				if (!payload.isRecurring) { // Is payload {cal_id: dfvf, caregiver: "", recurring: false} false?
+				if (!payload.isRecurring) { // Is payload {id: dfvf, caregiver: "", recurring: false} false?
 					collectionRef = collection(db, "exceptions"); // Set as exceptions database.
 				} else {
 					collectionRef = collection(db, "events"); // Set as events database.
 				}
-				const plainPayload = { ...payload }; // Sets a plain object: {cal_id: dfvf, caregiver: "", recurring: false}
+				const plainPayload = { ...payload }; // Sets a plain object: {id: dfvf, caregiver: "", recurring: false}
 				const docRef = await addDoc(collectionRef, plainPayload);
 				payload.id = docRef.id; // Update the payload with the Firestore document ID
 				if (!payload.isRecurring) { // Is payload an exception?
@@ -109,7 +109,6 @@ const storeCalendar = {
 		
 		async updateEvent({ commit, state, getters, dispatch }, payload) {
 			try {
-				console.log("updateEvent: " + payload);
 				let docRef;
 				if (!payload.isRecurring) {
 					// Handling non-recurring events (exceptions)
@@ -135,6 +134,7 @@ const storeCalendar = {
 							break;
 						}
 						case 'updateInstance': {
+							console.log("[storeCalendar.js/updateEvent/updateInstance]: Starting update for a single instance.");
 							// For updating a single instance of a recurring event, it's treated as an exception
 							payload.actionType.description = 'updateInstance';
 							payload.isRecurring = false;
@@ -142,6 +142,7 @@ const storeCalendar = {
 							const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
 							payload.id = exceptionDocRef.id; // Update payload with new Firestore document ID
 							commit('ADD_EXCEPTION', payload);
+							console.log("[storeCalendar.js/updateEvent/updateInstance]: Exception added for single instance update.");
 							break;
 						}
 						case 'updateForward': {
@@ -152,9 +153,10 @@ const storeCalendar = {
 								let updatedEvent = changeRecurringEnd({ ...state.events[index] }, payload.start);
 								let originalDocRef = doc(db, "events", state.events[index].id);
 								await updateDoc(originalDocRef, updatedEvent);
-		
+						
 								// Create a new event for the forward part
-								let recurringObjGoingForward = { ...payload, cal_id: uuidv4() };
+								let recurringObjGoingForward = { ...payload };
+								delete recurringObjGoingForward.id; // Remove id if present, to avoid confusion
 								const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
 								recurringObjGoingForward.id = newEventDocRef.id; // Update with new Firestore document ID
 								commit('ADD_EVENT', recurringObjGoingForward);
@@ -254,38 +256,38 @@ const storeCalendar = {
 		}
 	},
 	getters    : {
-		getInstances              : (state) => (focus, name, type) => {
+		getInstances: (state) => (focus, name, type) => {
 			return state.instances;
 		},
-		getExceptions             : (state) => (focus, name, type) => {
+		getExceptions: (state) => (focus, name, type) => {
 			return state.exceptions;
 		},
-		eventOpen                 : (state) => state.eventOpen,
-		getNamesCaregivers        : (state) => state.volunteerNames,
-		getNamesClients           : (state) => state.driverHelperNames,
-		newEventSignal            : (state) => state.newEventSignal,
-		getSelectedParticipant         : (state) => state.selectedPerson,
-		getCurrentEvent           : (state) => (data) => {
+		eventOpen: (state) => state.eventOpen,
+		getNamesVolunteers: (state) => state.volunteerNames,
+		getNamesDriverHelpers: (state) => state.driverHelperNames,
+		newEventSignal: (state) => state.newEventSignal,
+		getSelectedParticipant: (state) => state.selectedPerson,
+		getCurrentEvent: (state) => (data) => {
 			return state.instances.find((element) => {
-				return element.cal_id === data.cal_id && element.start === data.start;
+				return element.id === data.id && element.start === data.start;
 			});
 		},
-		getIndexEvent             : (state) => (data) => {
+		getIndexEvent: (state) => (data) => {
 			return state.events.findIndex((element) => {
-				return element.cal_id === data.cal_id;
+				return element.id === data.id;
 			});
 		},
-		getIndexException         : (state) => (data) => {
+		getIndexException: (state) => (data) => {
 			return state.exceptions.findIndex((element) => {
-				return element.cal_id === data.cal_id;
+				return element.id === data.id;
 			});
 		},
-		getIndexExceptionDiverged : (state) => (data) => {
+		getIndexExceptionDiverged: (state) => (data) => {
 			return state.exceptions.findIndex((element) => {
-				return element.cal_id === data.cal_id && element.actionType.originalData.start === data.start;
+				return element.id === data.id && element.actionType.originalData.start === data.start;
 			});
 		},
-		getNames                  : (state, getters) => (current, type) => {
+		getNames: (state, getters) => (current, type) => {
 			return [
 				...new Set(
 					getters

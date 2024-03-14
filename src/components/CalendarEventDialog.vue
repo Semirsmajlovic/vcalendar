@@ -437,7 +437,6 @@ export default {
             this.valid = false; // Resets form validation state
             this.newEvent = true; // Flags that a new event is being created
             this.localSelectedEvent = {
-                cal_id: uuidv4(), // Generates a unique ID for the event
                 shiftTitle: "", // Assigns the shift title to the event
                 volunteerLimit: "3", // Assigns the volunteer limit to the event
                 volunteerNames: [], // Assigns the volunteer name to the event
@@ -454,32 +453,40 @@ export default {
 
 
         async patchEvent(payload, patchType) {
+            console.log("[CalendarEventDialog.vue/patchEvent]: Starting with payload and patchType:", payload, patchType);
             if (payload.isRecurring) {
                 switch (patchType) {
                     case "updateInstance": {
+                        console.log("[CalendarEventDialog.vue/patchEvent]: Handling updateInstance.");
                         payload.actionType = this.createActionType("updateInstance", this.originalData);
                         break;
                     }
                     case "updateForward": {
+                        console.log("[CalendarEventDialog.vue/patchEvent]: Handling updateForward.");
                         payload.actionType = this.createActionType("updateForward", "");
                         this.changeDTSTARTdate(payload.start);
                         break;
                     }
                     case "updateAll": {
+                        console.log("[CalendarEventDialog.vue/patchEvent]: Handling updateAll.");
                         payload.actionType = this.createActionType("updateAll", "");
                         break;
                     }
                     default:
+                        console.log("[CalendarEventDialog.vue/patchEvent]: No actionType specified, updating snack message.");
                         this.updateSnackMessage(`No actionType in patchEvent`);
                 }
             }
             try {
                 await this.updateEvent(payload);
+                console.log("[CalendarEventDialog.vue/patchEvent]: Event updated successfully.");
                 this.updateSnackMessage("Event updated");
             } catch (e) {
+                console.error("[CalendarEventDialog.vue/patchEvent]: Error updating event:", e);
                 this.updateSnackMessage(`Error ${e}`);
             } finally {
                 this.closeDialog();
+                console.log("[CalendarEventDialog.vue/patchEvent]: Dialog closed.");
             }
         },
 

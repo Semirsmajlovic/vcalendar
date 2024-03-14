@@ -138,8 +138,8 @@ export default {
         ...mapGetters(["drawerStatus"]),
         ...mapGetters("storeCalendar", [
             "getSelectedParticipant",
-            "getNamesCaregivers",
-            "getNamesClients",
+            "getNamesVolunteers",
+            "getNamesDriverHelpers",
         ]),
         drawerSwitch: {
             get: function () {
@@ -149,7 +149,7 @@ export default {
         },
         namesCaregivers: {
             get: function () {
-                return [...this.getNamesCaregivers]
+                return [...this.getNamesVolunteers]
                     .filter((item) => item !== "")
                     .map((event) => event)
                     .sort((a, b) => {
@@ -159,7 +159,7 @@ export default {
         },
         namesClients: {
             get: function () {
-                return [...this.getNamesClients]
+                return [...this.getNamesDriverHelpers]
                     .filter((item) => item !== "")
                     .map((event) => event)
                     .sort((a, b) => {

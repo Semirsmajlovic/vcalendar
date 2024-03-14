@@ -51,7 +51,7 @@ export function getNamesInView(allEvents, current, type) {
 		// Output: 2024-03
         const focusedMonth = getFocus(current);
 
-		// Output: [{"duration":"4","start":"2024-03-11 12:00","volunteerLimit":"4","shiftTitle":"Test","rruleString":"","driverHelperLimit":"4","client":"","isRecurring":false,"cal_id":"279b775f-abd5-4b28-b2c4-7ad08c17e640","caregiver":"","end":"2024-03-11 16:00"}]
+		// Output: [{"duration":"4","start":"2024-03-11 12:00","volunteerLimit":"4","shiftTitle":"Test","rruleString":"","driverHelperLimit":"4","client":"","isRecurring":false,"id":"279b775f-abd5-4b28-b2c4-7ad08c17e640","caregiver":"","end":"2024-03-11 16:00"}]
         const filteredEvents = allEvents.filter((event) => {
             return event.start.includes(focusedMonth);
         });
@@ -128,7 +128,7 @@ export function createAllEvents(events, exceptionArray, focus, name, type) {
 	// Loop through recurring events while omitting any instances from recurring events if a matching exception is found in exceptions.
 	let index = allEvents.length - 1;
 	while (index >= 0) {
-		let exceptionFound = exceptionArray.some((exception) => exception.cal_id === allEvents[index].cal_id && exception.actionType.originalData.start === allEvents[index].start);
+		let exceptionFound = exceptionArray.some((exception) => exception.id === allEvents[index].id && exception.actionType.originalData.start === allEvents[index].start);
 		if (exceptionFound) {
 			allEvents.splice(index, 1);
 		}
@@ -315,7 +315,7 @@ async function deleteDivergedShift({ commit, state, getters }, payload) {
 async function deleteAllRecurringShifts({ commit, state }, payload) {
     try {
         console.log('Starting deleteAllRecurringShifts with payload:', payload); // Logs the beginning of the function execution and shows the payload.
-        let shiftsFound = state.events.filter(element => element.cal_id === payload.cal_id); // Filters the events to find those matching the payload's cal_id.
+        let shiftsFound = state.events.filter(element => element.id === payload.id); // Filters the events to find those matching the payload's id.
         console.log(`Found ${shiftsFound.length} shifts to delete.`); // Logs the number of shifts found to delete.
         for (let shift of shiftsFound) {
             await deleteDoc(doc(db, "events", shift.id)); // Deletes each found shift document from Firestore.
@@ -358,7 +358,7 @@ async function deleteForwardRecurringShift({ commit, state, getters }, payload) 
 // ♻️ Success: Click Recurring Shift -> "Delete this instance" -> Single instance is deleted.
 
 // Usage: Recurring Event Dialog -> Delete this instance.
-async function deleteSingleRecurringInstance({ commit }, payload) { // payload is the { cal_id: } object.
+async function deleteSingleRecurringInstance({ commit }, payload) { // payload is the { id: } object.
     try {
         const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload); // Adds a new document to the "exceptions" collection in Firestore with the given payload.
         payload.id = exceptionDocRef.id; // Updates the payload object with the ID of the newly created Firestore document.
