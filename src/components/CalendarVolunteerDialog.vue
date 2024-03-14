@@ -18,11 +18,13 @@
                         <h3>General Volunteer Signup</h3>
                         <p>As a general volunteer, you'll have the opportunity to contribute through various tasks and activities that support our cause.</p>
                         <v-text-field
+                            v-model="volunteerName"
                             label="Volunteer Name"
                             :rules="[v => !!v || 'Name is required']"
                             required
                         ></v-text-field>
                         <v-text-field
+                            v-model="volunteerEmail"
                             label="Volunteer Email"
                             :rules="[v => !!v || 'Email is optional', v => /.+@.+\..+/.test(v) || 'E-mail must be valid']"
                             required
@@ -56,7 +58,7 @@
   
 <script>
 import { db } from '../main.js';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 export default {
     name: 'CalendarVolunteerDialog',
     props: {
@@ -73,39 +75,30 @@ export default {
             dialog: this.value,
             selectedRole: 'Volunteer',
             volunteerName: '',
+            volunteerEmail: '',
             roles: ['Volunteer', 'Driver / Driver Helper'],
         };
     },
     watch: {
         value(newVal) {
-            this.dialog = newVal;
+            this.dialog = newVal; // Syncs the dialog visibility with the external prop value
         },
         dialog(newVal) {
             if (newVal) {
-                console.log(this.selectedShift);
+                console.log(this.selectedShift); // Logs the selected shift details when the dialog is opened
             }
             if (!newVal) {
-                this.$emit('input', newVal);
+                this.$emit('input', newVal); // Emits an event to update the parent component about the dialog's closure
             }
         }
     },
     methods: {
+
         async updateEvent() {
-            if (this.volunteerName) {
-                const eventRef = doc(db, "events", this.selectedShift.cal_id);
-                try {
-                    await updateDoc(eventRef, {
-                        volunteerNames: arrayUnion(this.volunteerName)
-                    });
-                    console.log('Event updated with volunteer name:', this.volunteerName);
-                } catch (error) {
-                    console.error("Error updating document: ", error);
-                }
-            }
-            this.close(); // Optionally close the dialog after participating
         },
+
         close() {
-            this.dialog = false;
+            this.dialog = false; // Set dialog data property to false, closing the dialog
         },
     },
 };

@@ -31,7 +31,6 @@
                 </v-toolbar>
                 <!-- End: Toolbar -->
 
-
                 <v-card-text>
                     <v-row>
                         <v-col cols="12">
@@ -96,46 +95,45 @@
                     </v-row>
 
                     <v-expand-transition>
-                            <v-row v-if="localSelectedEvent.isRecurring" no-gutters>
-                                <div v-for="dayName in weekdayNames" :key="dayName">
-                                    <v-col cols="12" sm="1" class="mr-1">
-                                        <v-checkbox
-                                            multiple
-                                            v-model="localBYDAY"
-                                            :label="dayName"
-                                            :value="dayName"
-                                            @change="changeBYDAY(localBYDAY)"
-                                        ></v-checkbox>
-                                    </v-col>
-                                </div>
-                            </v-row>
-                        </v-expand-transition>
-
-                        <v-expand-transition>
-                            <v-row v-if="localSelectedEvent.isRecurring">
-                                <v-col cols="6" sm="6">
-                                    <v-select
-                                        v-model="localINTERVAL"
-                                        :items="intervalValues"
-                                        label="Recurring Shift Interval"
-                                        hint="Select how often the shift recurs. For example, selecting '2' means the shift will recur every 2 weeks."
-                                        persistent-hint
-                                        single-line
-                                        value="localINTERVAL"
-                                        @change="changeINTERVAL"
-                                        :rules="[v => !!v || 'Interval selection is required']"
-                                    ></v-select>
+                        <v-row v-if="localSelectedEvent.isRecurring" no-gutters>
+                            <div v-for="dayName in weekdayNames" :key="dayName">
+                                <v-col cols="12" sm="1" class="mr-1">
+                                    <v-checkbox
+                                        multiple
+                                        v-model="localBYDAY"
+                                        :label="dayName"
+                                        :value="dayName"
+                                        @change="changeBYDAY(localBYDAY)"
+                                    ></v-checkbox>
                                 </v-col>
+                            </div>
+                        </v-row>
+                    </v-expand-transition>
 
-                                <v-col cols="6" sm="6">
-                                    <calendar-until-date-picker
-                                        :until="formatUNTILtoType(localUNTIL, '/', 'mmddyyyy')"
-                                        :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
-                                        @untilPicked="(...args) => changeUNTIL(localSelectedEvent.start, ...args)"
-                                    ></calendar-until-date-picker>
-                                </v-col>
-                            </v-row>
-                        </v-expand-transition>
+                    <v-expand-transition>
+                        <v-row v-if="localSelectedEvent.isRecurring">
+                            <v-col cols="6" sm="6">
+                                <v-select
+                                    v-model="localINTERVAL"
+                                    :items="intervalValues"
+                                    label="Recurring Shift Interval"
+                                    hint="Select how often the shift recurs. For example, selecting '2' means the shift will recur every 2 weeks."
+                                    persistent-hint
+                                    single-line
+                                    value="localINTERVAL"
+                                    @change="changeINTERVAL"
+                                    :rules="[v => !!v || 'Interval selection is required']"
+                                ></v-select>
+                            </v-col>
+                            <v-col cols="6" sm="6">
+                                <calendar-until-date-picker
+                                    :until="formatUNTILtoType(localUNTIL, '/', 'mmddyyyy')"
+                                    :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
+                                    @untilPicked="(...args) => changeUNTIL(localSelectedEvent.start, ...args)"
+                                ></calendar-until-date-picker>
+                            </v-col>
+                        </v-row>
+                    </v-expand-transition>
 
                 </v-card-text>
 
