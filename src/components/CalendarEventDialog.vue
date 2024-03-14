@@ -134,7 +134,6 @@
                             </v-col>
                         </v-row>
                     </v-expand-transition>
-
                 </v-card-text>
 
 
@@ -458,32 +457,22 @@ export default {
             if (payload.isRecurring) {
                 switch (patchType) {
                     case "updateInstance": {
-                        payload.actionType = this.createActionType(
-                            "updateInstance",
-                            this.originalData
-                        );
+                        payload.actionType = this.createActionType("updateInstance", this.originalData);
                         break;
                     }
                     case "updateForward": {
-                        payload.actionType = this.createActionType(
-                            "updateForward",
-                            ""
-                        );
+                        payload.actionType = this.createActionType("updateForward", "");
                         this.changeDTSTARTdate(payload.start);
                         break;
                     }
                     case "updateAll": {
-                        payload.actionType = this.createActionType(
-                            "updateAll",
-                            ""
-                        );
+                        payload.actionType = this.createActionType("updateAll", "");
                         break;
                     }
                     default:
                         this.updateSnackMessage(`No actionType in patchEvent`);
                 }
             }
-
             try {
                 await this.updateEvent(payload);
                 this.updateSnackMessage("Event updated");
@@ -493,6 +482,8 @@ export default {
                 this.closeDialog();
             }
         },
+
+
         async saveNewEvent(payload) {
             try {
                 await this.actionCreateNewEvent(payload);
@@ -504,6 +495,8 @@ export default {
                 this.closeDialog();
             }
         },
+
+
         async removeEvent(payload, removeType) {
             if (payload.isRecurring) {
                 switch (removeType) {

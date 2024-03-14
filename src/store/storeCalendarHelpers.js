@@ -161,40 +161,64 @@ export function createAllEvents(events, exceptionArray, focus, name, type) {
  * @return {Array}
  */
 export function makeRecurringEvents(payload, rruleString, focus) {
-	let recurringEvents = [];
-	let year = parseISO(focus).getFullYear();
-	let monthUTC = new Date(focus).getUTCMonth();
-	let day = payload.start.substr(8, 2);
 
-	// Subtract timezone offset to get the correct recurring start day and recurring end day used in .between function in recurDates
+	// Data: []
+	let recurringEvents = [];
+	
+	// Data: 2024
+	let year = parseISO(focus).getFullYear();
+	
+	// Data: 2
+	let monthUTC = new Date(focus).getUTCMonth();
+	
+	// Data: 12
+	let day = payload.start.substr(8, 2);
+	
+	// Data: "2024-03-01T06:00:00.000Z"
 	let startDate = new Date(year, monthUTC, 1);
+	
+	// Data: "2024-03-01T00:00:00.000Z"
 	let recurStart = new Date(startDate.valueOf() - startDate.getTimezoneOffset() * 60 * 1000);
+	
+	// Data: "2024-04-01T04:59:59.999Z"
 	let endDate = endOfMonth(new Date(year, monthUTC));
+	
+	// Data: "2024-03-31T23:59:59.999Z"
 	let recurEnd = new Date(endDate.valueOf() - endDate.getTimezoneOffset() * 60 * 1000);
 
-	// Crossover check - Check if shift crosses over to next day. Example: 23:00 - 05:00. If it does cross over, the end time is calculated by adding difference in minutes from start time. If the event does not cross over to next day, end time is the same date + end time.
-
+	// Data: "2024-03-12"
 	let startDateOnly = payload.start.slice(0, 10);
+
+	// Data: "2024-03-12"
 	let endDateOnly = payload.end.slice(0, 10);
+
+	// Data: "16:00"
 	let endTimeOnly = payload.end.slice(11);
+
+	// Data: ""
 	let diffMinutes = '';
+
+	// Data: false
 	let crossesOverNextDay = startDateOnly !== endDateOnly;
 
 	if (crossesOverNextDay) {
+		// Data: ""
 		diffMinutes = Math.abs(differenceInMinutes(parseISO(payload.start), parseISO(payload.end)));
 	}
-	// end Crossover check
 
 	let recurDates = rrulestr(rruleString)
 		.between(recurStart, recurEnd)
-		.map((date) => format(DateTime.fromJSDate(date).toUTC().setZone('local', { keepLocalTime: true }).toJSDate(), 'yyyy-MM-dd HH:mm'));
+		.map((date) => format(
+			DateTime.fromJSDate(date).toUTC().setZone('local', { 
+				keepLocalTime: true 
+			}).toJSDate(), 'yyyy-MM-dd HH:mm'));
 
 	for (let recurDate of recurDates) {
 		let date = recurDate.slice(0, 10);
-
-		// Crossover check
-		let endTimeDate = !crossesOverNextDay ? date + ' ' + endTimeOnly : format(addMinutes(parseISO(recurDate), diffMinutes), 'yyyy-MM-dd HH:mm');
-
+		let endTimeDate = !crossesOverNextDay ? date + ' ' + endTimeOnly : format(
+			addMinutes(parseISO(recurDate), diffMinutes), 
+			'yyyy-MM-dd HH:mm'
+		);
 		let tmpObj = { ...payload };
 		tmpObj.start = recurDate;
 		tmpObj.end = endTimeDate;
@@ -204,7 +228,7 @@ export function makeRecurringEvents(payload, rruleString, focus) {
 	return recurringEvents;
 }
 
-// async deleteShift Helpers:
+
 export async function handleNonRecurringShift({ commit, state, getters }, payload) {
     if (!payload.actionType || payload.actionType.description === 'updateInstance') {
         await deleteOneTimeShift({ commit, state, getters }, payload);
@@ -237,33 +261,87 @@ async function deleteOneTimeShift({ commit, state, getters }, payload) {
     }
 }
 
+// =================================================================================== //
+
+// 🔸 Unknown: Need to see how to target this, unable to console log.
+
 async function deleteDivergedShift({ commit, state, getters }, payload) {
-    let index = getters.getIndexExceptionDiverged(payload);
-    if (index !== -1) {
-        await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
-        commit('DELETE_EXCEPTION', index);
+    try {
+        console.log('Starting deleteDivergedShift with payload:', payload); // Logs the beginning of the function execution and shows the payload.
+        let index = getters.getIndexExceptionDiverged(payload); // Retrieves the index of the diverged shift exception based on the payload.
+        console.log('Index of diverged shift exception:', index); // Logs the index of the found exception.
+        if (index !== -1) { // Checks if the exception was found.
+            await deleteDoc(doc(db, "exceptions", state.exceptions[index].id)); // Deletes the exception document from Firestore.
+            console.log(`Deleted diverged shift exception with ID: ${state.exceptions[index].id}`); // Logs the ID of the exception that was deleted.
+            commit('DELETE_EXCEPTION', index); // Commits the deletion of the exception to the Vuex store.
+            console.log('Diverged shift exception deleted successfully'); // Logs a success message after the exception is deleted.
+        } else {
+            console.log('No matching diverged shift exception found to delete'); // Logs a message if no matching exception is found.
+        }
+    } catch (error) {
+        console.error('Error in deleteDivergedShift:', error); // Logs any errors that occur during the execution of the function.
+        throw error; // Rethrows the caught error for further handling.
     }
 }
+
+// =================================================================================== //
+
+// ♻️ Success: Create Recurring Shift every "Monday" -> Create Recurring Shift every "Tuesday" -> "Delete all Instance" on Monday -> "Tuesday" is not impacted.
 
 async function deleteAllRecurringShifts({ commit, state }, payload) {
-    let shiftsFound = state.events.filter(element => element.cal_id === payload.cal_id);
-    for (let shift of shiftsFound) {
-        await deleteDoc(doc(db, "events", shift.id));
+    try {
+        console.log('Starting deleteAllRecurringShifts with payload:', payload); // Logs the beginning of the function execution and shows the payload.
+        let shiftsFound = state.events.filter(element => element.cal_id === payload.cal_id); // Filters the events to find those matching the payload's cal_id.
+        console.log(`Found ${shiftsFound.length} shifts to delete.`); // Logs the number of shifts found to delete.
+        for (let shift of shiftsFound) {
+            await deleteDoc(doc(db, "events", shift.id)); // Deletes each found shift document from Firestore.
+            console.log(`Deleted shift with ID: ${shift.id}`); // Logs the ID of the shift that was deleted.
+        }
+        commit('DELETE_EVENTS_MULTIPLE', shiftsFound); // Commits the deletion of multiple events to the Vuex store.
+        console.log('All specified shifts have been deleted.'); // Logs a success message after all specified shifts are deleted.
+    } catch (error) {
+        console.error('Error in deleteAllRecurringShifts:', error); // Logs any errors that occur during the execution of the function.
+        throw error; // Rethrows the caught error for further handling.
     }
-    commit('DELETE_EVENTS_MULTIPLE', shiftsFound);
 }
+
+// =================================================================================== //
+
+// 🔺 Error: It deletes the current event also, which it should not.
 
 async function deleteForwardRecurringShift({ commit, state, getters }, payload) {
-    let index = getters.getIndexEvent(payload);
-    if (index !== -1) {
-        let updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
-        await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
-        commit('UPDATE_EVENT', { index, updatedEvent: updatedShift });
+    try {
+        console.log('Starting deleteForwardRecurringShift with payload:', payload);
+        let index = getters.getIndexEvent(payload);
+        console.log('Index of event to update:', index);
+        if (index !== -1) {
+            let updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
+            console.log('Updated shift details:', updatedShift);
+            await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
+            commit('UPDATE_EVENT', { index, updatedEvent: updatedShift });
+            console.log('Shift updated successfully');
+        } else {
+            console.log('No matching event found to update');
+        }
+    } catch (error) {
+        console.error('Error in deleteForwardRecurringShift:', error);
+        throw error; // Rethrow the error if you want to handle it further up the call stack
     }
 }
 
-async function deleteSingleRecurringInstance({ commit }, payload) {
-    const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
-    payload.id = exceptionDocRef.id; // Update payload with new Firestore document ID
-    commit('ADD_EXCEPTION', payload);
+// =================================================================================== //
+
+// ♻️ Success: Click Recurring Shift -> "Delete this instance" -> Single instance is deleted.
+
+// Usage: Recurring Event Dialog -> Delete this instance.
+async function deleteSingleRecurringInstance({ commit }, payload) { // payload is the { cal_id: } object.
+    try {
+        const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload); // Adds a new document to the "exceptions" collection in Firestore with the given payload.
+        payload.id = exceptionDocRef.id; // Updates the payload object with the ID of the newly created Firestore document.
+        commit('ADD_EXCEPTION', payload); // Commits the updated payload to the Vuex store using the 'ADD_EXCEPTION' mutation.
+        console.log('Payload after adding ID:', payload); // Logs the payload after it has been updated with the document ID.
+    } catch (error) {
+        console.error('Error in deleteSingleRecurringInstance:', error); // Logs any errors that occur during the execution of this function.
+        throw error; // Rethrows the caught error for further handling.
+    }
 }
