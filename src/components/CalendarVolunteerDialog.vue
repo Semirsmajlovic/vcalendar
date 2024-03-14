@@ -53,7 +53,7 @@
   
 <script>
 import { db } from '../main.js';
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import emailjs from 'emailjs-com'
 export default {
     name: 'CalendarVolunteerDialog',
@@ -157,9 +157,3 @@ export default {
     },
 };
 </script>
-
-<style scoped>
-.custom-alert {
-    background-color: #f5f5f5;
-}
-</style>

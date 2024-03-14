@@ -228,14 +228,46 @@ export function makeRecurringEvents(payload, rruleString, focus) {
 	return recurringEvents;
 }
 
+// =================================================================================== //
 
 export async function handleNonRecurringShift({ commit, state, getters }, payload) {
-    if (!payload.actionType || payload.actionType.description === 'updateInstance') {
-        await deleteOneTimeShift({ commit, state, getters }, payload);
-    } else {
-        await deleteDivergedShift({ commit, state, getters }, payload);
+    console.log("[storeCalendarHelpers.js/handleNonRecurringShift]: Starting with payload:", payload);
+    try {
+        if (!payload.actionType || payload.actionType.description === 'updateInstance') {
+            console.log("[storeCalendarHelpers.js/handleNonRecurringShift]: Handling as one-time shift.");
+            await deleteOneTimeShift({ commit, state, getters }, payload);
+        } else {
+            console.log("[storeCalendarHelpers.js/handleNonRecurringShift]: Handling as diverged shift.");
+            await deleteDivergedShift({ commit, state, getters }, payload);
+        }
+        console.log("[storeCalendarHelpers.js/handleNonRecurringShift]: Successfully processed non-recurring shift.");
+    } catch (error) {
+        console.error("[storeCalendarHelpers.js/handleNonRecurringShift]: Error processing non-recurring shift:", error);
+        throw error;
     }
 }
+
+// =================================================================================== //
+
+async function deleteOneTimeShift({ commit, state, getters }, payload) {
+    console.log("[storeCalendarHelpers.js/deleteOneTimeShift]: Starting with payload:", payload);
+    try {
+        let exceptionIndex = getters.getIndexException(payload);
+        if (exceptionIndex !== -1) {
+            console.log(`[storeCalendarHelpers.js/deleteOneTimeShift]: Deleting exception at index ${exceptionIndex}.`);
+            await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
+            commit('DELETE_EXCEPTION', exceptionIndex);
+            console.log("[storeCalendarHelpers.js/deleteOneTimeShift]: Exception deleted successfully.");
+        } else {
+            console.log("[storeCalendarHelpers.js/deleteOneTimeShift]: No matching exception found.");
+        }
+    } catch (error) {
+        console.error("[storeCalendarHelpers.js/deleteOneTimeShift]: Error deleting one-time shift:", error);
+        throw error; // Rethrow the error for further handling.
+    }
+}
+
+// =================================================================================== //
 
 export async function handleRecurringShift({ commit, state, getters, dispatch }, payload) {
     switch (payload.actionType.description) {
@@ -250,14 +282,6 @@ export async function handleRecurringShift({ commit, state, getters, dispatch },
             break;
         default:
             dispatch('updateSnackMessage', 'Unknown actionType for recurring shift', { root: true });
-    }
-}
-
-async function deleteOneTimeShift({ commit, state, getters }, payload) {
-    let exceptionIndex = getters.getIndexException(payload);
-    if (exceptionIndex !== -1) {
-        await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
-        commit('DELETE_EXCEPTION', exceptionIndex);
     }
 }
 

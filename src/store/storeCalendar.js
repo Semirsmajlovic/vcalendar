@@ -175,17 +175,25 @@ const storeCalendar = {
 
 
 		async deleteEvent({ commit, state, getters, dispatch }, payload) {
+			console.log("[storeCalendar.js/deleteEvent]: Starting deleteEvent with payload:", payload);
 			try {
 				if (!payload.isRecurring) {
+					console.log("[storeCalendar.js/deleteEvent]: Handling non-recurring event.");
 					await handleNonRecurringShift({ commit, state, getters }, payload);
 				} else {
+					console.log("[storeCalendar.js/deleteEvent]: Handling recurring event.");
 					await handleRecurringShift({ commit, state, getters, dispatch }, payload);
 				}
+				console.log("[storeCalendar.js/deleteEvent]: Successfully processed event deletion.");
 			} catch (e) {
-				console.error("Error processing shift: ", e);
+				console.error("[storeCalendar.js/deleteEvent]: Error processing shift: ", e);
 				dispatch('updateSnackMessage', `Operation failed: ${e.message}`, { root: true });
 			}
 		},
+
+
+
+		
 		updateSelectedPerson({ commit, state }, person) {
 			commit('SET_PERSON', person);
 		},
