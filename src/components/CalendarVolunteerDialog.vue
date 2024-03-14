@@ -43,6 +43,9 @@
                             label="Driver or Driver Helper Email"
                             required
                         ></v-text-field>
+                        <v-alert dense text light class="mt-3">
+                            We kindly request that individuals registering as drivers or driver helpers submit a copy of their valid driver's license and proof of insurance via email. This documentation is essential for ensuring compliance and safety standards. Thank you for your cooperation and commitment.
+                        </v-alert>
                     </div>
                 </v-card-text>
 
@@ -155,3 +158,9 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.custom-alert {
+    background-color: #f5f5f5;
+}
+</style>
