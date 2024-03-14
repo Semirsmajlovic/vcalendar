@@ -7,7 +7,7 @@
                 <calendar-tool-bar
                     :reference="this.$refs.calendar"
                     :focus="focus"
-                    :events="events"
+                    :shifts="shifts"
                     :propType="type"
                     @todayButtonClick="viewToday"
                     @typeDay="changeType('day')"
@@ -25,7 +25,7 @@
                                     ref="calendar"
                                     v-model="focus"
                                     :type="type"
-                                    :events="events"
+                                    :events="shifts"
                                     :event-height="112"
                                     :events-more="false"
                                     :event-margin-bottom="5"
@@ -85,10 +85,10 @@ export default {
             focus: "",
             type: "month",
             selectedShift: {},
-            originalData: {}, // Keep the original data for reference before user updates form. Used in updateInstance for recurring events
+            originalData: {}, // Keep the original data for reference before user updates form. Used in updateInstance for recurring shifts
             selectedWeekdayNum: 0,
             newDay: {},
-            events: [],
+            shifts: [],
             isBusy: false,
             showVolunteerDialog: false,
         };
@@ -114,7 +114,7 @@ export default {
             this.focus = "";
         },
 
-        // New method to handle click events conditionally
+
         handleClickEvent(event) {
             if (this.isLoggedIn) {
                 this.updateShift(event);
@@ -122,6 +122,8 @@ export default {
                 this.openVolunteerDialog(event);
             }
         },
+
+        // ========================================================================================== //
 
         handleClickDate(day) {
             if (this.isLoggedIn) {
@@ -197,7 +199,7 @@ export default {
                 this.updateSnackMessage(`Error loading ${e} `); // Displays an error message if the initialization fails
             } finally {
                 this.isBusy = false; // Resets the loading indicator to false, indicating the operation has completed
-                this.events = this.getInstances( // Retrieves and sets the events based on the current focus, participant's name, and type
+                this.shifts = this.getInstances( // Retrieves and sets the shifts based on the current focus, participant's name, and type
                     this.focus,
                     this.getSelectedParticipant.name,
                     this.getSelectedParticipant.type
