@@ -295,50 +295,54 @@ export default {
             },
         },
     },
+
+
     data() {
         return {
-            valid: false,
-            localSelectedEvent: {
-                shiftTitle: "",
-                volunteerLimit: 3,
-                driverHelperLimit: 2
+            valid: false, // Form validation state
+            localSelectedEvent: { // Local state of the event being edited or created
+                shiftTitle: "", // Title of the shift/event
+                volunteerLimit: 3, // Maximum number of volunteers allowed
+                driverHelperLimit: 2 // Maximum number of drivers/helpers allowed
             },
-            newEvent: false,
-            weekdayNames: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"],
-            intervalValues: ["1", "2", "3", "4"],
-            localINTERVAL: "",
-            localUNTIL: "",
-            localBYDAY: [],
-            deleteOptions: [
+            newEvent: false, // Flag to indicate if a new event is being created
+            weekdayNames: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"], // Array of weekday abbreviations for recurrence pattern
+            intervalValues: ["1", "2", "3", "4"], // Options for the recurrence interval
+            localINTERVAL: "", // Selected recurrence interval
+            localUNTIL: "", // Date until which the event recurs
+            localBYDAY: [], // Days of the week on which the event recurs
+            deleteOptions: [ // Options for deleting events
                 {
-                    title: "Delete this instance",
+                    title: "Delete this instance", // Option to delete a single instance of a recurring event
                     action: "deleteInstance",
                 },
                 {
-                    title: "Delete forward",
+                    title: "Delete forward", // Option to delete this and all future instances of a recurring event
                     action: "deleteForward",
                 },
                 {
-                    title: "Delete All",
+                    title: "Delete All", // Option to delete all instances of a recurring event
                     action: "deleteAll",
                 },
             ],
-            saveOptions: [
+            saveOptions: [ // Options for saving changes to events
                 {
-                    title: "Update this only",
+                    title: "Update this only", // Option to update only the current instance of a recurring event
                     action: "updateInstance",
                 },
                 {
-                    title: "Update forward",
+                    title: "Update forward", // Option to update this and all future instances of a recurring event
                     action: "updateForward",
                 },
                 {
-                    title: "Update All",
+                    title: "Update All", // Option to update all instances of a recurring event
                     action: "updateAll",
                 },
             ],
         };
     },
+
+
     computed: {
         ...mapGetters("storeCalendar", [
             "eventOpen",
@@ -347,53 +351,49 @@ export default {
             "newEventSignal",
         ]),
     },
+
+
     watch: {
+
+
         newDay(val, oldVal) {
-            // Create a new localSelectedEvent object if newDay prop has properties
             if (this.objectHasProperties(val)) {
-                this.createEvent(val);
+                this.createEvent(val); // Creates a new event using the provided date if the newDay object has properties
             }
         },
+
+
         selectedEvent(val, oldVal) {
             // Copy selectedEvent prop to localSelectedEvent for existing event
             if (this.objectHasProperties(val)) {
-                this.newEvent = false;
-                this.localSelectedEvent = val;
+                this.newEvent = false; // Indicates that an existing event is being edited, not a new one created
+                this.localSelectedEvent = val; // Assigns the selected event to the local state for editing
             }
 
-            this.localBYDAY = this.getBYDAY(
-                this.localSelectedEvent.rruleString
-            );
+            // Extracts and sets the BYDAY value from the event's RRule string for recurrence pattern
+            this.localBYDAY = this.getBYDAY(this.localSelectedEvent.rruleString);
 
-            this.localUNTIL = this.getUNTILstring(
-                this.localSelectedEvent.rruleString
-            );
+            // Extracts and sets the UNTIL date from the event's RRule string to indicate when recurrence ends
+            this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
 
-            this.localINTERVAL = this.getINTERVALnumber(
-                this.localSelectedEvent.rruleString
-            );
+            // Extracts and sets the INTERVAL number from the event's RRule string to indicate the frequency of recurrence
+            this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
         },
+
+
         localSelectedEvent: {
             deep: true,
             handler(val, oldVal) {
-                // When user selects recurring checkbox on a new event create rruleString
                 if (this.newEvent && this.localSelectedEvent.isRecurring) {
-                    this.localSelectedEvent.rruleString = this.createRRULEString(
-                        this.localSelectedEvent
-                    );
-
-                    // Re-read INTERVAL string in rruleString after creating rruleString for interval select
-                    this.localINTERVAL = this.getINTERVALnumber(
-                        this.localSelectedEvent.rruleString
-                    );
-
-                    // Re-read UNTIL string in rruleString after creating rruleString for until date picker
-                    this.localUNTIL = this.getUNTILstring(
-                        this.localSelectedEvent.rruleString
-                    );
+                    // If creating a new recurring event, generate and assign the RRule string
+                    this.localSelectedEvent.rruleString = this.createRRULEString(this.localSelectedEvent);
+                    // Update the interval based on the newly generated RRule string
+                    this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
+                    // Update the UNTIL date based on the newly generated RRule string
+                    this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
                 }
-                // Empty rruleString when user unchecks recurring checkbox
                 if (this.newEvent && !this.localSelectedEvent.isRecurring) {
+                    // If creating a new non-recurring event, clear the RRule string
                     this.localSelectedEvent.rruleString = "";
                 }
             },
