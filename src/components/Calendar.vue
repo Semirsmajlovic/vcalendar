@@ -108,9 +108,12 @@ export default {
     methods: {
         ...mapActions(["updateSnackMessage"]),
         ...mapActions("storeCalendar", ["initInstances", "dialogOpen"]),
+
+
         viewToday() {
             this.focus = "";
         },
+
         // New method to handle click events conditionally
         handleClickEvent(event) {
             if (this.isLoggedIn) {
@@ -172,14 +175,14 @@ export default {
             this.newDay = {};
 
             // Logging for debugging purposes
-            console.log('Calendar[resetShiftData]: Shift data has been reset');
+            console.log('[Calendar.vue/resetShiftData]: Shift data has been reset.');
         },
 
         // NEW SCENARIO
         prepareAndOpenShiftCreationDialog(day) {
             try {
                 if (typeof day.weekday === 'undefined') { // Validation (example, ensure day.weekday exists)
-                    throw new Error('Invalid day object: missing weekday');
+                    throw new Error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Invalid day object: missing weekday');
                 }
                 this.selectedWeekdayNum = day.weekday;
                 this.selectedShift = {};
@@ -187,15 +190,15 @@ export default {
                 this.newDay = day;
                 this.$store.dispatch("storeCalendar/dialogOpen", true) // Dispatch the Vuex action
                     .then(() => {
-                        console.log('Dialog opened successfully');
+                        console.log('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Dialog opened successfully.');
                     })
                     .catch(error => {
-                        console.error('Failed to open dialog:', error);
+                        console.error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Failed to open dialog: ', error);
                         this.resetShiftData(); // Optionally, reset event data on failure
                         this.updateSnackMessage(`Error: ${error.message}`); // Handle error (e.g., show user feedback)
                     });
             } catch (error) {
-                console.error('Failed to create event:', error);
+                console.error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Failed to create event: ', error);
                 this.resetShiftData();
                 this.updateSnackMessage(`Error: ${error.message}`);
             }

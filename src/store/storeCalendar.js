@@ -80,40 +80,33 @@ const storeCalendar = {
 				dispatch('updateSnackMessage', `Error at ${e}`, { root: true });
 			}
 		},
+
+
+
 		async actionCreateNewEvent({ commit, dispatch }, payload) {
 			try {
-				let collectionRef;
-				if (!payload.isRecurring) {
-					// Reference to the exceptions collection
-					collectionRef = collection(db, "exceptions");
+				let collectionRef; // Set the collectionRef
+				if (!payload.isRecurring) { // Is payload {cal_id: dfvf, caregiver: "", recurring: false} false?
+					collectionRef = collection(db, "exceptions"); // Set as exceptions database.
 				} else {
-					// Reference to the events collection
-					collectionRef = collection(db, "events");
+					collectionRef = collection(db, "events"); // Set as events database.
 				}
-				console.log("actionCreateNewEvent -> collectionRef:", collectionRef);
-				
-				// Ensure payload is a plain object
-				const plainPayload = { ...payload };
-		
-				// Add the new document to Firestore
+				const plainPayload = { ...payload }; // Sets a plain object: {cal_id: dfvf, caregiver: "", recurring: false}
 				const docRef = await addDoc(collectionRef, plainPayload);
-				console.log("Document written with ID: ", docRef.id);
-		
-				// Update the payload with the Firestore document ID
-				payload.id = docRef.id;
-		
-				// Commit the change again with the updated payload
-				if (!payload.isRecurring) {
-					commit('ADD_EXCEPTION', payload);
+				payload.id = docRef.id; // Update the payload with the Firestore document ID
+				if (!payload.isRecurring) { // Is payload an exception?
+					commit('ADD_EXCEPTION', payload); // Commit the change
 				} else {
-					commit('ADD_EVENT', payload);
+					commit('ADD_EVENT', payload); // Commit the change
 				}
-		
 			} catch (e) {
-				console.error("Error adding document: ", e);
+				console.error("[storeCalendar.js/actionCreateNewEvent]: Error adding document: ", e);
 				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 			}
 		},
+
+
+		
 		async updateEvent({ commit, state, getters, dispatch }, payload) {
 			try {
 				console.log("updateEvent: " + payload);
