@@ -17,15 +17,8 @@
                     <div v-if="selectedRole === 'Volunteer'">
                         <h3>General Volunteer Signup</h3>
                         <p>As a general volunteer, you'll have the opportunity to contribute through various tasks and activities that support our cause.</p>
-                        <v-text-field
-                            v-model="volunteerName"
-                            label="Volunteer Name"
-                            required
-                        ></v-text-field>
-                        <v-text-field
-                            v-model="volunteerEmail"
-                            label="Volunteer Email (Optional)"
-                        ></v-text-field>
+                        <v-text-field v-model="volunteerName" type="text" label="Volunteer Name" required name="volunteerName"></v-text-field>
+                        <v-text-field v-model="volunteerEmail" type="email" label="Volunteer Email (Optional)" name="volunteerEmail"></v-text-field>
                     </div>
                     <!-- End: Volunteer Section -->
 
@@ -33,16 +26,8 @@
                         <h3>Driver / Helper Volunteer</h3>
                         <p>As a driver or helper, you play a crucial role in logistics and transportation, ensuring resources and people reach where they are needed most.</p>
                         <!-- Add your Driver / Helper specific fields here -->
-                        <v-text-field
-                            v-model="driverHelperName"
-                            label="Driver or Driver Helper Name"
-                            required
-                        ></v-text-field>
-                        <v-text-field
-                            v-model="driverHelperEmail"
-                            label="Driver or Driver Helper Email"
-                            required
-                        ></v-text-field>
+                        <v-text-field v-model="driverHelperName" type="text" label="Driver or Driver Helper Name" required name="driverHelperName"></v-text-field>
+                        <v-text-field v-model="driverHelperEmail" type="email" label="Driver or Driver Helper Email" required name="driverHelperEmail"></v-text-field>
                         <v-alert dense text light class="mt-3">
                             We kindly request that individuals registering as drivers or driver helpers submit a copy of their valid driver's license and proof of insurance via email. This documentation is essential for ensuring compliance and safety standards. Thank you for your cooperation and commitment.
                         </v-alert>
@@ -69,6 +54,7 @@
 <script>
 import { db } from '../main.js';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import emailjs from 'emailjs-com'
 export default {
     name: 'CalendarVolunteerDialog',
     props: {
@@ -127,6 +113,19 @@ export default {
                             email: this.volunteerEmail 
                         }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
                     };
+
+
+                    // EmailJS:
+                    // Prepare the email data
+                    // const emailParams = {
+                    //     to_name: this.volunteerName,
+                    //     message: "Thank you for signing up as a volunteer. We are excited to have you on board!",
+                    //     reply_to: this.volunteerEmail,
+                    // };
+                    // console.log(emailParams);
+                    // await emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams, 'nQeNPSgRwskhINwUu');
+
+
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
                     updatePayload = {
                         driverHelperNames: arrayUnion({ 
