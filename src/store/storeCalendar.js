@@ -34,14 +34,14 @@ const storeCalendar = {
 					if (data.rruleString) {
 						data.rruleString = data.rruleString.replace(/\\n/g, '\n');
 					}
-					return { id: data.cal_id, ...data }; // Use cal_id instead of Firestore document id
+					return { id: doc.id, ...data };
 				});
 				console.log("[storeCalendar.js/initInstances/events]: ", events);
 
 				// Fetch exceptions from Firestore
 				const exceptionsCollectionRef = collection(db, "exceptions");
 				const exceptionsSnapshot = await getDocs(exceptionsCollectionRef);
-				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.cal_id, ...doc.data() }));
+				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 				console.log("[storeCalendar.js/initInstances/exceptions]: ", exceptions);
 
 				// Set the Vuex state.
@@ -130,10 +130,7 @@ const storeCalendar = {
 							if (index !== -1) {
 								docRef = doc(db, "events", payload.id); // Assuming payload.id is the Firestore document ID
 								await updateDoc(docRef, payload);
-								commit('UPDATE_EVENT', {
-									index,
-									updatedEvent: payload
-								});
+								commit('UPDATE_EVENT', { index, updatedEvent: payload });
 							}
 							break;
 						}
@@ -173,6 +170,10 @@ const storeCalendar = {
 				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 			}
 		},
+
+
+
+
 		async deleteEvent({ commit, state, getters, dispatch }, payload) {
 			try {
 				if (!payload.isRecurring) {

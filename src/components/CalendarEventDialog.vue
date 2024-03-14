@@ -398,11 +398,14 @@ export default {
                 }
             },
         },
+
+
         newEventSignal() {
-            // When any CRUD happens, wait for Vuex mutation to set state.newEventSignal=true to update view only after mutation has completed.
-            this.$emit("refresh");
-            this.SET_NEW_EVENT_SIGNAL(false);
+            this.$emit("refresh"); // Emits a "refresh" event to the parent component
+            this.SET_NEW_EVENT_SIGNAL(false); // Calls the Vuex mutation to set the new event signal state to false
         },
+
+
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
@@ -413,35 +416,46 @@ export default {
             "deleteEvent",
         ]),
         ...mapMutations("storeCalendar", ["SET_NEW_EVENT_SIGNAL"]),
+
+
         objectHasProperties(obj) {
-            return Object.keys(obj).length > 0;
+            return Object.keys(obj).length > 0; // Checks if the object has any properties (is not empty)
         },
+
+
         validate() {
-            this.$refs.form.validate();
+            this.$refs.form.validate(); // Triggers validation on the form referenced by "form"
         },
+
+
         formatDateYYYYMMDD(date) {
             if (!date) {
-                return "";
+                return ""; // Returns an empty string if no date is provided
             }
-            return format(parseISO(date), "yyyy-MM-dd");
+            return format(parseISO(date), "yyyy-MM-dd"); // Converts the date to "YYYY-MM-DD" format
         },
+
+
         createEvent({ date }) {
-            this.valid = false;
-            this.newEvent = true;
-            const caregiverName = this.getSelectedParticipant.type === "caregiver" ? this.getSelectedParticipant.name : "";
-            const clientName = this.getSelectedParticipant.type === "client" ? this.getSelectedParticipant.name : "";
+            this.valid = false; // Resets form validation state
+            this.newEvent = true; // Flags that a new event is being created
             this.localSelectedEvent = {
-                cal_id: uuidv4(),
-                caregiver: caregiverName,
-                client: clientName,
-                start: `${date} 12:00`,
-                end: `${date} 16:00`,
-                duration: "4",
-                isRecurring: false,
-                rruleString: ""
+                cal_id: uuidv4(), // Generates a unique ID for the event
+                shiftTitle: "", // Assigns the shift title to the event
+                volunteerLimit: "3", // Assigns the volunteer limit to the event
+                volunteerNames: [], // Assigns the volunteer name to the event
+                driverHelperLimit: "2", // Assigns the driverHelper limit to the event
+                driverHelperNames: [], // Assigns the driverHelper name to the event
+                start: `${date} 12:00`, // Sets the event start time to 12:00 on the selected date
+                end: `${date} 16:00`, // Sets the event end time to 16:00 on the selected date
+                duration: "4", // Sets the event duration to 4 hours
+                isRecurring: false, // Flags the event as non-recurring
+                rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
             };
-            this.dialogOpen(true);
+            this.dialogOpen(true); // Opens the event dialog to show the event details form
         },
+
+
         async patchEvent(payload, patchType) {
             if (payload.isRecurring) {
                 switch (patchType) {
