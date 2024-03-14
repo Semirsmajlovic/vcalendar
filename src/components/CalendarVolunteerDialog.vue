@@ -93,10 +93,27 @@ export default {
         }
     },
     methods: {
-
         async updateEvent() {
+            try {
+                const shift = this.selectedShift; // Retrieves the selected shift object from component data
+                let docRef;
+                if (shift.isRecurring) {
+                    docRef = doc(db, "events", shift.id); // Sets docRef to a Firestore document reference in the "events" collection if the shift is recurring
+                } else {
+                    docRef = doc(db, "exceptions", shift.id); // Sets docRef to a Firestore document reference in the "exceptions" collection if the shift is not recurring
+                }
+                const updatePayload = {
+                    volunteerNames: arrayUnion({ 
+                        name: this.volunteerName, 
+                        email: this.volunteerEmail 
+                    }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
+                };
+                await updateDoc(docRef, updatePayload); // Updates the Firestore document with the new volunteer information
+                this.close(); // Closes the dialog after successful update
+            } catch (error) {
+                console.error("Failed to update event: ", error); // Logs an error if the update fails
+            }
         },
-
         close() {
             this.dialog = false; // Set dialog data property to false, closing the dialog
         },
