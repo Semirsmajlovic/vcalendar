@@ -41,7 +41,7 @@
                                 </v-calendar>
                             </v-col>
                             <v-col v-if="isLoggedIn" cols="12" lg="2">
-                                <calendar-side-bar @selectedPerson="refreshEvents()" :focus="focus"></calendar-side-bar>
+                                <calendar-side-bar @selectedParticipant="refreshEvents()" :focus="focus"></calendar-side-bar>
                             </v-col>
                         </v-row>
                     </v-row>

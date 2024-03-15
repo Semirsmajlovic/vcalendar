@@ -33,7 +33,7 @@ export function getNamesInView(allEvents, current, type) {
         });
         const names = filteredEvents.flatMap((event) => {
             if (Array.isArray(event[type])) {
-                return event[type].map(person => person.name);
+                return event[type].map(participant => participant.name);
             } else {
                 return [];
             }

@@ -19,7 +19,7 @@ const storeCalendar = {
 		newEventSignal: false, // Signal to components that an event has been created or deleted to repopulate names
 		volunteerNames: [], // Previous: caregiverNames | Names of all possible caregivers in view. Used in CalendarSideBar
 		driverHelperNames: [], // Previous: clientNames | Names of all the clients in view in view. Used in CalendarSideBar
-		selectedPerson: {}, // Sets the calendar's view to this person when clicking on names in CalendarSideBar
+		selectedParticipant: {}, // Sets the calendar's view to this participant when clicking on names in CalendarSideBar
 		instances: [], // All events shown in calendar view - calculated at runtime by combining state.events and state.exceptions
 	},
 	actions    : {
@@ -68,7 +68,7 @@ const storeCalendar = {
 					clNames
 				]);
 
-				// If name and type is provided, filter allEvents to that person only
+				// If name and type is provided, filter allEvents to that participant only
 				let { name, type } = payload;
 				if (name || type) {
 					allEvents = allEvents.filter((event) => {
@@ -196,8 +196,8 @@ const storeCalendar = {
 
 
 		
-		updateSelectedPerson({ commit, state }, person) {
-			commit('SET_PERSON', person);
+		updateSelectedParticipant({ commit, state }, participant) {
+			commit('SET_PERSON', participant);
 		},
 		dialogOpen({ commit, state }, dialogStatus) {
 			commit('SET_DIALOG', dialogStatus);
@@ -213,8 +213,8 @@ const storeCalendar = {
 		SET_INIT_EXCEPTIONS(state, payload) {
 			state.exceptions = payload;
 		},
-		SET_PERSON(state, person) {
-			state.selectedPerson = person;
+		SET_PERSON(state, participant) {
+			state.selectedParticipant = participant;
 		},
 		SET_NEW_EVENT_SIGNAL(state, status) {
 			state.newEventSignal = status;
@@ -266,7 +266,7 @@ const storeCalendar = {
 		getNamesVolunteers: (state) => state.volunteerNames,
 		getNamesDriverHelpers: (state) => state.driverHelperNames,
 		newEventSignal: (state) => state.newEventSignal,
-		getSelectedParticipant: (state) => state.selectedPerson,
+		getSelectedParticipant: (state) => state.selectedParticipant,
 		getCurrentEvent: (state) => (data) => {
 			return state.instances.find((element) => {
 				return element.id === data.id && element.start === data.start;

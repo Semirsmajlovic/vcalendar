@@ -203,7 +203,7 @@ export default {
             this.reference.next();
         },
         PDFCalendar(name, focus) {
-            // To save the calendar in PDF with the person's name / date above it without changing the actual view of the calendar, use couple tricks. Clone the calendar view, move this out of the screen using css left: -10000px, append the name / date above it then ready it for jsPDF to do it's job.
+            // To save the calendar in PDF with the participant's name / date above it without changing the actual view of the calendar, use couple tricks. Clone the calendar view, move this out of the screen using css left: -10000px, append the name / date above it then ready it for jsPDF to do it's job.
 
             // Find the calendar area and clone it
             let target = document.querySelector("#calendarContent");

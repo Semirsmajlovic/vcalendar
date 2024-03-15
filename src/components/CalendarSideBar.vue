@@ -153,21 +153,21 @@ export default {
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
-        ...mapActions("storeCalendar", ["updateSelectedPerson"]),
+        ...mapActions("storeCalendar", ["updateSelectedParticipant"]),
         ...mapMutations(["drawerChange"]),
 
 
 
         async eventsByName(name, type) {
-            console.log("[CalendarSideBar/eventsByName]: Starting to update selected person.");
+            console.log("[CalendarSideBar/eventsByName]: Starting to update selected participant.");
             try {
-                await this.updateSelectedPerson({ name, type });
-                this.$emit("selectedPerson");
+                await this.updateSelectedParticipant({ name, type });
+                this.$emit("selectedParticipant");
                 this.drawerChange();
-                console.log(this.updateSelectedPerson);
-                console.log("[CalendarSideBar/eventsByName]: Successfully updated selected person.");
+                console.log(this.updateSelectedParticipant);
+                console.log("[CalendarSideBar/eventsByName]: Successfully updated selected participant.");
             } catch (error) {
-                console.error("[CalendarSideBar/eventsByName]: Error updating selected person.", error);
+                console.error("[CalendarSideBar/eventsByName]: Error updating selected participant.", error);
             }
         },
 
