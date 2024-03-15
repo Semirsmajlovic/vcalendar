@@ -20,7 +20,13 @@
                         <v-text-field v-model="volunteerName" type="text" label="Volunteer Name" required name="volunteerName"></v-text-field>
                         <v-text-field v-model="volunteerEmail" type="email" label="Volunteer Email (Optional)" name="volunteerEmail"></v-text-field>
                     </div>
-                    <v-alert v-else-if="selectedRole === 'Volunteer'" type="info" dense>
+                    <v-alert 
+                        v-else-if="selectedRole === 'Volunteer'" 
+                        border="top"
+                        colored-border
+                        color="error"
+                        elevation="2"
+                    >
                         We have reached the maximum number of volunteers for this shift. Thank you for your interest!
                     </v-alert>
                     <!-- End: Volunteer Section -->
@@ -31,11 +37,23 @@
                         <!-- Add your Driver / Helper specific fields here -->
                         <v-text-field v-model="driverHelperName" type="text" label="Driver or Driver Helper Name" required name="driverHelperName"></v-text-field>
                         <v-text-field v-model="driverHelperEmail" type="email" label="Driver or Driver Helper Email" required name="driverHelperEmail"></v-text-field>
-                        <v-alert dense text light class="mt-3">
+                        <v-alert
+                            class="mt-3"
+                            border="top"
+                            color="info"
+                            colored-border
+                            elevation="2"
+                        >
                             We kindly request that individuals registering as drivers or driver helpers submit a copy of their valid driver's license and proof of insurance via email. This documentation is essential for ensuring compliance and safety standards. Thank you for your cooperation and commitment.
                         </v-alert>
                     </div>
-                    <v-alert v-else-if="selectedRole === 'Driver / Driver Helper'" type="info" dense>
+                    <v-alert 
+                        v-else-if="selectedRole === 'Driver / Driver Helper'" 
+                        border="top"
+                        colored-border
+                        color="error"
+                        elevation="2"
+                    >
                         We have reached the maximum number of drivers/helpers for this shift. Thank you for your interest!
                     </v-alert>
 

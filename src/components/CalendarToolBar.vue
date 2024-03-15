@@ -67,10 +67,12 @@
                 <span class="text-left">
                     {{ reference.title }}
                 </span>
-                <span class="mx-2">&#8226;</span>
-                <span>
-                    Selected: <span class="blue--text">{{ getSelectedParticipant.name || "All" }}</span>
-                </span>
+                <div v-if="isLoggedIn">
+                    <span class="mx-2">&#8226;</span>
+                    <span>
+                        Selected: <span class="blue--text">{{ getSelectedParticipant.name || "All" }}</span>
+                    </span>
+                </div>
             </v-toolbar-title>
             <!-- End: Month & Selected Participant -->
 
@@ -160,6 +162,9 @@ export default {
     },
     computed: {
         ...mapGetters("storeCalendar", ["getSelectedParticipant"]),
+        isLoggedIn() {
+            return !!this.$store.state.user;
+        },
         totalHours: {
             get: function () {
                 try {
