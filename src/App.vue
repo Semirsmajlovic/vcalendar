@@ -84,14 +84,9 @@ export default {
         });
     },
     methods: {
-        ...mapMutations(["navigationDrawerChange"]),
+        ...mapMutations(["drawerChange"]),
         changeDrawer() {
-            try {
-                this.navigationDrawerChange();
-                console.log("Drawer state changed successfully.");
-            } catch (error) {
-                console.error("Failed to change drawer state:", error);
-            }
+            this.drawerChange();
         },
         handleSignOut() {
             const auth = getAuth();

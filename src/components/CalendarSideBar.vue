@@ -155,12 +155,24 @@ export default {
         ...mapActions(["updateSnackMessage"]),
         ...mapActions("storeCalendar", ["updateSelectedPerson"]),
         ...mapMutations(["drawerChange"]),
-        ...mapMutations("storeCalendar", ["ADD_NEW_TEMPORARY_PERSON"]),
+
+
+
         async eventsByName(name, type) {
-            await this.updateSelectedPerson({ name, type });
-            this.$emit("selectedPerson");
-            this.drawerChange();
+            console.log("[CalendarSideBar/eventsByName]: Starting to update selected person.");
+            try {
+                await this.updateSelectedPerson({ name, type });
+                this.$emit("selectedPerson");
+                this.drawerChange();
+                console.log(this.updateSelectedPerson);
+                console.log("[CalendarSideBar/eventsByName]: Successfully updated selected person.");
+            } catch (error) {
+                console.error("[CalendarSideBar/eventsByName]: Error updating selected person.", error);
+            }
         },
+
+
+
         handleGroupToggle(groupName) {
             // Check if the group has items before toggling
             const hasItems = groupName === 'volunteers' ? this.namesVolunteers.length > 0 : this.namesDriverHelpers.length > 0;

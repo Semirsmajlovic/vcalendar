@@ -4,16 +4,6 @@ import storeCalendar from './storeCalendar';
 
 Vue.use(Vuex);
 
-// Mutation Types
-const SET_SNACK_MESSAGE = 'SET_SNACK_MESSAGE';
-const TOGGLE_DRAWER = 'TOGGLE_DRAWER';
-const SET_USER = 'SET_USER';
-
-// Centralized Error Handler
-function handleError(action, error) {
-  console.error(`Failed to ${action}:`, error);
-}
-
 // State
 const state = {
   snackOpen: false,
@@ -22,41 +12,30 @@ const state = {
   user: null,
 };
 
-// Mutations
-const mutations = {
-  [SET_SNACK_MESSAGE](state, message) {
-    state.snackMessage = message;
-  },
-  [TOGGLE_DRAWER](state) {
-    state.drawer = !state.drawer;
-  },
-  [SET_USER](state, user) {
-    state.user = user;
-  },
-};
-
 // Actions
 const actions = {
   updateSnackMessage({ commit }, msg) {
     try {
-      commit(SET_SNACK_MESSAGE, msg);
+      commit('SET_SNACK_MESSAGE', msg);
     } catch (error) {
-      handleError('update snack message', error);
-    }
-  },
-  toggleDrawer({ commit }) {
-    try {
-      commit(TOGGLE_DRAWER);
-    } catch (error) {
-      handleError('toggle drawer', error);
+      console.error('Failed to update snack message:', error);
     }
   },
   setUser({ commit }, user) {
-    try {
-      commit(SET_USER, user);
-    } catch (error) {
-      handleError('set user', error);
-    }
+    commit('SET_USER', user);
+  },
+};
+
+// Mutations
+const mutations = {
+  SET_SNACK_MESSAGE(state, message) {
+    state.snackMessage = message;
+  },
+  changeDrawer() {
+    this.drawerChange();
+  },
+  SET_USER(state, user) {
+    state.user = user;
   },
 };
 
