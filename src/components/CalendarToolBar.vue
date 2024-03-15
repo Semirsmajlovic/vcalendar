@@ -1,124 +1,86 @@
 <template>
     <v-sheet height="64">
         <v-toolbar flat>
+            <v-row align="center" justify="space-between" no-gutters>
 
-            <!-- Start: Month Button -->
-            <v-menu bottom left>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn outlined color="grey darken-2" v-bind="(attrs)" v-on="on">
-                        <span>{{ typeToLabel[propType] }}</span>
-                        <v-icon right>mdi-menu-down</v-icon>
+                <!-- Left Column for Buttons -->
+                <v-col cols="auto">
+                    <!-- Month Button -->
+                    <v-menu bottom left>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn outlined color="grey darken-2" v-bind="attrs" v-on="on">
+                                <span>{{ typeToLabel[propType] }}</span>
+                                <v-icon right>mdi-menu-down</v-icon>
+                            </v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="$emit('typeMonth')">
+                                <v-list-item-title>Month</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="$emit('typeWeek')">
+                                <v-list-item-title>Week</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="$emit('type4day')">
+                                <v-list-item-title>4 days</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="$emit('typeDay')">
+                                <v-list-item-title>Day</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+
+                    <!-- Today Button -->
+                    <v-btn outlined class="mx-2" color="grey darken-2" @click="$emit('todayButtonClick')">
+                        Today
                     </v-btn>
-                </template>
-                <v-list>
-                    <v-list-item @click="$emit('typeMonth')">
-                        <v-list-item-title>Month</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="$emit('typeWeek')">
-                        <v-list-item-title>Week</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="$emit('type4day')">
-                        <v-list-item-title>4 days</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="$emit('typeDay')">
-                        <v-list-item-title>Day</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-            <!-- End: Month Button -->
 
-            <!-- Start: Today Button -->
-            <v-btn
-                outlined
-                class="mr-4"
-                color="grey darken-2"
-                @click="$emit('todayButtonClick')"
-            >
-                Today
-            </v-btn>
-            <!-- End: Today Button -->
+                    <!-- Previous Button -->
+                    <v-btn
+                        outlined
+                        color="grey darken-2"
+                        @click="prev"
+                        class="mr-2"
+                    >
+                        <v-icon small>mdi-chevron-left</v-icon>
+                    </v-btn>
 
-            <!-- Start: Previous Button -->
-            <v-btn
-                fab
-                text
-                small
-                color="grey darken-2"
-                @click="prev"
-            >
-                <v-icon small>mdi-chevron-left</v-icon>
-            </v-btn>
-            <!-- End: Previous Button -->
-            
-            <!-- Start: Next Button -->
-            <v-btn
-                fab
-                text
-                small
-                color="grey darken-2"
-                @click="next"
-            >
-                <v-icon small>mdi-chevron-right</v-icon>
-            </v-btn>
-            <!-- End: Next Button -->
+                    <!-- Next Button -->
+                    <v-btn
+                        outlined
+                        color="grey darken-2"
+                        @click="next"
+                    >
+                        <v-icon small>mdi-chevron-right</v-icon>
+                    </v-btn>
+                </v-col>
 
-            <!-- Start: Month & Selected Participant -->
-            <v-toolbar-title v-if="reference">
-                <span class="text-left">
-                    {{ reference.title }}
-                </span>
-                <div v-if="isLoggedIn">
-                    <span class="mx-2">&#8226;</span>
-                    <span>
-                        Selected: <span class="blue--text">{{ getSelectedParticipant.name || "All" }}</span>
-                    </span>
-                </div>
-            </v-toolbar-title>
-            <!-- End: Month & Selected Participant -->
+                <!-- Center Column for Toolbar Title -->
+                <v-col cols="auto">
+                    <v-toolbar-title v-if="reference" class="text-center">
+                        <span>{{ reference.title }}</span>
+                        <div v-if="isLoggedIn">
+                            Selected: <span class="blue--text">{{ getSelectedParticipant.name || "All" }}</span>
+                        </div>
+                    </v-toolbar-title>
+                </v-col>
 
-            <!-- Start: Spacer -->
-            <v-spacer></v-spacer>
-            <!-- End: Spacer -->
+                <!-- Right Column for Chips -->
+                <v-col cols="auto" class="text-right">
+                    <v-chip color="blue lighten-2" label text-color="white">
+                        <v-icon left>mdi-clock-outline</v-icon>
+                        Total Hours: {{ totalHours }}
+                    </v-chip>
+                    <v-chip class="ma-2" color="blue lighten-2" label text-color="white">
+                        <v-icon left>mdi-calendar-range</v-icon>
+                        Total Shifts: {{ shifts.length }}
+                    </v-chip>
+                    <v-chip class="mr-0" color="blue darken-1" label text-color="white" @click="PDFCalendar(getSelectedParticipant.name, focus)">
+                        <v-icon left>mdi-download</v-icon>
+                        Download PDF
+                    </v-chip>
+                </v-col>
 
-            <!-- Start: Total Hours, Total Events, Download PDF -->
-            <div class="text-center">
-                <v-chip
-                    class="ma-2"
-                    color="blue lighten-2"
-                    label
-                    text-color="white"
-                >
-                    <v-icon left>
-                        mdi-clock
-                    </v-icon>
-                    Total Hours: {{ totalHours }}
-                </v-chip>
-                <v-chip
-                    class="ma-2"
-                    color="blue lighten-2"
-                    label
-                    text-color="white"
-                >
-                    <v-icon left>
-                        mdi-calendar-multiple
-                    </v-icon>
-                    Total Shifts: {{ shifts.length }}
-                </v-chip>
-                <v-chip
-                    class="ma-2"
-                    color="blue darken-1"
-                    label
-                    text-color="white"
-                    @click="PDFCalendar(getSelectedParticipant.name, focus)"
-                >
-                    <v-icon left>
-                        mdi-file-pdf-box
-                    </v-icon>
-                    Download PDF
-                </v-chip>
-            </div>
-            <!-- End: Total Hours, Total Events, Download PDF -->
-
+            </v-row>
         </v-toolbar>
     </v-sheet>
 </template>
@@ -257,11 +219,14 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 // Move cloned calendar outside of view so that the user does not see it
 #printCalendarClone {
     position: fixed;
     left: -10000px;
     padding: 1rem;
+}
+::v-deep .v-toolbar__content {
+  padding: 0 !important;
 }
 </style>
