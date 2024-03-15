@@ -14,15 +14,18 @@
                     ></v-select>
 
                     <!-- Start: Volunteer Section -->
-                    <div v-if="selectedRole === 'Volunteer'">
+                    <div v-if="selectedRole === 'Volunteer' && !isVolunteerLimitReached">
                         <h3>General Volunteer Signup</h3>
                         <p>As a general volunteer, you'll have the opportunity to contribute through various tasks and activities that support our cause.</p>
                         <v-text-field v-model="volunteerName" type="text" label="Volunteer Name" required name="volunteerName"></v-text-field>
                         <v-text-field v-model="volunteerEmail" type="email" label="Volunteer Email (Optional)" name="volunteerEmail"></v-text-field>
                     </div>
+                    <v-alert v-else-if="selectedRole === 'Volunteer'" type="info" dense>
+                        We have reached the maximum number of volunteers for this shift. Thank you for your interest!
+                    </v-alert>
                     <!-- End: Volunteer Section -->
 
-                    <div v-else-if="selectedRole === 'Driver / Driver Helper'">
+                    <div v-if="selectedRole === 'Driver / Driver Helper' && !isDriverHelperLimitReached">
                         <h3>Driver / Helper Volunteer</h3>
                         <p>As a driver or helper, you play a crucial role in logistics and transportation, ensuring resources and people reach where they are needed most.</p>
                         <!-- Add your Driver / Helper specific fields here -->
@@ -32,20 +35,17 @@
                             We kindly request that individuals registering as drivers or driver helpers submit a copy of their valid driver's license and proof of insurance via email. This documentation is essential for ensuring compliance and safety standards. Thank you for your cooperation and commitment.
                         </v-alert>
                     </div>
+                    <v-alert v-else-if="selectedRole === 'Driver / Driver Helper'" type="info" dense>
+                        We have reached the maximum number of drivers/helpers for this shift. Thank you for your interest!
+                    </v-alert>
+
+
                 </v-card-text>
-
-
-
-
                 <v-card-actions>
                     <v-btn color="grey darken-1" text @click="close">Close</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn color="primary" @click="updateEvent">Participate</v-btn>
+                    <v-btn :disabled="!canParticipate" color="primary" @click="updateEvent">Participate</v-btn>
                 </v-card-actions>
-
-
-
-
             </v-card>
         </v-dialog>
     </v-form>
@@ -76,6 +76,23 @@ export default {
             driverHelperEmail: '',
             roles: ['Volunteer', 'Driver / Driver Helper'],
         };
+    },
+    computed: {
+        isVolunteerLimitReached() {
+            return this.selectedShift.volunteerNames?.length >= this.selectedShift.volunteerLimit;
+        },
+        isDriverHelperLimitReached() {
+            return this.selectedShift.driverHelperNames?.length >= this.selectedShift.driverHelperLimit;
+        },
+        canParticipate() {
+            // Determines if the "Participate" button should be enabled based on the selected role and its limit
+            if (this.selectedRole === 'Volunteer') {
+                return !this.isVolunteerLimitReached;
+            } else if (this.selectedRole === 'Driver / Driver Helper') {
+                return !this.isDriverHelperLimitReached;
+            }
+            return true; // Default to true if none of the above conditions are met
+        }
     },
     watch: {
         value(newVal) {

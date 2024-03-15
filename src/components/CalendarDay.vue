@@ -3,8 +3,8 @@
         <v-row no-gutters>
             <v-col cols="12">
                 <div class="text-caption font-weight-bold">Available Spots:</div>
-                <div class="text-caption mb-n1">Volunteers: <strong>3</strong></div>
-                <div class="text-caption mb-1">Drivers: <strong>2</strong></div>
+                <div :class="{ 'strikethrough': availableVolunteerSpots === 0 }" class="text-caption mb-n1">Volunteers: <strong>{{ availableVolunteerSpots }}</strong></div>
+                <div :class="{ 'strikethrough': availableDriverSpots === 0 }" class="text-caption mb-1">Drivers / Helpers: <strong>{{ availableDriverSpots }}</strong></div>
             </v-col>
         </v-row>
         <v-divider class="grey darken-1 mb-2"></v-divider>
@@ -38,6 +38,20 @@ export default {
             },
         },
     },
+    computed: {
+        availableVolunteerSpots() {
+            if (this.event.volunteerLimit && Array.isArray(this.event.volunteerNames)) {
+                return this.event.volunteerLimit - this.event.volunteerNames.length;
+            }
+            return 0;
+        },
+        availableDriverSpots() {
+            if (this.event.driverHelperLimit && Array.isArray(this.event.driverHelperNames)) {
+                return this.event.driverHelperLimit - this.event.driverHelperNames.length;
+            }
+            return 0;
+        },
+    },
     methods: {
         duration(eventObj) {
             return (
@@ -62,8 +76,10 @@ export default {
         background-color: #e3eefa;
     }
 }
-
 .nonRecurringEvent {
     border-top: 3px solid #4caf50;
+}
+.strikethrough {
+    text-decoration: line-through;
 }
 </style>
