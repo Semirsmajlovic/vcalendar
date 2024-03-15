@@ -60,12 +60,12 @@ const storeCalendar = {
 
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
 				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteerNames'); // Previous: caregiver
-				// let clNames = getNamesInView(allEvents, payload.focus, 'driverHelperNames'); // Previous: client
+				let clNames = getNamesInView(allEvents, payload.focus, 'driverHelperNames'); // Previous: client
 
 				// Set the names.
 				commit('SET_NAMES', [
 					cgNames,
-					// clNames
+					clNames
 				]);
 
 				// If name and type is provided, filter allEvents to that person only

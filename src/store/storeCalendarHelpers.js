@@ -26,27 +26,21 @@ export function getFocus(focus) {
 // ♻️ Success: Returns unique names in the Sidebar.
 
 export function getNamesInView(allEvents, current, type) {
-	console.log("[storeCalendarHelpers.js/getNamesInView/allEvents]: ", allEvents);
 	try {
 		const focusedMonth = getFocus(current);
-		console.log("[storeCalendarHelpers.js/getNamesInView/focusedMonth]: ", focusedMonth);
         const filteredEvents = allEvents.filter((event) => {
             return event.start.includes(focusedMonth);
         });
-		console.log("[storeCalendarHelpers.js/getNamesInView/filteredEvents]: ", filteredEvents);
         const names = filteredEvents.flatMap((event) => {
-			console.log("[storeCalendarHelpers.js/getNamesInView/names/event]: ", event);
             if (Array.isArray(event[type])) {
                 return event[type].map(person => person.name);
             } else {
                 return [];
             }
         });
-		console.log("[storeCalendarHelpers.js/getNamesInView/names]: ", names);
         const sortedNames = names.sort((a, b) => {
             return a.split(' ')[1].localeCompare(b.split(' ')[1]);
         });
-		console.log("[storeCalendarHelpers.js/getNamesInView/sortedNames]: ", sortedNames);
         const uniqueNames = [...new Set(sortedNames)];
 		console.log("[storeCalendarHelpers.js/getNamesInView/uniqueNames]: ", uniqueNames);
         return uniqueNames;
