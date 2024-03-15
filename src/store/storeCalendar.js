@@ -197,7 +197,7 @@ const storeCalendar = {
 
 		
 		updateSelectedParticipant({ commit, state }, participant) {
-			commit('SET_PERSON', participant);
+			commit('SET_PARTICIPANT', participant);
 		},
 		dialogOpen({ commit, state }, dialogStatus) {
 			commit('SET_DIALOG', dialogStatus);
@@ -213,7 +213,7 @@ const storeCalendar = {
 		SET_INIT_EXCEPTIONS(state, payload) {
 			state.exceptions = payload;
 		},
-		SET_PERSON(state, participant) {
+		SET_PARTICIPANT(state, participant) {
 			state.selectedParticipant = participant;
 		},
 		SET_NEW_EVENT_SIGNAL(state, status) {
