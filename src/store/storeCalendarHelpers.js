@@ -314,7 +314,7 @@ async function deleteForwardRecurringShift({ commit, state, getters }, payload) 
             let updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
             console.log('Updated shift details:', updatedShift);
             await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
-            commit('UPDATE_EVENT', { index, updatedEvent: updatedShift });
+            commit('UPDATE_SHIFT', { index, updatedShift: updatedShift });
             console.log('Shift updated successfully');
         } else {
             console.log('No matching event found to update');

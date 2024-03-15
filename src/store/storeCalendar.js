@@ -97,7 +97,7 @@ const storeCalendar = {
 				if (!payload.isRecurring) { // Is payload an exception?
 					commit('ADD_EXCEPTION', payload); // Commit the change
 				} else {
-					commit('ADD_EVENT', payload); // Commit the change
+					commit('ADD_SHIFT', payload); // Commit the change
 				}
 			} catch (e) {
 				console.error("[storeCalendar.js/actionCreateNewEvent]: Error adding document: ", e);
@@ -129,7 +129,7 @@ const storeCalendar = {
 							if (index !== -1) {
 								docRef = doc(db, "events", payload.id); // Assuming payload.id is the Firestore document ID
 								await updateDoc(docRef, payload);
-								commit('UPDATE_EVENT', { index, updatedEvent: payload });
+								commit('UPDATE_SHIFT', { index, updatedShift: payload });
 							}
 							break;
 						}
@@ -150,16 +150,16 @@ const storeCalendar = {
 							let index = getters.getIndexEvent(payload);
 							if (index !== -1) {
 								// Update the original event's UNTIL date
-								let updatedEvent = changeRecurringEnd({ ...state.events[index] }, payload.start);
+								let updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
 								let originalDocRef = doc(db, "events", state.events[index].id);
-								await updateDoc(originalDocRef, updatedEvent);
+								await updateDoc(originalDocRef, updatedShift);
 						
 								// Create a new event for the forward part
 								let recurringObjGoingForward = { ...payload };
 								delete recurringObjGoingForward.id; // Remove id if present, to avoid confusion
 								const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
 								recurringObjGoingForward.id = newEventDocRef.id; // Update with new Firestore document ID
-								commit('ADD_EVENT', recurringObjGoingForward);
+								commit('ADD_SHIFT', recurringObjGoingForward);
 							}
 							break;
 						}
@@ -230,12 +230,12 @@ const storeCalendar = {
 		SET_DIALOG(state, dialogStatus) {
 			state.eventOpen = dialogStatus;
 		},
-		ADD_EVENT(state, payload) {
+		ADD_SHIFT(state, payload) {
 			state.events.push(payload);
 			state.newEventSignal = true;
 		},
-		UPDATE_EVENT(state, { index, updatedEvent }) {
-			state.events.splice(index, 1, updatedEvent);
+		UPDATE_SHIFT(state, { index, updatedShift }) {
+			state.events.splice(index, 1, updatedShift);
 			state.newEventSignal = true;
 		},
 		DELETE_EVENTS_MULTIPLE(state, eventsFound) {
