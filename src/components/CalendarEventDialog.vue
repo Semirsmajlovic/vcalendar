@@ -343,7 +343,7 @@ export default {
     computed: {
         ...mapGetters("storeCalendar", [
             "eventOpen",
-            "getIndexEvent", // Previous: getEventIndex
+            "getIndexEvent",
             "getSelectedParticipant",
             "newEventSignal",
         ]),
