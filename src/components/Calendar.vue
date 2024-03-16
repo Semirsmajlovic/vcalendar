@@ -101,7 +101,7 @@ export default {
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
-        ...mapActions("storeCalendar", ["initInstances", "dialogOpen"]),
+        ...mapActions("storeCalendar", ["initInstances", "adminShiftDialogOpen"]),
 
 
         viewToday() {
@@ -111,7 +111,7 @@ export default {
 
         handleClickEvent(event) {
             if (this.isLoggedIn) {
-                this.updateShift(event);
+                this.handleShiftSelection(event);
             } else {
                 this.openVolunteerDialog(event);
             }
@@ -144,7 +144,7 @@ export default {
                 this.selectedShift = {}; // Resets the selected shift data, preparing for a new shift creation
                 this.originalData = {}; // Clears any original data stored for comparison or rollback
                 this.newDay = day; // Sets the newDay object to the day parameter, preparing it for a new event
-                this.$store.dispatch("storeCalendar/dialogOpen", true) // Dispatches an action to open the shift creation dialog
+                this.$store.dispatch("storeCalendar/adminShiftDialogOpen", true) // Dispatches an action to open the shift creation dialog
                     .then(() => {
                         console.log('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Dialog opened successfully.'); // Logs success message on successful dialog opening
                     })
@@ -170,13 +170,13 @@ export default {
 
         // ========================================================================================== //
 
-        updateShift({ nativeEvent, event, eventParsed }) {
+        handleShiftSelection({ nativeEvent, event, eventParsed }) {
             this.selectedWeekdayNum = eventParsed.start.weekday; // Sets the weekday number of the event start date
             this.selectedShift = this.getCurrentEvent(event); // Retrieves and sets the current event data
             this.originalData = { ...this.selectedShift }; // Creates a copy of the selectedShift to keep original data before any updates
             this.newDay = {}; // Resets newDay, preparing for a new event creation or update
             nativeEvent.stopPropagation(); // Prevents the click event from bubbling up to parent elements
-            this.dialogOpen(true); // Opens the dialog for editing or viewing the event details
+            this.adminShiftDialogOpen(true); // Opens the dialog for editing or viewing the event details
         },
 
         // ========================================================================================== //

@@ -269,7 +269,7 @@ const storeCalendar = {
 		updateSelectedParticipant({ commit, state }, participant) {
 			commit('SET_PARTICIPANT', participant);
 		},
-		dialogOpen({ commit, state }, dialogStatus) {
+		adminShiftDialogOpen({ commit, state }, dialogStatus) {
 			commit('SET_DIALOG', dialogStatus);
 		}
 	},

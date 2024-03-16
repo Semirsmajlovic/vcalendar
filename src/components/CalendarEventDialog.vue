@@ -407,7 +407,7 @@ export default {
     methods: {
         ...mapActions(["updateSnackMessage"]),
         ...mapActions("storeCalendar", [
-            "dialogOpen",
+            "adminShiftDialogOpen",
             "actionCreateNewEvent",
             "updateEvent",
             "deleteEvent",
@@ -448,7 +448,7 @@ export default {
                 isRecurring: false, // Flags the event as non-recurring
                 rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
             };
-            this.dialogOpen(true); // Opens the event dialog to show the event details form
+            this.adminShiftDialogOpen(true); // Opens the event dialog to show the event details form
         },
 
 
@@ -543,7 +543,7 @@ export default {
             }
         },
         closeDialog() {
-            this.dialogOpen(false);
+            this.adminShiftDialogOpen(false);
         },
         createRRULEString(payload) {
             if (!payload.isRecurring) {
