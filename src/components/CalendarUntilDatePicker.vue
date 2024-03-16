@@ -13,8 +13,8 @@
             <template v-slot:activator="{ on, attrs }">
                 <v-text-field
                     v-model="compDate"
-                    label="Select Date"
-                    hint="Choose a date until which the event is valid"
+                    label="Select Until Date"
+                    hint="Choose a date until which the shift is valid"
                     persistent-hint
                     v-bind="attrs"
                     v-on="on"
@@ -48,10 +48,12 @@ export default {
         },
     },
     data() {
+        const today = new Date();
+        const nextYear = new Date(today.setFullYear(today.getFullYear() + 1)).toISOString().split('T')[0];
         return {
             dateLocal: "",
             untilMenu: false,
-            maxDate: "2025-01-01",
+            maxDate: nextYear,
         };
     },
     computed: {
