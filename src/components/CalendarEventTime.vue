@@ -22,18 +22,18 @@
                     ></v-text-field>
                 </template>
                 <v-time-picker
-                    format="12hr"
                     :allowed-minutes="allowedStep"
                     v-if="menu_start"
                     v-model="compuStart"
                     full-width
                     @click:minute="$refs.menu.save(compuStart)"
+                    use-ampm
                 ></v-time-picker>
             </v-menu>
         </v-col>
         <v-col cols="4">
             <v-text-field
-                label="Duration"
+                label="Shift Duration"
                 v-model="compuDur"
                 @blur="duration = compuDur"
                 :rules="rulesDuration"
@@ -78,38 +78,28 @@ export default {
     computed: {
         compuStart: {
             get: function (getTime) {
+                console.log("CalendarEventTime.vue/compustart/get]: ", this.timeOnly(this.event.start));
                 return this.timeOnly(this.event.start);
             },
             set: function (setTime) {
-                // This variable keeps the current duration since changing event.start will automatically change the duration based on input
                 let tmpDur = this.compuDur;
                 this.event.start = this.formatFull(setTime, "start");
-
-                // Set the duration back to original duration before changing start time
                 this.compuDur = tmpDur;
-
-                // Emit change of start time to main dialog component to change DTSTART
                 this.$emit("startTimeChanged", setTime);
             },
         },
         compuDur: {
             get: function () {
                 let diffMinutes = Math.abs(
-                    differenceInMinutes(
-                        parseISO(this.event.start),
-                        parseISO(this.event.end)
-                    )
+                    differenceInMinutes(parseISO(this.event.start), parseISO(this.event.end))
                 );
-
                 let durationInHours = diffMinutes / 60;
                 return durationInHours;
             },
             set: function (dur) {
                 let tmpDur = this.compuDur;
-
                 let checkDurationFormat = /^\s*(?=.*[1-9])\d+(\.(?:0|00|25|5|50|75))?$/;
                 let durationFormatPass = checkDurationFormat.test(dur);
-
                 if (durationFormatPass) {
                     this.event.duration = dur;
                     let durationInMinutes = dur * 60;
@@ -127,12 +117,8 @@ export default {
                 if (isNaN(minutesToAdd)) {
                     return;
                 }
-
                 let endDate = this.displayDate(this.event.start);
-                this.event.end = format(
-                    addMinutes(parseISO(this.event.start), minutesToAdd),
-                    "yyyy-MM-dd HH:mm"
-                );
+                this.event.end = format(addMinutes(parseISO(this.event.start), minutesToAdd),"yyyy-MM-dd HH:mm");
             },
         },
     },
@@ -143,7 +129,9 @@ export default {
     },
     methods: {
         timeOnly(time) {
-            if (!time) return "00:00";
+            if (!time) {
+                return "00:00";
+            }
             return time.slice(11);
         },
         displayDate(date) {
@@ -153,17 +141,13 @@ export default {
             return date.substring(0, 10);
         },
         formatFull(time, startOrEnd) {
-            if (!time || !startOrEnd) return null;
-            let date =
-                startOrEnd === "start"
-                    ? this.event.start.substring(0, 10)
-                    : this.event.end.substring(0, 10);
+            if (!time || !startOrEnd) {
+                return null;
+            }
+            let date = startOrEnd === "start" ? this.event.start.substring(0, 10) : this.event.end.substring(0, 10);
             return `${date} ${time}`;
         },
         allowedStep: (m) => m % 15 === 0,
     },
 };
 </script>
-
-<style lang="scss" scoped>
-</style>

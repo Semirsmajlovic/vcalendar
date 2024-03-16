@@ -38,7 +38,7 @@
                                 v-model="localSelectedEvent.shiftTitle"
                                 label="Shift Title (Optional)"
                                 hint="Enter a descriptive title for the shift, if desired."
-                                single-line
+                                type="text"
                             ></v-text-field>
                         </v-col>
                     </v-row>
@@ -49,7 +49,6 @@
                                 v-model="localSelectedEvent.volunteerLimit"
                                 hint="Provide number of allowed volunteers."
                                 label="Volunteer Limit"
-                                single-line
                                 type="number"
                                 :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
                             ></v-text-field>
@@ -59,7 +58,6 @@
                                 v-model="localSelectedEvent.driverHelperLimit"
                                 hint="Provide number of allowed drivers and/or helpers."
                                 label="Driver / Helper Limit"
-                                single-line
                                 type="number"
                                 :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
                             ></v-text-field>
@@ -70,7 +68,7 @@
                         :event="localSelectedEvent"
                         @startTimeChanged="
                             (...args) => {
-                                changeDTSTARTtime(...args), 
+                                updateRecurringEventStartTime(...args), 
                                 changeUNTIL(...args, formatUNTILtoType(localUNTIL, '-', 'yyyymmdd'));
                             }
                         "
@@ -130,6 +128,28 @@
                             </v-col>
                         </v-row>
                     </v-expand-transition>
+
+                    <v-row class="mt-3" no-gutters>
+                        <v-col cols="12" sm="12">
+                            <v-alert outlined text dense>
+                                <span class="text-overline">Shift Details:</span>
+                                <template v-if="localSelectedEvent.isRecurring">
+                                    <div class="text-body-2">
+                                        Starts on 
+                                        {{ dateStartSentence(localSelectedEvent.rruleString) }}
+                                        {{ rruleDescription(localSelectedEvent.rruleString) }}
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div v-if="localSelectedEvent.hasOwnProperty('actionType')" class="text-body-2">
+                                        Diverged Shift
+                                    </div>
+                                    <div v-else class="text-body-2">One-time Shift</div>
+                                </template>
+                            </v-alert>
+                        </v-col>
+                    </v-row>
+
                 </v-card-text>
 
 
@@ -304,6 +324,7 @@ export default {
             localINTERVAL: "", // Selected recurrence interval
             localUNTIL: "", // Date until which the event recurs
             localBYDAY: [], // Days of the week on which the event recurs
+            rruleDescriptionCache: {},
             deleteOptions: [ // Options for deleting events
                 {
                     title: "Delete this instance", // Option to delete a single instance of a recurring event
@@ -556,7 +577,7 @@ export default {
                 freq: RRule.WEEKLY,
                 byweekday:
                     this.localBYDAY.map((dayNames) => RRule[dayNames]) ||
-                    this.getWeekdayInitial(
+                    this.getWeekdayAbbreviationByIndex(
                         new Date(year, monthUTC, day).getDay()
                     ),
                 interval: this.localINTERVAL || "1",
@@ -567,20 +588,30 @@ export default {
             });
             return rule.toString();
         },
-        getWeekdayInitial(dayNum) {
+
+        /**
+         * Retrieves the abbreviation of a weekday based on its index.
+         * @param {Number} dayNum - The index of the weekday, where 0 is Sunday, 1 is Monday, etc.
+         * @returns {String} The abbreviation of the weekday.
+         */
+        getWeekdayAbbreviationByIndex(dayNum) {
             return this.weekdayNames[dayNum];
         },
-        changeDTSTARTtime(start_time) {
-            if (!this.localSelectedEvent.isRecurring) {
+
+        /**
+         * Updates the start time in the DTSTART portion of the RRULE string for a recurring event.
+         * @param {String} start_time - The new start time in HH:MM format.
+         * Previous: changeDTSTARTtime
+         */
+        updateRecurringEventStartTime(start_time) {
+            if (!this.localSelectedEvent.isRecurring) { // If the shift is not recurring, return.
                 return;
             }
-
             let formatStart = start_time.replace(":", "") + "00";
             let replaceText = this.localSelectedEvent.rruleString.substring(
                 17,
                 this.localSelectedEvent.rruleString.indexOf("Z")
             );
-
             this.localSelectedEvent.rruleString = this.replacer(
                 this.localSelectedEvent.rruleString,
                 replaceText,
@@ -589,6 +620,7 @@ export default {
             );
             return;
         },
+
         changeDTSTARTdate(dateUpdated) {
             // Updating forward requires rruleStringToReplace ( payload.rruleString )'s DTSTART date portion to be updated with date of dateUpdated (payload.start)
 
@@ -640,7 +672,7 @@ export default {
         },
         getBYDAY(rruleString) {
             if (!rruleString) {
-                return [this.getWeekdayInitial(this.selectedWeekdayNum)];
+                return [this.getWeekdayAbbreviationByIndex(this.selectedWeekdayNum)];
             }
 
             let index = rruleString.indexOf("BYDAY");
@@ -763,22 +795,62 @@ export default {
             }
             return endTime.slice(-5) || "";
         },
+
+        // ============================================================================================ //
+
         rruleDescription(ruleString) {
             if (!ruleString) {
                 return;
             }
-            return RRule.fromString(ruleString).toText();
-        },
-        dateStartSentence(rruleString) {
-            if (!rruleString) {
-                return;
+            if (this.rruleDescriptionCache[ruleString]) {
+                return this.rruleDescriptionCache[ruleString];
             }
-
-            return format(
-                RRule.fromString(rruleString).origOptions.dtstart,
-                "MMM d, yyyy"
-            );
+            try {
+                const description = RRule.fromString(ruleString).toText();
+                this.rruleDescriptionCache[ruleString] = description;
+                return description;
+            } catch (error) {
+                console.error("Error parsing RRULE string:", error);
+                return "Invalid RRULE string";
+            }
         },
+
+        // ============================================================================================ //
+
+        /**
+         * Formats the start date of a recurring event as a sentence with the full month name, day with suffix, and year.
+         * @param {String} rruleString - The RRULE string of the recurring event.
+         * @returns {String} The formatted start date sentence.
+         */
+         dateStartSentence(rruleString) {
+            if (!rruleString) {
+                return '';
+            }
+            const dtstart = RRule.fromString(rruleString).origOptions.dtstart;
+            const day = dtstart.getDate();
+            const suffix = ((day) => {
+                const j = day % 10,
+                    k = day % 100;
+                if (j == 1 && k != 11) {
+                    return "st";
+                }
+                if (j == 2 && k != 12) {
+                    return "nd";
+                }
+                if (j == 3 && k != 13) {
+                    return "rd";
+                }
+                return "th";
+            })(day);
+            const formattedDateWithoutDay = format(dtstart, `MMMM , yyyy`);
+            const formattedDate = formattedDateWithoutDay.replace(', ', `${day}${suffix}, `);
+
+            return formattedDate;
+        }
+
+        // ============================================================================================ //
+
+
     },
 };
 </script>
