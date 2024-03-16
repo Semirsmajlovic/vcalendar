@@ -17,12 +17,10 @@
                         </v-col>
                     </v-row>
                 </v-alert>
-
-                <!-- OrganizationDialog component, bound to showOrganizationDialog data property -->
                 <organization-dialog :value="showOrganizationDialog" @input="showOrganizationDialog = $event"></organization-dialog>
             </v-col>
         </v-row>
-      <v-row class="fill-height">
+        <v-row class="fill-height">
         <v-col>
           <v-row>
             <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
@@ -40,6 +38,7 @@
                 @type4day="updateCalendarViewType('4day')"
               ></calendar-tool-bar>
               <!-- End: Calendar Toolbar -->
+                <div class="printInformationArea"></div>
               <v-calendar
                 ref="calendar"
                 v-model="focus"
