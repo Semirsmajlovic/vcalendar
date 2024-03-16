@@ -1,6 +1,6 @@
 <template>
     <v-form ref="form">
-        <v-dialog v-model="dialog" persistent max-width="600px">
+        <v-dialog v-model="dialog" persistent max-width="600px" @click:outside="close">
             <v-card>
                 <v-card-title>
                     Role Selection

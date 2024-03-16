@@ -13,6 +13,7 @@
             v-model="eventOpen" 
             persistent 
             max-width="720"
+            @click:outside="closeDialog(false)"
         >
             <v-card>
 
@@ -22,10 +23,7 @@
                         {{ newEvent ? 'Create Event' : 'Update Event' }}
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-btn
-                        depressed
-                        @click="closeDialog(false)"
-                    >
+                    <v-btn depressed @click="closeDialog(false)">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </v-toolbar>
@@ -135,16 +133,16 @@
                                 <span class="text-overline">Shift Details:</span>
                                 <template v-if="localSelectedEvent.isRecurring">
                                     <div class="text-body-2">
-                                        Starts on 
+                                        Shifts start on 
                                         {{ dateStartSentence(localSelectedEvent.rruleString) }}
                                         {{ rruleDescription(localSelectedEvent.rruleString) }}
                                     </div>
                                 </template>
                                 <template v-else>
                                     <div v-if="localSelectedEvent.hasOwnProperty('actionType')" class="text-body-2">
-                                        Diverged Shift
+                                        Single-Occurrence Diverged Shift
                                     </div>
-                                    <div v-else class="text-body-2">One-time Shift</div>
+                                    <div v-else class="text-body-2">Single-Occurrence Shift</div>
                                 </template>
                             </v-alert>
                         </v-col>
