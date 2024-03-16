@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialog" persistent max-width="600px">
+    <v-dialog v-model="dialog" persistent max-width="600px" @click:outside="dialog = false">
       <v-card>
         <v-card-title>
           Organization Details
@@ -10,7 +10,7 @@
             <v-text-field label="Contact Name" v-model="contactName"></v-text-field>
             <v-text-field label="Phone Number" v-model="phoneNumber"></v-text-field>
             <v-text-field label="Email" v-model="email"></v-text-field>
-            <v-text-field label="Number of People" type="number" :max="8" v-model="numberOfPeople"></v-text-field>
+            <v-text-field label="Number of People (Max: 8)" type="number" :max="8" v-model="numberOfPeople"></v-text-field>
             <v-menu
                 ref="menu"
                 v-model="menu"
@@ -26,7 +26,7 @@
                     multiple
                     chips
                     small-chips
-                    label="Multiple picker in menu"
+                    label="Choose dates to volunteer"
                     prepend-icon="mdi-calendar"
                     readonly
                     v-bind="attrs"
@@ -75,13 +75,21 @@ export default {
     },
     watch: {
         value(newVal) {
-        this.dialog = newVal; // Update dialog based on the value prop changes
+            this.dialog = newVal; // Update dialog based on the value prop changes
         },
         dialog(newVal) {
-        this.$emit('input', newVal); // Emit changes to keep the parent in sync
-        }
+            this.$emit('input', newVal); // Emit changes to keep the parent in sync
+        },
+        numberOfPeople(newValue) {
+            this.checkNumberOfPeople();
+        },
     },
     methods: {
+        checkNumberOfPeople() {
+            if (parseInt(this.numberOfPeople) > 8) {
+                this.numberOfPeople = '8';
+            }
+        },
         sendEmail() {
             const emailParams = {
                 organization_name: this.organizationName,

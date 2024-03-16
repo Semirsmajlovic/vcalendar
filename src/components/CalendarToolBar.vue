@@ -66,11 +66,11 @@
 
                 <!-- Right Column for Chips -->
                 <v-col cols="4" md="4" class="text-right">
-                    <v-chip color="blue lighten-2" label text-color="white">
+                    <v-chip color="blue darken-1" label text-color="white">
                         <v-icon left>mdi-clock-outline</v-icon>
                         Total Hours: {{ totalHours }}
                     </v-chip>
-                    <v-chip class="ma-2" color="blue lighten-2" label text-color="white">
+                    <v-chip class="ma-2" color="blue darken-1" label text-color="white">
                         <v-icon left>mdi-calendar-range</v-icon>
                         Total Shifts: {{ shifts.length }}
                     </v-chip>

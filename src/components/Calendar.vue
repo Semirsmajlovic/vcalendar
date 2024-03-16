@@ -1,19 +1,19 @@
 <template>
     <v-container id="dynamicContentArea456" fluid>
-        <v-row justify="center">
+        <v-row justify="center" v-if="!isLoggedIn">
             <v-col cols="12" sm="8" md="6" lg="6">
                 <v-alert
-                text
-                dense
-                color="teal"
-                border="left"
-                    >
+                    text
+                    dense
+                    color="info"
+                    border="top"
+                >
                     <v-row align="center" justify="center">
                         <v-col class="grow">
-                            For organizations seeking to volunteer, please click the button to register.
+                            For organizations interested in volunteering, please register your participation by clicking the button to join our efforts in making a difference.
                         </v-col>
                         <v-col class="shrink">
-                        <v-btn @click="showOrganizationDialog = true">Participate</v-btn>
+                        <v-btn @click="showOrganizationDialog = true" color="primary">Participate</v-btn>
                         </v-col>
                     </v-row>
                 </v-alert>
@@ -55,7 +55,7 @@
                 @change="loadAndUpdateShifts"
               >
                 <template v-slot:event="{ event }">
-                  <calendar-day :event="event"></calendar-day>
+                  <calendar-day :event="event" :is-logged-in="isLoggedIn"></calendar-day>
                 </template>
               </v-calendar>
             </v-col>

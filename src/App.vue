@@ -29,14 +29,14 @@
                 <v-icon left dark>mdi-login</v-icon>
                 Login
             </v-btn>
-            <v-btn 
+            <!-- <v-btn 
                 color="secondary" 
                 class="ma-2 white--text" 
                 @click="$router.push('/register')"
                 v-if="!isLoggedIn">
                 <v-icon left dark>mdi-account-plus</v-icon>
                 Signup
-            </v-btn>
+            </v-btn> -->
             <v-btn 
                 @click="handleSignOut" 
                 color="red" 

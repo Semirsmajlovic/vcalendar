@@ -9,12 +9,16 @@
         </v-row>
         <v-divider class="grey darken-1 mb-2"></v-divider>
         <v-row no-gutters>
-            <v-col cols="12"> <!-- Use full width for the column -->
+            <v-col cols="12">
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Volunteer</v-btn>
+                        <!-- Show this button if the user is logged in -->
+                        <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Participants</v-btn>
+                        <!-- Show this button if the user is not logged in -->
+                        <v-btn v-else class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Volunteer</v-btn>
                     </template>
-                    <span>Sign up to help with the shift.</span>
+                    <span v-if="isLoggedIn">View participants for this shift.</span>
+                    <span v-else>Sign up to help with the shift.</span>
                 </v-tooltip>
             </v-col>
         </v-row>
@@ -36,6 +40,10 @@ export default {
             default() {
                 return {};
             },
+        },
+        isLoggedIn: {
+            type: Boolean,
+            default: false,
         },
     },
     computed: {
