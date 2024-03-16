@@ -170,50 +170,53 @@ export default {
             this.reference.next();
         },
         PDFCalendar(name, focus) {
-            // To save the calendar in PDF with the participant's name / date above it without changing the actual view of the calendar, use couple tricks. Clone the calendar view, move this out of the screen using css left: -10000px, append the name / date above it then ready it for jsPDF to do it's job.
 
-            // Find the calendar area and clone it
+            console.log("[PDFCalendar]: ", name);
+
             let target = document.querySelector("#calendarContent");
-            let clone = target.cloneNode(true);
-            clone.id = "printCalendarClone";
-            target.after(clone);
 
-            // Create the information area that houses the name and date
-            let newContent = document.createElement("h3");
-            newContent.style.paddingTop = "1rem";
-            newContent.style.paddingBottom = "1rem";
 
-            let personName = name === undefined ? "All" : name;
-            let date =
-                !focus || focus === ""
-                    ? `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
-                    : focus.substr(0, 7);
 
-            newContent.innerHTML = `${personName} ${date}`;
+            // let clone = target.cloneNode(true);
+            // clone.id = "printCalendarClone";
+            // target.after(clone);
 
-            // Attach the information area to cloned calendar
-            let newTarget = document
-                .querySelector("#printCalendarClone")
-                .getElementsByClassName("printInformationArea")[0];
-            newTarget.appendChild(newContent);
+            // // Create the information area that houses the name and date
+            // let newContent = document.createElement("h3");
+            // newContent.style.paddingTop = "1rem";
+            // newContent.style.paddingBottom = "1rem";
 
-            // Create PDF
-            const pdf = new jsPDF({
-                orientation: "portrait",
-                format: [470, 500],
-            });
-            let element = document.querySelector("#printCalendarClone");
-            let width = element.style.width;
-            let height = element.style.height;
-            html2canvas(element)
-                .then((canvas) => {
-                    let image = canvas.toDataURL("image/png");
-                    pdf.addImage(image, "JPEG", 20, 20, width, height);
-                    pdf.save(`${personName}-${date}.pdf`);
-                })
-                .catch(function (e) {
-                    this.updateSnackMessage(`Error at html2canvas : ${e} `);
-                });
+            // let personName = name === undefined ? "All" : name;
+            // let date =
+            //     !focus || focus === ""
+            //         ? `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
+            //         : focus.substr(0, 7);
+
+            // newContent.innerHTML = `${personName} ${date}`;
+
+            // // Attach the information area to cloned calendar
+            // let newTarget = document
+            //     .querySelector("#printCalendarClone")
+            //     .getElementsByClassName("printInformationArea")[0];
+            // newTarget.appendChild(newContent);
+
+            // // Create PDF
+            // const pdf = new jsPDF({
+            //     orientation: "portrait",
+            //     format: [470, 500],
+            // });
+            // let element = document.querySelector("#printCalendarClone");
+            // let width = element.style.width;
+            // let height = element.style.height;
+            // html2canvas(element)
+            //     .then((canvas) => {
+            //         let image = canvas.toDataURL("image/png");
+            //         pdf.addImage(image, "JPEG", 20, 20, width, height);
+            //         pdf.save(`${personName}-${date}.pdf`);
+            //     })
+            //     .catch(function (e) {
+            //         this.updateSnackMessage(`Error at html2canvas : ${e} `);
+            //     });
         },
     },
 };

@@ -1,13 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
 import { 
-	leadingZero, 
 	getFocus, 
 	getNamesInView, 
 	changeRecurringEnd, 
-	createAllEvents, 
-	makeRecurringEvents,
-	handleNonRecurringShift,
-	handleRecurringShift
+	createAllEvents
 } from './storeCalendarHelpers';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from '../main.js';
@@ -22,7 +17,7 @@ const storeCalendar = {
 		selectedParticipant: {}, // Sets the calendar's view to this participant when clicking on names in CalendarSideBar
 		instances: [], // All events shown in calendar view - calculated at runtime by combining state.events and state.exceptions
 	},
-	actions    : {
+	actions: {
 		async initInstances({ commit, dispatch }, payload) {
 			try {
 
@@ -48,7 +43,6 @@ const storeCalendar = {
 				commit('SET_INIT_RECURRING_SHIFTS', events);
 				commit('SET_INIT_EXCEPTIONS', exceptions);
 
-				// 
 				let allEvents = createAllEvents(
 					events,
 					exceptions,
@@ -56,7 +50,6 @@ const storeCalendar = {
 					'',
 					''
 				);
-				console.log("[storeCalendar.js/initInstances/allEvents]: ", allEvents);
 
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
 				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteerNames'); // Previous: caregiver
@@ -68,8 +61,16 @@ const storeCalendar = {
 					clNames
 				]);
 
-				// If name and type is provided, filter allEvents to that participant only
+				/*
+					payload: {
+						focus: ""
+						name: "Semir 1"
+						type: "volunteerNames"
+					}
+				*/
 				let { name, type } = payload;
+
+				// If name and type is provided, filter allEvents to that participant only
 				if (name || type) {
 					allEvents = allEvents.filter((event) => {
 						return event[type] === name;
@@ -264,7 +265,7 @@ const storeCalendar = {
 
 
 
-		
+		// Previous: updateSelectedPerson | 1 Instance old file | 1 Instance this file.
 		updateSelectedParticipant({ commit, state }, participant) {
 			commit('SET_PARTICIPANT', participant);
 		},
@@ -335,7 +336,11 @@ const storeCalendar = {
 		getNamesVolunteers: (state) => state.volunteerNames,
 		getNamesDriverHelpers: (state) => state.driverHelperNames,
 		newEventSignal: (state) => state.newEventSignal,
+
+
 		getSelectedParticipant: (state) => state.selectedParticipant,
+
+
 		getCurrentEvent: (state) => (data) => {
 			return state.instances.find((element) => {
 				return element.id === data.id && element.start === data.start;

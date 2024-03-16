@@ -89,6 +89,8 @@ export function changeRecurringEnd(eventToStop, newEndDate) {
 export function createAllEvents(events, exceptionArray, focus, name, type) {
 	let allEvents = [];
 
+	console.log("[storeCalendarHelpers.js/createAllEvents]: ", name);
+
 	// Create all recurring instances within month using RRULE string
 	events.map((item) => {
 		allEvents = [
