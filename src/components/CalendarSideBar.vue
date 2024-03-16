@@ -9,8 +9,6 @@
             right
         >
             <v-list>
-
-
                 <v-list-item-group>
                     <v-list-item
                         link
@@ -155,9 +153,6 @@ export default {
         ...mapActions(["updateSnackMessage"]),
         ...mapActions("storeCalendar", ["updateSelectedParticipant"]),
         ...mapMutations(["drawerChange"]),
-
-
-
         async eventsByName(name, type) {
             console.log("[CalendarSideBar/eventsByName]: Starting to update selected participant.");
             try {
@@ -170,17 +165,11 @@ export default {
                 console.error("[CalendarSideBar/eventsByName]: Error updating selected participant.", error);
             }
         },
-
-
-
         handleGroupToggle(groupName) {
-            // Check if the group has items before toggling
             const hasItems = groupName === 'volunteers' ? this.namesVolunteers.length > 0 : this.namesDriverHelpers.length > 0;
             if (!hasItems) {
-                // If the group has no items, do not allow it to expand
                 return;
             }
-            // Toggle the expanded group
             this.expandedGroup = this.expandedGroup === groupName ? '' : groupName;
         },
         checkDuplicateName(name, type) {
