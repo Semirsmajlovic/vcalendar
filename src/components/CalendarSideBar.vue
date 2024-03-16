@@ -153,18 +153,19 @@ export default {
         ...mapActions(["updateSnackMessage"]),
         ...mapActions("storeCalendar", ["updateSelectedParticipant"]),
         ...mapMutations(["drawerChange"]),
-        async eventsByName(name, type) {
-            console.log("[CalendarSideBar/eventsByName]: Starting to update selected participant.");
+
+
+        async eventsByName(name, type) { // name: Semir 1 / type: volunteerNames
             try {
                 await this.updateSelectedParticipant({ name, type });
                 this.$emit("selectedParticipant");
                 this.drawerChange();
-                console.log(this.updateSelectedParticipant);
-                console.log("[CalendarSideBar/eventsByName]: Successfully updated selected participant.");
             } catch (error) {
                 console.error("[CalendarSideBar/eventsByName]: Error updating selected participant.", error);
             }
         },
+
+
         handleGroupToggle(groupName) {
             const hasItems = groupName === 'volunteers' ? this.namesVolunteers.length > 0 : this.namesDriverHelpers.length > 0;
             if (!hasItems) {
