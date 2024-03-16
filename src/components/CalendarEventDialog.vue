@@ -66,19 +66,15 @@
                         </v-col>
                     </v-row>
 
-                    <v-row>
-                        <v-col cols="12" sm="6">
-                            <calendar-event-time
-                                :event="localSelectedEvent"
-                                @startTimeChanged="
-                                    (...args) => {
-                                        changeDTSTARTtime(...args), 
-                                        changeUNTIL(...args, formatUNTILtoType(localUNTIL, '-', 'yyyymmdd'));
-                                    }
-                                "
-                            ></calendar-event-time>
-                        </v-col>
-                    </v-row>
+                    <calendar-event-time
+                        :event="localSelectedEvent"
+                        @startTimeChanged="
+                            (...args) => {
+                                changeDTSTARTtime(...args), 
+                                changeUNTIL(...args, formatUNTILtoType(localUNTIL, '-', 'yyyymmdd'));
+                            }
+                        "
+                    ></calendar-event-time>
 
                     <v-row 
                         v-if="localSelectedEvent.isRecurring || newEvent"

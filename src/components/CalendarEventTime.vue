@@ -22,7 +22,7 @@
                     ></v-text-field>
                 </template>
                 <v-time-picker
-                    format="24hr"
+                    format="12hr"
                     :allowed-minutes="allowedStep"
                     v-if="menu_start"
                     v-model="compuStart"
