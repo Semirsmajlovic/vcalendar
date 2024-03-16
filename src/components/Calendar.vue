@@ -1,9 +1,32 @@
 <template>
     <v-container id="dynamicContentArea456" fluid>
+        <v-row justify="center">
+            <v-col cols="12" sm="8" md="6" lg="6">
+                <v-alert
+                text
+                dense
+                color="teal"
+                border="left"
+                    >
+                    <v-row align="center" justify="center">
+                        <v-col class="grow">
+                            For organizations seeking to volunteer, please click the button to register.
+                        </v-col>
+                        <v-col class="shrink">
+                        <v-btn @click="showOrganizationDialog = true">Participate</v-btn>
+                        </v-col>
+                    </v-row>
+                </v-alert>
+
+                <!-- OrganizationDialog component, bound to showOrganizationDialog data property -->
+                <organization-dialog :value="showOrganizationDialog" @input="showOrganizationDialog = $event"></organization-dialog>
+            </v-col>
+        </v-row>
       <v-row class="fill-height">
         <v-col>
           <v-row>
             <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
+
               <!-- Start: Calendar Toolbar -->
               <calendar-tool-bar
                 :reference="this.$refs.calendar"
@@ -63,6 +86,7 @@ import CalendarToolBar from "./CalendarToolBar.vue";
 import CalendarSideBar from "./CalendarSideBar.vue";
 import CalendarEventDialog from "./CalendarEventDialog.vue";
 import CalendarVolunteerDialog from "./CalendarVolunteerDialog.vue";
+import OrganizationDialog from "./OrganizationDialog.vue";
 
 export default {
     name: "Calendar",
@@ -72,6 +96,7 @@ export default {
         CalendarSideBar,
         CalendarEventDialog,
         CalendarVolunteerDialog,
+        OrganizationDialog,
     },
     data() {
         return {
@@ -85,6 +110,7 @@ export default {
             shifts: [],
             isBusy: false,
             showVolunteerDialog: false,
+            showOrganizationDialog: false,
         };
     },
     computed: {
