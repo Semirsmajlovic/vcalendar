@@ -11,10 +11,10 @@
                 :shifts="shifts"
                 :propType="type"
                 @todayButtonClick="viewToday"
-                @typeDay="changeType('day')"
-                @typeWeek="changeType('week')"
-                @typeMonth="changeType('month')"
-                @type4day="changeType('4day')"
+                @typeDay="updateCalendarViewType('day')"
+                @typeWeek="updateCalendarViewType('week')"
+                @typeMonth="updateCalendarViewType('month')"
+                @type4day="updateCalendarViewType('4day')"
               ></calendar-tool-bar>
               <!-- End: Calendar Toolbar -->
               <v-calendar
@@ -29,7 +29,7 @@
                 @click:event="handleClickEvent"
                 @click:date="handleClickDate"
                 @click:day="handleClickDay"
-                @change="refreshEvents"
+                @change="loadAndUpdateShifts"
               >
                 <template v-slot:event="{ event }">
                   <calendar-day :event="event"></calendar-day>
@@ -37,7 +37,7 @@
               </v-calendar>
             </v-col>
             <v-col v-if="isLoggedIn" cols="12" lg="2">
-              <calendar-side-bar @selectedParticipant="refreshEvents()" :focus="focus"></calendar-side-bar>
+              <calendar-side-bar @selectedParticipant="loadAndUpdateShifts()" :focus="focus"></calendar-side-bar>
             </v-col>
           </v-row>
         </v-col>
@@ -47,7 +47,7 @@
         :selectedEvent="selectedShift"
         :selectedWeekdayNum="selectedWeekdayNum"
         :originalData="originalData"
-        @refresh="refreshEvents()"
+        @refresh="loadAndUpdateShifts()"
       ></calendar-event-dialog>
       <calendar-volunteer-dialog
         v-model="showVolunteerDialog"
@@ -181,31 +181,30 @@ export default {
 
         // ========================================================================================== //
 
-        async refreshEvents() {
-            this.isBusy = true; // Indicates the start of an asynchronous operation, typically used to trigger loading indicators
+        // Default: loadAndUpdateShifts() comes back as undefined when clicking on either "All", "Caregiver" or "Client".
+        // This: loadAndUpdateShifts() comes back as undefined when clicking on either "All", "Volunteer" or "Driver / Helper".
+        async loadAndUpdateShifts() {
+            this.isBusy = true;
             try {
-                await this.initInstances({ // Asynchronously initializes event instances based on the current focus, participant's name, and type
-                    focus: this.focus,
-                    name: this.getSelectedParticipant.name,
-                    type: this.getSelectedParticipant.type,
-                });
+                const result = await this.initInstances({ focus: this.focus, name: this.getSelectedParticipant.name, type: this.getSelectedParticipant.type });
+                console.log("[Calendar.vue/loadAndUpdateShifts]: ", result);
             } catch (e) {
                 this.updateSnackMessage(`Error loading ${e} `); // Displays an error message if the initialization fails
             } finally {
-                this.isBusy = false; // Resets the loading indicator to false, indicating the operation has completed
-                this.shifts = this.getInstances( // Retrieves and sets the shifts based on the current focus, participant's name, and type
+                this.isBusy = false; 
+                this.shifts = this.getInstances(
                     this.focus,
                     this.getSelectedParticipant.name,
                     this.getSelectedParticipant.type
                 );
-                this.newDay = {}; // Resets the newDay object, typically used to clear form data or preparation for a new event
-                this.selectedShift = {}; // Resets the selectedShift object, clearing any previously selected or edited event data
+                this.newDay = {};
+                this.selectedShift = {};
             }
         },
 
         // ========================================================================================== //
 
-        changeType(newType) {
+        updateCalendarViewType(newType) {
             this.type = newType; // Updates the calendar view type (day, week, month, 4day) based on user selection
         },
 
