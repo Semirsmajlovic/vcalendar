@@ -49,9 +49,7 @@
 
         <!-- Start: Main View -->
         <v-main>
-            <v-container
-            id="main-container"
-            >
+            <v-container id="main-container" fluid>
                 <router-view></router-view>
             </v-container>
         </v-main>

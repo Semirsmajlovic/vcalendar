@@ -1,66 +1,60 @@
 <template>
-    <v-container id="dynamicContentArea456">
-        <v-row class="fill-height">
-            <v-col>
-
-                <!-- Start: Calendar Toolbar -->
-                <calendar-tool-bar
-                    :reference="this.$refs.calendar"
-                    :focus="focus"
-                    :shifts="shifts"
-                    :propType="type"
-                    @todayButtonClick="viewToday"
-                    @typeDay="changeType('day')"
-                    @typeWeek="changeType('week')"
-                    @typeMonth="changeType('month')"
-                    @type4day="changeType('4day')"
-                ></calendar-tool-bar>
-                <!-- End: Calendar Toolbar -->
-
-                <v-container>
-                    <v-row>
-                        <v-row>
-                            <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
-                                <v-calendar
-                                    ref="calendar"
-                                    v-model="focus"
-                                    :type="type"
-                                    :events="shifts"
-                                    :event-height="112"
-                                    :events-more="false"
-                                    :event-margin-bottom="5"
-                                    :show-week="false"
-                                    @click:event="handleClickEvent"
-                                    @click:date="handleClickDate"
-                                    @click:day="handleClickDay"
-                                    @change="refreshEvents"
-                                >
-                                    <template v-slot:event="{ event }">
-                                        <calendar-day :event="event"></calendar-day>
-                                    </template>
-                                </v-calendar>
-                            </v-col>
-                            <v-col v-if="isLoggedIn" cols="12" lg="2">
-                                <calendar-side-bar @selectedParticipant="refreshEvents()" :focus="focus"></calendar-side-bar>
-                            </v-col>
-                        </v-row>
-                    </v-row>
-                </v-container>
+    <v-container id="dynamicContentArea456" fluid>
+      <v-row class="fill-height">
+        <v-col>
+          <v-row>
+            <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
+              <!-- Start: Calendar Toolbar -->
+              <calendar-tool-bar
+                :reference="this.$refs.calendar"
+                :focus="focus"
+                :shifts="shifts"
+                :propType="type"
+                @todayButtonClick="viewToday"
+                @typeDay="changeType('day')"
+                @typeWeek="changeType('week')"
+                @typeMonth="changeType('month')"
+                @type4day="changeType('4day')"
+              ></calendar-tool-bar>
+              <!-- End: Calendar Toolbar -->
+              <v-calendar
+                ref="calendar"
+                v-model="focus"
+                :type="type"
+                :events="shifts"
+                :event-height="112"
+                :events-more="false"
+                :event-margin-bottom="5"
+                :show-week="false"
+                @click:event="handleClickEvent"
+                @click:date="handleClickDate"
+                @click:day="handleClickDay"
+                @change="refreshEvents"
+              >
+                <template v-slot:event="{ event }">
+                  <calendar-day :event="event"></calendar-day>
+                </template>
+              </v-calendar>
             </v-col>
-        </v-row>
-        <calendar-event-dialog
-            :newDay="newDay"
-            :selectedEvent="selectedShift"
-            :selectedWeekdayNum="selectedWeekdayNum"
-            :originalData="originalData"
-            @refresh="refreshEvents()"
-        ></calendar-event-dialog>
-        <calendar-volunteer-dialog
-            v-model="showVolunteerDialog"
-            :selectedShift="selectedShift"
-        ></calendar-volunteer-dialog>
+            <v-col v-if="isLoggedIn" cols="12" lg="2">
+              <calendar-side-bar @selectedParticipant="refreshEvents()" :focus="focus"></calendar-side-bar>
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
+      <calendar-event-dialog
+        :newDay="newDay"
+        :selectedEvent="selectedShift"
+        :selectedWeekdayNum="selectedWeekdayNum"
+        :originalData="originalData"
+        @refresh="refreshEvents()"
+      ></calendar-event-dialog>
+      <calendar-volunteer-dialog
+        v-model="showVolunteerDialog"
+        :selectedShift="selectedShift"
+      ></calendar-volunteer-dialog>
     </v-container>
-</template>
+  </template>
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";

@@ -4,7 +4,7 @@
             <v-row align="center" justify="space-between" no-gutters>
 
                 <!-- Left Column for Buttons -->
-                <v-col cols="auto">
+                <v-col cols="4">
                     <!-- Month Button -->
                     <v-menu bottom left>
                         <template v-slot:activator="{ on, attrs }">
@@ -55,17 +55,17 @@
                 </v-col>
 
                 <!-- Center Column for Toolbar Title -->
-                <v-col cols="auto">
-                    <v-toolbar-title v-if="reference" class="text-center">
+                <v-col cols="4" class="d-flex justify-center align-center">
+                    <v-toolbar-title v-if="reference" class="d-flex align-center justify-center">
                         <span>{{ reference.title }}</span>
-                        <div v-if="isLoggedIn">
-                            Selected: <span class="blue--text">{{ getSelectedParticipant.name || "All" }}</span>
-                        </div>
+                        <span v-if="isLoggedIn" class="ml-2">
+                            | Selected: <span class="blue--text">{{ getSelectedParticipant.name || "All" }}</span>
+                        </span>
                     </v-toolbar-title>
                 </v-col>
 
                 <!-- Right Column for Chips -->
-                <v-col cols="auto" class="text-right">
+                <v-col cols="4" md="4" class="text-right">
                     <v-chip color="blue lighten-2" label text-color="white">
                         <v-icon left>mdi-clock-outline</v-icon>
                         Total Hours: {{ totalHours }}
