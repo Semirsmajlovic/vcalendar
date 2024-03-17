@@ -71,11 +71,28 @@ const storeCalendar = {
 				let { name, type } = payload;
 
 				// If name and type is provided, filter allEvents to that participant only
+
+				console.log("UNFILTERED:", allEvents)
+
+				console.log("FILTER NAME:", name)
+
 				if (name || type) {
 					allEvents = allEvents.filter((event) => {
-						return event[type] === name;
+						console.log("FILTERING", event[type])
+						let isVolunteerMatching = false
+
+						for (var volunteer of event[type]) {
+							if (volunteer.name == name) {
+								isVolunteerMatching = true
+							}
+						}
+
+						return isVolunteerMatching;
 					});
 				}
+
+				console.log("FILTERED:", allEvents)
+
 				commit('SET_INIT_INSTANCES', allEvents);
 			} catch (e) {
 				dispatch('updateSnackMessage', `Error at ${e}`, { root: true });
@@ -199,9 +216,12 @@ const storeCalendar = {
 
 		async deleteEvent({ commit, state, getters, dispatch }, payload) {
 			try {
+				console.log("HELLO DELETE")
 				if (!payload.isRecurring) {
+					console.log("DELETE REC")
 					if (!payload.actionType) {
 						try {
+							// console.log("WHEN THIS DELETE iS CALLED 1")
 							let exceptionIndex = getters.getIndexException(payload);
 							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
 							commit('DELETE_EXCEPTION', exceptionIndex);
@@ -209,13 +229,30 @@ const storeCalendar = {
 							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 						}
 					} else {
+						console.log("WHEN THIS DELETE iS CALLED")
 						try {
-							let index = getters.getIndexExceptionDiverged(payload);
+							let index = getters.getIndexExceptionDiverged(payload)
+
+							console.log("Deleting Exception", state.exceptions)
+							console.log("Deleting id", state.exceptions[index].id)
+							console.log("Deleting index", index)
+
+							// var exceptionDeleteQuery = await db.collection('exceptions').where('id','==', payload.id);
+							var exceptionDeleteQuery = collection(db, 'exceptions');
+							var querySnapshot = await getDocs(exceptionDeleteQuery);
+							
+							querySnapshot.forEach((doc) => {
+							  if (doc.data().id === payload.id) {
+								deleteDoc(doc.ref);
+							  }
+							});
+
 							payload.actionType.description = 'deleteInstance';
-							await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
-							//commit('DELETE_EXCEPTION', index);
+							// await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
+							commit('DELETE_EXCEPTION', index);
 							commit('UPDATE_EXCEPTION', { index, payload });
 						} catch(e) {
+							console.log("ERROR", e)
 							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 						}
 					}
