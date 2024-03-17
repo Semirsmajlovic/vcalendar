@@ -37,6 +37,7 @@
                                 label="Shift Title (Optional)"
                                 hint="Enter a descriptive title for the shift, if desired."
                                 type="text"
+                                :rules="[v => v.length <= 25 || 'Max 25 characters']"
                             ></v-text-field>
                         </v-col>
                     </v-row>
@@ -847,7 +848,6 @@ export default {
         }
 
         // ============================================================================================ //
-
 
     },
 };

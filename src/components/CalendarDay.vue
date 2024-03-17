@@ -1,6 +1,12 @@
 <template>
     <v-container fluid class="event__inner pt-1">
         <v-row no-gutters>
+            <v-col>
+                <span class="text-caption font-weight-bold">{{ event.shiftTitle || (event.isRecurring ? "Recurring Shift" : "Single Occurrence Shift") }}</span>
+            </v-col>
+        </v-row>
+        <v-divider class="grey darken-1 mb-1 mt-1"></v-divider>
+        <v-row no-gutters>
             <v-col cols="12">
                 <div class="text-caption font-weight-bold">Available Spots:</div>
                 <div :class="{ 'strikethrough': availableVolunteerSpots === 0 }" class="text-caption mb-n1">Volunteers: <strong>{{ availableVolunteerSpots }}</strong></div>
@@ -76,10 +82,8 @@ export default {
 <style lang="scss" scoped>
 /* day event container styling */
 .event__inner {
-    background-color: #f1f3f4;
-    color: #333 !important;
-    border-top: 3px solid #2091ea;
-
+    outline: 1px solid #cccccc; /* Light gray outline */
+    outline-offset: -1px; /* Adjusts the outline to be inside the element if needed */
     &:hover {
         background-color: #e3eefa;
     }
