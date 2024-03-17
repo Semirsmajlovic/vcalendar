@@ -48,7 +48,6 @@
                 event-text-color="#333"
                 :event-height="135"
                 :events-more="false"
-                :event-margin-bottom="5"
                 :show-week="false"
                 @click:event="handleClickEvent"
                 @click:date="handleClickDate"
