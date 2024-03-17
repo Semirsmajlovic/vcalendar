@@ -73,15 +73,7 @@ const storeCalendar = {
 				// If name and type is provided, filter allEvents to that participant only
 				if (name || type) {
 					allEvents = allEvents.filter((event) => {
-						let isVolunteerMatching = false
-
-						for (var volunteer of event[type]) {
-							if (volunteer.name == name) {
-								isVolunteerMatching = true
-							}
-						}
-
-						return isVolunteerMatching;
+						return event[type] === name;
 					});
 				}
 				commit('SET_INIT_INSTANCES', allEvents);
@@ -218,20 +210,10 @@ const storeCalendar = {
 						}
 					} else {
 						try {
-							let index = getters.getIndexExceptionDiverged(payload)
-
-							var exceptionDeleteQuery = collection(db, 'exceptions');
-							var querySnapshot = await getDocs(exceptionDeleteQuery);
-							
-							querySnapshot.forEach((doc) => {
-							  if (doc.data().id === payload.id) {
-								deleteDoc(doc.ref);
-							  }
-							});
-
+							let index = getters.getIndexExceptionDiverged(payload);
 							payload.actionType.description = 'deleteInstance';
-							// await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
-							commit('DELETE_EXCEPTION', index);
+							await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
+							//commit('DELETE_EXCEPTION', index);
 							commit('UPDATE_EXCEPTION', { index, payload });
 						} catch(e) {
 							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });

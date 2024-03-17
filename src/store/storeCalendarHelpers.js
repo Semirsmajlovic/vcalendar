@@ -38,11 +38,6 @@ export function getNamesInView(allEvents, current, type) {
                 return [];
             }
         });
-
-		console.log("All Events", allEvents)
-
-		console.log("NAMES", names)
-
         const sortedNames = names.sort((a, b) => {
             return a.split(' ')[1].localeCompare(b.split(' ')[1]);
         });
