@@ -505,6 +505,9 @@ export default {
 
 
         async removeEvent(payload, removeType) {
+            console.log("DELETE", removeType)
+            console.log("DELETE !", payload.isRecurring)
+            console.log("DELETE !", payload.actionType)
             if (payload.isRecurring) {
                 switch (removeType) {
                     case "deleteInstance": {
