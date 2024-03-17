@@ -300,8 +300,7 @@ export default {
             localSelectedEvent: { // Local state of the event being edited or created
                 shiftTitle: "", // Title of the shift/event
                 volunteerLimit: 3, // Maximum number of volunteers allowed
-                driverHelperLimit: 2, // Maximum number of drivers/helpers allowed
-                isRecurring: false
+                driverHelperLimit: 2 // Maximum number of drivers/helpers allowed
             },
             newEvent: false, // Flag to indicate if a new event is being created
             weekdayNames: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"], // Array of weekday abbreviations for recurrence pattern
