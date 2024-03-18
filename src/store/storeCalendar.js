@@ -61,13 +61,6 @@ const storeCalendar = {
 					clNames
 				]);
 
-				/*
-					payload: {
-						focus: ""
-						name: "Semir 1"
-						type: "volunteerNames"
-					}
-				*/
 				let { name, type } = payload;
 
 				// If name and type is provided, filter allEvents to that participant only
@@ -89,8 +82,6 @@ const storeCalendar = {
 				dispatch('updateSnackMessage', `Error at ${e}`, { root: true });
 			}
 		},
-
-
 
 		async actionCreateNewEvent({ commit, dispatch }, payload) {
 			try {
