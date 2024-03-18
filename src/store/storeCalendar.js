@@ -73,7 +73,15 @@ const storeCalendar = {
 				// If name and type is provided, filter allEvents to that participant only
 				if (name || type) {
 					allEvents = allEvents.filter((event) => {
-						return event[type] === name;
+						let isMatching = false;
+						if (event[type] && Array.isArray(event[type])) { // Ensure the property exists and is an array
+							for (var participant of event[type]) {
+								if (participant.name == name) {
+									isMatching = true;
+								}
+							}
+						}
+						return isMatching;
 					});
 				}
 				commit('SET_INIT_INSTANCES', allEvents);

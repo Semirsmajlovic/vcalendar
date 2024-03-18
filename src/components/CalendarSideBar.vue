@@ -65,7 +65,7 @@
                             <v-list-item
                                 link
                                 dense
-                                @click="eventsByName(item, 'driverHelper')"
+                                @click="eventsByName(item, 'driverHelperNames')"
                                 :class="item === getSelectedParticipant.name ? 'blue' : ''"
                             >
                                 <v-list-item-title :class="item === getSelectedParticipant.name ? 'white--text' : ''">
