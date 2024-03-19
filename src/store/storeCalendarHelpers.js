@@ -26,8 +26,8 @@ export function getFocus(focus) {
 // ♻️ Success: Returns unique names in the Sidebar.
 
 export function getNamesInView(allEvents, current, type) {
-	try {
-		const focusedMonth = getFocus(current);
+    try {
+        const focusedMonth = getFocus(current);
         const filteredEvents = allEvents.filter((event) => {
             return event.start.includes(focusedMonth);
         });
@@ -38,15 +38,20 @@ export function getNamesInView(allEvents, current, type) {
                 return [];
             }
         });
-        const sortedNames = names.sort((a, b) => {
-            return a.split(' ')[1].localeCompare(b.split(' ')[1]);
+        // Filter out any names that are null, undefined, or do not contain a space
+        const filteredNames = names.filter(name => name && name.includes(' '));
+        const sortedNames = filteredNames.sort((a, b) => {
+            // Split names and compare last names; if names do not have a last name, compare the full name
+            const lastNameA = a.split(' ')[1] || a;
+            const lastNameB = b.split(' ')[1] || b;
+            return lastNameA.localeCompare(lastNameB);
         });
         const uniqueNames = [...new Set(sortedNames)];
         return uniqueNames;
-	}  catch (error) {
-		console.error(`Error in getNamesInView: ${error}`);
-		throw error;
-	}
+    } catch (error) {
+        console.error(`Error in getNamesInView: ${error}`);
+        throw error;
+    }
 }
 
 // ================================================================================= //

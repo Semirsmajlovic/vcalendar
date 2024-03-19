@@ -45,7 +45,6 @@
                     </v-row>
 
 
-
                     <v-row no-gutters>
                         <v-col cols="12" sm="6" class="pr-6">
                             <v-text-field
@@ -67,6 +66,7 @@
                         </v-col>
                     </v-row>
 
+
                     <calendar-event-time
                         :event="localSelectedEvent"
                         @startTimeChanged="
@@ -76,6 +76,7 @@
                             }
                         "
                     ></calendar-event-time>
+
 
                     <v-row v-if="localSelectedEvent.isRecurring || newEvent" align="start" no-gutters>
                         <v-col cols="12">
@@ -88,6 +89,7 @@
                             ></v-checkbox>
                         </v-col>
                     </v-row>
+
 
                     <v-expand-transition>
                         <v-row v-if="localSelectedEvent.isRecurring" no-gutters>
@@ -104,6 +106,7 @@
                             </div>
                         </v-row>
                     </v-expand-transition>
+
 
                     <v-expand-transition>
                         <v-row v-if="localSelectedEvent.isRecurring">
@@ -554,31 +557,21 @@ export default {
             if (payload.isRecurring) {
                 switch (removeType) {
                     case "deleteInstance": {
-                        payload.actionType = this.createActionType(
-                            "deleteInstance",
-                            this.originalData
-                        );
+                        payload.actionType = this.createActionType("deleteInstance", this.originalData);
                         break;
                     }
                     case "deleteForward": {
-                        payload.actionType = this.createActionType(
-                            "deleteForward",
-                            ""
-                        );
+                        payload.actionType = this.createActionType("deleteForward", "");
                         break;
                     }
                     case "deleteAll": {
-                        payload.actionType = this.createActionType(
-                            "deleteAll",
-                            ""
-                        );
+                        payload.actionType = this.createActionType("deleteAll", "");
                         break;
                     }
                     default:
                         this.updateSnackMessage(`No actionType in removeEvent`);
                 }
             }
-
             try {
                 await this.deleteEvent(payload);
                 this.updateSnackMessage("Event deleted");
@@ -595,13 +588,11 @@ export default {
             if (!payload.isRecurring) {
                 return "";
             }
-
             let year = new Date(payload.start).getFullYear();
             let monthUTC = new Date(payload.start).getUTCMonth();
             let day = payload.start.substr(8, 2);
             let hour = payload.start.substr(11, 2);
             let minutes = payload.start.substr(14, 2);
-
             const rule = new RRule({
                 freq: RRule.WEEKLY,
                 byweekday:
@@ -651,18 +642,14 @@ export default {
         },
 
         changeDTSTARTdate(dateUpdated) {
-            // Updating forward requires rruleStringToReplace ( payload.rruleString )'s DTSTART date portion to be updated with date of dateUpdated (payload.start)
-
             if (!this.localSelectedEvent.isRecurring) {
                 return;
             }
-
             let dateForward = dateUpdated.slice(0, 10).replaceAll("-", "");
             let currentDtstartDate = this.localSelectedEvent.rruleString.slice(
                 8,
                 16
             );
-
             this.localSelectedEvent.rruleString = this.replacer(
                 this.localSelectedEvent.rruleString,
                 currentDtstartDate,
