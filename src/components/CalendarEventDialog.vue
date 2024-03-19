@@ -128,13 +128,14 @@
                         </v-row>
                     </v-expand-transition>
 
+
                     <v-row class="mt-3" no-gutters>
                         <v-col cols="12" sm="12">
-                            <v-alert outlined text dense>
-                                <span class="text-overline">Shift Details:</span>
+                            <v-alert outlined dense class="grey lighten-3">
+                                <span class="text-body-2 font-weight-bold">Shift Details:</span>
                                 <template v-if="localSelectedEvent.isRecurring">
                                     <div class="text-body-2">
-                                        Shifts start on 
+                                        Shift start on 
                                         {{ dateStartSentence(localSelectedEvent.rruleString) }}
                                         {{ rruleDescription(localSelectedEvent.rruleString) }}
                                     </div>
@@ -148,6 +149,33 @@
                             </v-alert>
                         </v-col>
                     </v-row>
+
+
+                    <v-row justify="center" no-gutters v-if="safeVolunteerNames.length > 0 || safeDriverHelperNames.length > 0">
+                        <v-expansion-panels accordion focusable>
+                            <v-expansion-panel v-if="safeVolunteerNames.length > 0">
+                                <v-expansion-panel-header>Volunteers</v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <v-data-table
+                                        :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }]"
+                                        :items="safeVolunteerNames"
+                                        hide-default-footer
+                                    ></v-data-table>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                            <v-expansion-panel v-if="safeDriverHelperNames.length > 0">
+                                <v-expansion-panel-header>Driver / Driver Helpers</v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <v-data-table
+                                        :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }]"
+                                        :items="safeDriverHelperNames"
+                                        hide-default-footer
+                                    ></v-data-table>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                        </v-expansion-panels>
+                    </v-row>
+
 
                 </v-card-text>
 
@@ -324,6 +352,8 @@ export default {
             localUNTIL: "", // Date until which the event recurs
             localBYDAY: [], // Days of the week on which the event recurs
             rruleDescriptionCache: {},
+            volunteerNames: [],
+            driverHelperNames: [],
             deleteOptions: [ // Options for deleting events
                 {
                     title: "Delete this instance", // Option to delete a single instance of a recurring event
@@ -363,6 +393,12 @@ export default {
             "getSelectedParticipant",
             "newEventSignal",
         ]),
+        safeVolunteerNames() {
+        return this.localSelectedEvent.volunteerNames || [];
+        },
+        safeDriverHelperNames() {
+            return this.localSelectedEvent.driverHelperNames || [];
+        }
     },
 
 
