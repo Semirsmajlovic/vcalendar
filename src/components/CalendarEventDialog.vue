@@ -30,7 +30,9 @@
                 <!-- End: Toolbar -->
 
                 <v-card-text>
-                    <v-row>
+
+
+                    <v-row no-gutters class="pt-6">
                         <v-col cols="12">
                             <v-text-field
                                 v-model="localSelectedEvent.shiftTitle"
@@ -42,8 +44,10 @@
                         </v-col>
                     </v-row>
 
-                    <v-row>
-                        <v-col cols="12" sm="6">
+
+
+                    <v-row no-gutters>
+                        <v-col cols="12" sm="6" class="pr-6">
                             <v-text-field
                                 v-model="localSelectedEvent.volunteerLimit"
                                 hint="Provide number of allowed volunteers."
@@ -73,13 +77,11 @@
                         "
                     ></calendar-event-time>
 
-                    <v-row 
-                        v-if="localSelectedEvent.isRecurring || newEvent"
-                        align="start"
-                    >
+                    <v-row v-if="localSelectedEvent.isRecurring || newEvent" align="start" no-gutters>
                         <v-col cols="12">
                             <span>Choose Shift Type:</span>
                             <v-checkbox
+                                class="mt-1"
                                 v-model="localSelectedEvent.isRecurring"
                                 :label="`Recurring`"
                                 :disabled="localSelectedEvent.isRecurring && !newEvent"
