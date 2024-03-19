@@ -141,8 +141,8 @@ const storeCalendar = {
 				}
 			} else {
 				switch (payload.actionType.description) {
-					case 'updateAll': {
 
+					case 'updateAll': {
 						try {
 							let index = getters.getIndexEvent(payload);
 							if (index !== -1) {
@@ -156,15 +156,21 @@ const storeCalendar = {
 						}
 						break;
 					}
+
+					// Functions the same as original.
 					case 'updateInstance': {
-						payload.actionType.description = 'updateInstance';
-						payload.isRecurring = false;
-						payload.rruleString = '';
-						const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
-						payload.id = exceptionDocRef.id;
-						commit('ADD_EXCEPTION', payload);
+						try {
+							payload.actionType.description = 'updateInstance';
+							payload.isRecurring = false;
+							payload.rruleString = '';
+							console.log('[storeCalendar/updateEvent]: ', payload);
+							commit('ADD_EXCEPTION', payload);
+						} catch(e) {
+							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+						}
 						break;
 					}
+					
 					case 'updateForward': {
 						try {
 								let index = getters.getIndexEvent(payload);
@@ -180,7 +186,6 @@ const storeCalendar = {
 								recurringObjGoingForward.id = newEventDocRef.id; // Update with new Firestore document ID
 								commit('ADD_SHIFT', recurringObjGoingForward); // Add the new event to Vuex state
 						} catch (e) {
-							console.error("Error in updateForward: ", e);
 							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 						}
 						break;

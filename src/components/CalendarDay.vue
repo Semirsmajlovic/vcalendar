@@ -19,7 +19,7 @@
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                         <!-- Show this button if the user is logged in -->
-                        <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Participants</v-btn>
+                        <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Update</v-btn>
                         <!-- Show this button if the user is not logged in -->
                         <v-btn v-else class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Volunteer</v-btn>
                     </template>
