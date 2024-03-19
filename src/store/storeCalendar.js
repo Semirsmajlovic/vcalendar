@@ -31,13 +31,11 @@ const storeCalendar = {
 					}
 					return { id: doc.id, ...data };
 				});
-				console.log("[storeCalendar.js/initInstances/events]: ", events);
 
 				// Fetch exceptions from Firestore
 				const exceptionsCollectionRef = collection(db, "exceptions");
 				const exceptionsSnapshot = await getDocs(exceptionsCollectionRef);
 				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-				console.log("[storeCalendar.js/initInstances/exceptions]: ", exceptions);
 
 				// Set the Vuex state.
 				commit('SET_INIT_RECURRING_SHIFTS', events);

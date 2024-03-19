@@ -5,7 +5,6 @@ module.exports = {
   publicPath: (() => {
     try {
       const envPath = process.env.NODE_ENV === 'production' ? '/' : '/';
-      console.log(`Setting publicPath to ${envPath}`);
       return envPath;
     } catch (error) {
       console.error(`Error setting publicPath: ${error}`);

@@ -131,22 +131,17 @@ export default {
             get: function () {
                 try {
                     if (!this.shifts.length) {
-                        console.log("No shifts found.");
                         return 0;
                     }
                     const total = this.shifts.reduce((sum, shift) => {
                         const duration = parseFloat(shift.duration);
                         if (isNaN(duration)) {
-                            console.warn(`Invalid duration encountered: ${shift.duration}`);
                             return sum;
                         }
                         return sum + duration;
                     }, 0);
-
-                    console.log(`Total hours calculated: ${total}`);
                     return total;
                 } catch (error) {
-                    console.error("Error calculating total hours:", error);
                     return 0; // Return 0 in case of any error
                 }
             },

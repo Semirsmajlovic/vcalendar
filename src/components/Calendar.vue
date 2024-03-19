@@ -172,7 +172,6 @@ export default {
                 this.newDay = day; // Sets the newDay object to the day parameter, preparing it for a new event
                 this.$store.dispatch("storeCalendar/adminShiftDialogOpen", true) // Dispatches an action to open the shift creation dialog
                     .then(() => {
-                        console.log('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Dialog opened successfully.'); // Logs success message on successful dialog opening
                     })
                     .catch(error => {
                         console.error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Failed to open dialog: ', error); // Logs error if dialog opening fails
@@ -191,7 +190,6 @@ export default {
             this.selectedShift = {}; // Clears the selected shift data
             this.originalData = {}; // Clears the original data stored for comparison or rollback
             this.newDay = {}; // Resets the newDay object, clearing any data prepared for a new event
-            console.log('[Calendar.vue/resetShiftData]: Shift data has been reset.'); // Logs a message indicating that the shift data has been reset
         },
 
         // ========================================================================================== //
@@ -213,7 +211,6 @@ export default {
             this.isBusy = true;
             try {
                 const result = await this.initInstances({ focus: this.focus, name: this.getSelectedParticipant.name, type: this.getSelectedParticipant.type });
-                console.log("[Calendar.vue/loadAndUpdateShifts]: ", result);
             } catch (e) {
                 this.updateSnackMessage(`Error loading ${e} `); // Displays an error message if the initialization fails
             } finally {

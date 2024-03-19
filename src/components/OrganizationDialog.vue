@@ -102,10 +102,8 @@ export default {
 
             emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams, 'nQeNPSgRwskhINwUu')
                 .then((response) => {
-                    console.log('SUCCESS!', response.status, response.text);
                     this.dialog = false; // Close the dialog on success
                 }, (error) => {
-                    console.log('FAILED...', error);
                 });
         }
     }

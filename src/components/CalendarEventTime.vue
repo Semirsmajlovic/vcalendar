@@ -78,7 +78,6 @@ export default {
     computed: {
         compuStart: {
             get: function (getTime) {
-                console.log("CalendarEventTime.vue/compustart/get]: ", this.timeOnly(this.event.start));
                 return this.timeOnly(this.event.start);
             },
             set: function (setTime) {

@@ -117,9 +117,6 @@ export default {
             this.dialog = newVal; // Syncs the dialog visibility with the external prop value
         },
         dialog(newVal) {
-            if (newVal) {
-                console.log(this.selectedShift); // Logs the selected shift details when the dialog is opened
-            }
             if (!newVal) {
                 this.$emit('input', newVal); // Emits an event to update the parent component about the dialog's closure
             }
