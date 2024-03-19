@@ -38,6 +38,3 @@ module.exports = {
     }
   }
 };
-
-// Logging the final configuration for debugging purposes
-console.log('vue.config.js is configured successfully.');
