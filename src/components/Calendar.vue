@@ -66,7 +66,7 @@
         </v-col>
       </v-row>
       <calendar-event-dialog
-        :newDay="newDay"
+        :dateForNewShift="dateForNewShift"
         :selectedEvent="selectedShift"
         :selectedWeekdayNum="selectedWeekdayNum"
         :originalData="originalData"
@@ -106,7 +106,7 @@ export default {
             selectedShift: {},
             originalData: {}, // Keep the original data for reference before user updates form. Used in updateInstance for recurring shifts
             selectedWeekdayNum: 0,
-            newDay: {},
+            dateForNewShift: {},
             shifts: [],
             isBusy: false,
             showVolunteerDialog: false,
@@ -169,10 +169,9 @@ export default {
                 this.selectedWeekdayNum = day.weekday; // Sets the selected weekday number based on the day object
                 this.selectedShift = {}; // Resets the selected shift data, preparing for a new shift creation
                 this.originalData = {}; // Clears any original data stored for comparison or rollback
-                this.newDay = day; // Sets the newDay object to the day parameter, preparing it for a new event
+                this.dateForNewShift = day; // Sets the dateForNewShift object to the day parameter, preparing it for a new event
                 this.$store.dispatch("storeCalendar/adminShiftDialogOpen", true) // Dispatches an action to open the shift creation dialog
-                    .then(() => {
-                    })
+                    .then(() => {})
                     .catch(error => {
                         console.error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Failed to open dialog: ', error); // Logs error if dialog opening fails
                         this.resetShiftData(); // Resets shift data on failure to open dialog
@@ -189,7 +188,7 @@ export default {
             this.selectedWeekdayNum = 0; // Resets the selected weekday number to its default value
             this.selectedShift = {}; // Clears the selected shift data
             this.originalData = {}; // Clears the original data stored for comparison or rollback
-            this.newDay = {}; // Resets the newDay object, clearing any data prepared for a new event
+            this.dateForNewShift = {}; // Resets the dateForNewShift object, clearing any data prepared for a new event
         },
 
         // ========================================================================================== //
@@ -198,7 +197,7 @@ export default {
             this.selectedWeekdayNum = eventParsed.start.weekday; // Sets the weekday number of the event start date
             this.selectedShift = this.getCurrentEvent(event); // Retrieves and sets the current event data
             this.originalData = { ...this.selectedShift }; // Creates a copy of the selectedShift to keep original data before any updates
-            this.newDay = {}; // Resets newDay, preparing for a new event creation or update
+            this.dateForNewShift = {}; // Resets dateForNewShift, preparing for a new event creation or update
             nativeEvent.stopPropagation(); // Prevents the click event from bubbling up to parent elements
             this.adminShiftDialogOpen(true); // Opens the dialog for editing or viewing the event details
         },
@@ -220,7 +219,7 @@ export default {
                     this.getSelectedParticipant.name,
                     this.getSelectedParticipant.type
                 );
-                this.newDay = {};
+                this.dateForNewShift = {};
                 this.selectedShift = {};
             }
         },

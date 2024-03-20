@@ -312,7 +312,7 @@ export default {
                 return {};
             },
         },
-        newDay: {
+        dateForNewShift: {
             type: Object,
             default() {
                 return {};
@@ -399,9 +399,9 @@ export default {
     watch: {
 
 
-        newDay(val) {
+        dateForNewShift(val) {
             if (this.objectHasProperties(val)) {
-                this.openAdminShiftDialogAndPopulateDefaultData(val); // Creates a new event using the provided date if the newDay object has properties
+                this.openAdminShiftDialogAndPopulateDefaultData(val); // Creates a new event using the provided date if the dateForNewShift object has properties
             }
         },
 
