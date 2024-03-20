@@ -13,7 +13,7 @@
             v-model="eventOpen" 
             persistent 
             max-width="720"
-            @click:outside="closeDialog(false)"
+            @click:outside="closeAdminShiftDialog(false)"
         >
             <v-card>
 
@@ -23,7 +23,7 @@
                         {{ newEvent ? 'Create Event' : 'Update Event' }}
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-btn depressed @click="closeDialog(false)">
+                    <v-btn depressed @click="closeAdminShiftDialog(false)">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </v-toolbar>
@@ -525,7 +525,7 @@ export default {
             } catch (e) {
                 this.updateSnackMessage(`Error ${e}`);
             } finally {
-                this.closeDialog();
+                this.closeAdminShiftDialog();
             }
         },
 
@@ -540,8 +540,8 @@ export default {
             } catch (e) {
                 this.updateSnackMessage(`Error ${e}`);
             } finally {
-                this.newEvent = false;
-                this.closeDialog();
+                this.newEvent = false; // Set newEvent as false.
+                this.closeAdminShiftDialog(); // 
             }
         },
 
@@ -582,10 +582,10 @@ export default {
             } catch (e) {
                 this.updateSnackMessage(`Error ${e}`);
             } finally {
-                this.closeDialog();
+                this.closeAdminShiftDialog();
             }
         },
-        closeDialog() {
+        closeAdminShiftDialog() {
             this.adminShiftDialogOpen(false);
         },
         createRRULEString(payload) {

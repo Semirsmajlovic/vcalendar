@@ -81,29 +81,25 @@ const storeCalendar = {
 			}
 		},
 
+        // ===================================================================================== //
+
+		// Execution:
+        // - Step 2: The function "saveNewEvent" in CalendarEventDialog.vue is triggered before this.
 		async actionCreateNewEvent({ commit, dispatch }, payload) {
 			try {
-				let collectionRef; // Set the collectionRef
-				if (!payload.isRecurring) { // Is payload {id: dfvf, caregiver: "", recurring: false} false?
-					collectionRef = collection(db, "exceptions"); // Set as exceptions database.
-				} else {
-					collectionRef = collection(db, "events"); // Set as events database.
-				}
-				const plainPayload = { ...payload }; // Sets a plain object: {id: dfvf, caregiver: "", recurring: false}
-				const docRef = await addDoc(collectionRef, plainPayload);
-				payload.id = docRef.id; // Update the payload with the Firestore document ID
-				if (!payload.isRecurring) { // Is payload an exception?
-					commit('ADD_EXCEPTION', payload); // Commit the change
-				} else {
-					commit('ADD_SHIFT', payload); // Commit the change
-				}
+				const collectionName = payload.isRecurring ? "events" : "exceptions";
+				const collectionRef = collection(db, collectionName);
+				const docRef = await addDoc(collectionRef, payload);
+				payload.id = docRef.id;
+				const mutationName = payload.isRecurring ? 'ADD_SHIFT' : 'ADD_EXCEPTION';
+				commit(mutationName, payload);
 			} catch (e) {
-				console.error("[storeCalendar.js/actionCreateNewEvent]: Error adding document: ", e);
-				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+				console.error(`[storeCalendar.js/actionCreateNewEvent]: Error adding document: ${e}`);
+				dispatch('updateSnackMessage', `Error: ${e.message}`, { root: true });
 			}
 		},
 
-
+        // ===================================================================================== //
 		
 		async updateEvent({ commit, state, getters, dispatch }, payload) {
 			let docRef;
