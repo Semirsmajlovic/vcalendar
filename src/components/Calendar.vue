@@ -67,7 +67,7 @@
       </v-row>
       <calendar-event-dialog
         :dateForNewShift="dateForNewShift"
-        :selectedEvent="selectedShift"
+        :updateLocalStateOnShiftSelectionChange="selectedShift"
         :selectedWeekdayNum="selectedWeekdayNum"
         :originalData="originalData"
         @refresh="loadAndUpdateShifts()"

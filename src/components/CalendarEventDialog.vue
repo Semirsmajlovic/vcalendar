@@ -1,12 +1,3 @@
-<!-- 
-    - Create Shift:
-      - Shift Title (Optional): shiftTitle
-      - Volunteer Limit: volunteerLimit
-      - Driver Limit: driverLimit
-
-      - Recurring
- -->
-
 <template>
     <v-form ref="form" v-model="valid">
         <v-dialog 
@@ -306,7 +297,7 @@ export default {
         CalendarUntilDatePicker,
     },
     props: {
-        selectedEvent: {
+        updateLocalStateOnShiftSelectionChange: {
             type: Object,
             default() {
                 return {};
@@ -401,18 +392,22 @@ export default {
         // ===================================================================================== //
         // Watch - Observe and react to data changes.
 
-        // Instructions:
-        // Step 1: Click "Calendar Date" -> Watch is triggered.
+        // Execution:
+        // Step 1: Click on "Calendar Day".
         dateForNewShift(val) {
             if (this.objectHasProperties(val)) {
                 this.openAdminShiftDialogAndPopulateDefaultData(val);
+                console.log("[CalendarEventDialog.vue/dateForNewShift]: Watch has triggered.");
             }
         },
 
         // ===================================================================================== //
         // Watch - Observe and react to data changes.
 
-        selectedEvent(val, oldVal) {
+        // Execution:
+        // Page Load: Blank Object.
+        // Event Click: Returns Shift Object.
+        updateLocalStateOnShiftSelectionChange(val) {
             if (this.objectHasProperties(val)) {
                 this.newEvent = false;
                 this.localSelectedEvent = val;
@@ -420,28 +415,28 @@ export default {
             this.localBYDAY = this.getBYDAY(this.localSelectedEvent.rruleString);
             this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
             this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
+            console.log("[CalendarEventDialog.vue/updateLocalStateOnShiftSelectionChange]: Watch has triggered.", val);
         },
 
         // ===================================================================================== //
+        // Watch - Observe and react to data changes.
 
         localSelectedEvent: {
             deep: true,
-            handler(val, oldVal) {
-                if (this.newEvent && this.localSelectedEvent.isRecurring) {
-                    // If creating a new recurring event, generate and assign the RRule string
-                    this.localSelectedEvent.rruleString = this.createRRULEString(this.localSelectedEvent);
-                    // Update the interval based on the newly generated RRule string
-                    this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
-                    // Update the UNTIL date based on the newly generated RRule string
-                    this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
-                }
-                if (this.newEvent && !this.localSelectedEvent.isRecurring) {
-                    // If creating a new non-recurring event, clear the RRule string
-                    this.localSelectedEvent.rruleString = "";
+            handler() {
+                if (this.newEvent) {
+                    if (this.localSelectedEvent.isRecurring) {
+                        this.localSelectedEvent.rruleString = this.createRRULEString(this.localSelectedEvent);
+                        this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
+                        this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
+                    } else {
+                        this.localSelectedEvent.rruleString = "";
+                    }
                 }
             },
         },
 
+        // ===================================================================================== //
 
         newEventSignal() {
             this.$emit("refresh"); // Emits a "refresh" event to the parent component
