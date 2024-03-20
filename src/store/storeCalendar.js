@@ -199,31 +199,30 @@ const storeCalendar = {
 
 				if (!payload.isRecurring) {
 					if (!payload.actionType) {
-
-
-						console.log("We are here 1");
-
-						// try {
-						// 	let exceptionIndex = getters.getIndexException(payload);
-						// 	await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
-						// 	commit('DELETE_EXCEPTION', exceptionIndex);
-						// } catch(e) {
-						// 	dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
-						// }
-
-
-
+						// [WORKS]: Create Single Shift -> Click "Delete" -> Shift is removed.
+						// [WORKS]: Create Single Shift -> Update Shift -> Click "Delete" -> Shift is removed.
+						try {
+							let exceptionIndex = getters.getIndexException(payload);
+							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
+							commit('DELETE_EXCEPTION', exceptionIndex);
+						} catch(e) {
+							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+						}
 					} else {
+
+						console.log("We are here 2");
 
 						// Update Recurring Event -> Turns to Single Event -> Delete Single Event.
 
 						try {
 							let index = getters.getIndexExceptionDiverged(payload);
 							payload.actionType.description = 'deleteInstance';
-							console.log("Index: ", index);
+							console.log("Index: ", payload);
 						} catch (e) {
 							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
 						}
+
+
 						
 						// try {
 						// 	let index = getters.getIndexExceptionDiverged(payload);
