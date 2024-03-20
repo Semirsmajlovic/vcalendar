@@ -35,7 +35,7 @@
                     <v-row no-gutters class="pt-6">
                         <v-col cols="12">
                             <v-text-field
-                                v-model="localSelectedEvent.shiftTitle"
+                                v-model="localSelectedShift.shiftTitle"
                                 label="Shift Title (Optional)"
                                 hint="Enter a descriptive title for the shift, if desired."
                                 type="text"
@@ -48,7 +48,7 @@
                     <v-row no-gutters>
                         <v-col cols="12" sm="6" class="pr-6">
                             <v-text-field
-                                v-model="localSelectedEvent.volunteerLimit"
+                                v-model="localSelectedShift.volunteerLimit"
                                 hint="Provide number of allowed volunteers."
                                 label="Volunteer Limit"
                                 type="number"
@@ -57,7 +57,7 @@
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field
-                                v-model="localSelectedEvent.driverHelperLimit"
+                                v-model="localSelectedShift.driverHelperLimit"
                                 hint="Provide number of allowed drivers and/or helpers."
                                 label="Driver / Helper Limit"
                                 type="number"
@@ -68,7 +68,7 @@
 
 
                     <calendar-event-time
-                        :event="localSelectedEvent"
+                        :event="localSelectedShift"
                         @startTimeChanged="
                             (...args) => {
                                 updateRecurringEventStartTime(...args), 
@@ -78,21 +78,21 @@
                     ></calendar-event-time>
 
 
-                    <v-row v-if="localSelectedEvent.isRecurring || newEvent" align="start" no-gutters>
+                    <v-row v-if="localSelectedShift.isRecurring || newEvent" align="start" no-gutters>
                         <v-col cols="12">
                             <span>Choose Shift Type:</span>
                             <v-checkbox
                                 class="mt-1"
-                                v-model="localSelectedEvent.isRecurring"
+                                v-model="localSelectedShift.isRecurring"
                                 :label="`Recurring`"
-                                :disabled="localSelectedEvent.isRecurring && !newEvent"
+                                :disabled="localSelectedShift.isRecurring && !newEvent"
                             ></v-checkbox>
                         </v-col>
                     </v-row>
 
 
                     <v-expand-transition>
-                        <v-row v-if="localSelectedEvent.isRecurring" no-gutters>
+                        <v-row v-if="localSelectedShift.isRecurring" no-gutters>
                             <div v-for="dayName in weekdayNames" :key="dayName">
                                 <v-col cols="12" sm="1" class="mr-1">
                                     <v-checkbox
@@ -109,7 +109,7 @@
 
 
                     <v-expand-transition>
-                        <v-row v-if="localSelectedEvent.isRecurring">
+                        <v-row v-if="localSelectedShift.isRecurring">
                             <v-col cols="6" sm="6">
                                 <v-select
                                     v-model="localINTERVAL"
@@ -126,8 +126,8 @@
                             <v-col cols="6" sm="6">
                                 <calendar-until-date-picker
                                     :until="formatUNTILtoType(localUNTIL, '/', 'mmddyyyy')"
-                                    :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
-                                    @untilPicked="(...args) => changeUNTIL(localSelectedEvent.start, ...args)"
+                                    :minimumEventDate="formatDateYYYYMMDD(localSelectedShift.start)"
+                                    @untilPicked="(...args) => changeUNTIL(localSelectedShift.start, ...args)"
                                 ></calendar-until-date-picker>
                             </v-col>
                         </v-row>
@@ -138,15 +138,15 @@
                         <v-col cols="12" sm="12">
                             <v-alert outlined dense class="grey lighten-3">
                                 <span class="text-body-2 font-weight-bold">Shift Details:</span>
-                                <template v-if="localSelectedEvent.isRecurring">
+                                <template v-if="localSelectedShift.isRecurring">
                                     <div class="text-body-2">
                                         Shift start on 
-                                        {{ dateStartSentence(localSelectedEvent.rruleString) }}
-                                        {{ rruleDescription(localSelectedEvent.rruleString) }}
+                                        {{ dateStartSentence(localSelectedShift.rruleString) }}
+                                        {{ rruleDescription(localSelectedShift.rruleString) }}
                                     </div>
                                 </template>
                                 <template v-else>
-                                    <div v-if="localSelectedEvent.hasOwnProperty('actionType')" class="text-body-2">
+                                    <div v-if="localSelectedShift.hasOwnProperty('actionType')" class="text-body-2">
                                         Single-Occurrence Diverged Shift
                                     </div>
                                     <div v-else class="text-body-2">Single-Occurrence Shift</div>
@@ -187,7 +187,7 @@
 
                 <!-- Start: Delete / Update / Create Button -->
                 <v-card-actions>
-                    <div v-if="localSelectedEvent.isRecurring">
+                    <div v-if="localSelectedShift.isRecurring">
                         <v-menu bottom offset-y>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn
@@ -208,7 +208,7 @@
                                 <v-list-item 
                                     v-for="(item, index) in deleteOptions" 
                                     :key="index" 
-                                    @click="removeEvent(localSelectedEvent, item.action)"
+                                    @click="removeEvent(localSelectedShift, item.action)"
                                 >
                                     <v-list-item-title>
                                         {{ item.title }}
@@ -218,7 +218,7 @@
                         </v-menu>
                     </div>
                     <div v-else>
-                        <v-btn :disabled="newEvent" text color="orange" @click="removeEvent(localSelectedEvent)">
+                        <v-btn :disabled="newEvent" text color="orange" @click="removeEvent(localSelectedShift)">
                             Delete
                             <v-icon right dark> mdi-trash-can-outline </v-icon>
                         </v-btn>
@@ -227,12 +227,12 @@
                     <v-spacer></v-spacer>
 
                     <!-- Button to create new recurring event -->
-                    <div v-if="localSelectedEvent.isRecurring && newEvent">
+                    <div v-if="localSelectedShift.isRecurring && newEvent">
                         <v-btn
                             :disabled="!valid && newEvent"
                             depressed
                             color="primary darken-1 white--text"
-                            @click="saveNewEvent(localSelectedEvent)"
+                            @click="saveNewEvent(localSelectedShift)"
                         >
                             Create
                             <v-icon right dark>mdi-content-save</v-icon>
@@ -240,24 +240,24 @@
                     </div>
                 
                     <!-- Button to create new onetime event -->
-                    <div v-else-if="!localSelectedEvent.isRecurring && newEvent">
+                    <div v-else-if="!localSelectedShift.isRecurring && newEvent">
                         <v-btn
                             :disabled="!valid && newEvent"
                             depressed
                             color="green darken-1 white--text"
-                            @click="saveNewEvent(localSelectedEvent)"
+                            @click="saveNewEvent(localSelectedShift)"
                         >
                             Create
                             <v-icon right dark>mdi-content-save</v-icon>
                         </v-btn>
                     </div>
                     <!-- Button update recurring event in store -->
-                    <div v-else-if="localSelectedEvent.isRecurring && !newEvent">
+                    <div v-else-if="localSelectedShift.isRecurring && !newEvent">
                         <v-menu bottom offset-y>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn
                                     depressed
-                                    :color="localSelectedEvent.isRecurring ? 'primary darken-1 white--text' : 'green darken-1 white--text'"
+                                    :color="localSelectedShift.isRecurring ? 'primary darken-1 white--text' : 'green darken-1 white--text'"
                                     v-bind="attrs"
                                     v-on="on"
                                     :disabled="!valid"
@@ -274,7 +274,7 @@
                                 <v-list-item
                                     v-for="(item, index) in saveOptions"
                                     :key="index"
-                                    @click="updateRecurringOrSingleShift(localSelectedEvent, item.action)"
+                                    @click="updateRecurringOrSingleShift(localSelectedShift, item.action)"
                                 >
                                     <v-list-item-title>
                                         {{ item.title }}
@@ -289,7 +289,7 @@
                             :disabled="!valid && newEvent"
                             depressed
                             color="green darken-1 white--text"
-                            @click="updateRecurringOrSingleShift(localSelectedEvent)"
+                            @click="updateRecurringOrSingleShift(localSelectedShift)"
                         >
                             Save
                             <v-icon right dark>mdi-content-save</v-icon>
@@ -345,7 +345,7 @@ export default {
     data() {
         return {
             valid: false, // Form validation state
-            localSelectedEvent: { // Local state of the event being edited or created
+            localSelectedShift: { // Local state of the event being edited or created
                 shiftTitle: "", // Title of the shift/event
                 volunteerLimit: 3, // Maximum number of volunteers allowed
                 driverHelperLimit: 2 // Maximum number of drivers/helpers allowed
@@ -396,13 +396,13 @@ export default {
             "eventOpen",
             "getIndexEvent",
             "getSelectedParticipant",
-            "newEventSignal",
+            "emitRefreshAndResetNewShiftSignal",
         ]),
         safeVolunteerNames() {
-        return this.localSelectedEvent.volunteerNames || [];
+        return this.localSelectedShift.volunteerNames || [];
         },
         safeDriverHelperNames() {
-            return this.localSelectedEvent.driverHelperNames || [];
+            return this.localSelectedShift.driverHelperNames || [];
         }
     },
 
@@ -412,51 +412,49 @@ export default {
 
         newDay(val, oldVal) {
             if (this.objectHasProperties(val)) {
-                this.createEvent(val); // Creates a new event using the provided date if the newDay object has properties
+                this.createNewShift(val); // Creates a new event using the provided date if the newDay object has properties
             }
         },
 
 
         selectedEvent(val, oldVal) {
-            // Copy selectedEvent prop to localSelectedEvent for existing event
+            // Copy selectedEvent prop to localSelectedShift for existing event
             if (this.objectHasProperties(val)) {
                 this.newEvent = false; // Indicates that an existing event is being edited, not a new one created
-                this.localSelectedEvent = val; // Assigns the selected event to the local state for editing
+                this.localSelectedShift = val; // Assigns the selected event to the local state for editing
             }
 
             // Extracts and sets the BYDAY value from the event's RRule string for recurrence pattern
-            this.localBYDAY = this.getBYDAY(this.localSelectedEvent.rruleString);
+            this.localBYDAY = this.getBYDAY(this.localSelectedShift.rruleString);
 
             // Extracts and sets the UNTIL date from the event's RRule string to indicate when recurrence ends
-            this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
+            this.localUNTIL = this.getUNTILstring(this.localSelectedShift.rruleString);
 
             // Extracts and sets the INTERVAL number from the event's RRule string to indicate the frequency of recurrence
-            this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
+            this.localINTERVAL = this.getINTERVALnumber(this.localSelectedShift.rruleString);
         },
 
 
-        localSelectedEvent: {
+        localSelectedShift: {
             deep: true,
-            handler(val, oldVal) {
-                if (this.newEvent && this.localSelectedEvent.isRecurring) {
-                    // If creating a new recurring event, generate and assign the RRule string
-                    this.localSelectedEvent.rruleString = this.createRRULEString(this.localSelectedEvent);
-                    // Update the interval based on the newly generated RRule string
-                    this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
-                    // Update the UNTIL date based on the newly generated RRule string
-                    this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
-                }
-                if (this.newEvent && !this.localSelectedEvent.isRecurring) {
-                    // If creating a new non-recurring event, clear the RRule string
-                    this.localSelectedEvent.rruleString = "";
+            handler(newVal, oldVal) {
+                if (this.newEvent) {
+                    if (newVal.isRecurring) {
+                        newVal.rruleString = this.createRRULEString(newVal);
+                        this.localINTERVAL = this.getINTERVALnumber(newVal.rruleString);
+                        this.localUNTIL = this.getUNTILstring(newVal.rruleString);
+                    } else {
+                        newVal.rruleString = "";
+                    }
                 }
             },
         },
 
 
-        newEventSignal() {
-            this.$emit("refresh"); // Emits a "refresh" event to the parent component
-            this.SET_NEW_EVENT_SIGNAL(false); // Calls the Vuex mutation to set the new event signal state to false
+        // Previous: newEventSignal
+        emitRefreshAndResetNewShiftSignal() {
+            this.$emit("refresh");
+            this.SET_NEW_EVENT_SIGNAL(false);
         },
 
 
@@ -490,22 +488,22 @@ export default {
         },
 
 
-        createEvent({ date }) {
-            this.valid = false; // Resets form validation state
-            this.newEvent = true; // Flags that a new event is being created
-            this.localSelectedEvent = {
-                shiftTitle: "", // Assigns the shift title to the event
-                volunteerLimit: "3", // Assigns the volunteer limit to the event
-                volunteerNames: [], // Assigns the volunteer name to the event
-                driverHelperLimit: "2", // Assigns the driverHelper limit to the event
-                driverHelperNames: [], // Assigns the driverHelper name to the event
-                start: `${date} 08:30`, // Sets the event start time to 12:00 on the selected date
-                end: `${date} 12:30`, // Sets the event end time to 16:00 on the selected date
-                duration: "4", // Sets the event duration to 4 hours
-                isRecurring: false, // Flags the event as non-recurring
-                rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
+        createNewShift({ date }) {
+            this.valid = false;
+            this.newEvent = true;
+            this.localSelectedShift = {
+                shiftTitle: "",
+                volunteerLimit: "3",
+                volunteerNames: [],
+                driverHelperLimit: "2",
+                driverHelperNames: [],
+                start: `${date} 08:30`,
+                end: `${date} 12:30`,
+                duration: "4",
+                isRecurring: false,
+                rruleString: ""
             };
-            this.adminShiftDialogOpen(true); // Opens the event dialog to show the event details form
+            this.adminShiftDialogOpen(true);
         },
 
 
@@ -659,16 +657,16 @@ export default {
          * Previous: changeDTSTARTtime
          */
         updateRecurringEventStartTime(start_time) {
-            if (!this.localSelectedEvent.isRecurring) { // If the shift is not recurring, return.
+            if (!this.localSelectedShift.isRecurring) { // If the shift is not recurring, return.
                 return;
             }
             let formatStart = start_time.replace(":", "") + "00";
-            let replaceText = this.localSelectedEvent.rruleString.substring(
+            let replaceText = this.localSelectedShift.rruleString.substring(
                 17,
-                this.localSelectedEvent.rruleString.indexOf("Z")
+                this.localSelectedShift.rruleString.indexOf("Z")
             );
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
+            this.localSelectedShift.rruleString = this.replacer(
+                this.localSelectedShift.rruleString,
                 replaceText,
                 formatStart,
                 0
@@ -677,16 +675,16 @@ export default {
         },
 
         changeDTSTARTdate(dateUpdated) {
-            if (!this.localSelectedEvent.isRecurring) {
+            if (!this.localSelectedShift.isRecurring) {
                 return;
             }
             let dateForward = dateUpdated.slice(0, 10).replaceAll("-", "");
-            let currentDtstartDate = this.localSelectedEvent.rruleString.slice(
+            let currentDtstartDate = this.localSelectedShift.rruleString.slice(
                 8,
                 16
             );
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
+            this.localSelectedShift.rruleString = this.replacer(
+                this.localSelectedShift.rruleString,
                 currentDtstartDate,
                 dateForward,
                 0
@@ -704,19 +702,19 @@ export default {
         },
 
         changeINTERVAL(interval) {
-            let intervalTextCurrent = this.localSelectedEvent.rruleString.substring(
-                this.localSelectedEvent.rruleString.indexOf("INTERVAL"),
-                this.localSelectedEvent.rruleString.indexOf(
+            let intervalTextCurrent = this.localSelectedShift.rruleString.substring(
+                this.localSelectedShift.rruleString.indexOf("INTERVAL"),
+                this.localSelectedShift.rruleString.indexOf(
                     ";",
-                    this.localSelectedEvent.rruleString.indexOf("INTERVAL")
+                    this.localSelectedShift.rruleString.indexOf("INTERVAL")
                 )
             );
 
             let intervalTextNew = `INTERVAL=${interval}`;
             this.localINTERVAL = interval;
 
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
+            this.localSelectedShift.rruleString = this.replacer(
+                this.localSelectedShift.rruleString,
                 intervalTextCurrent,
                 intervalTextNew,
                 0
@@ -737,17 +735,17 @@ export default {
             if (byDay.length === 0) {
                 return;
             }
-            let byDayCurrentText = this.localSelectedEvent.rruleString.substring(
-                this.localSelectedEvent.rruleString.indexOf("BYDAY"),
-                this.localSelectedEvent.rruleString.indexOf(
+            let byDayCurrentText = this.localSelectedShift.rruleString.substring(
+                this.localSelectedShift.rruleString.indexOf("BYDAY"),
+                this.localSelectedShift.rruleString.indexOf(
                     ";",
-                    this.localSelectedEvent.rruleString.indexOf("BYDAY")
+                    this.localSelectedShift.rruleString.indexOf("BYDAY")
                 )
             );
             let byDayNew = `BYDAY=${byDay.join(",")}`;
             this.localBYDAY = byDay;
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
+            this.localSelectedShift.rruleString = this.replacer(
+                this.localSelectedShift.rruleString,
                 byDayCurrentText,
                 byDayNew,
                 0
@@ -802,9 +800,9 @@ export default {
 
             this.localUNTIL = newUNTILString;
 
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
-                this.localSelectedEvent.rruleString.slice(-16),
+            this.localSelectedShift.rruleString = this.replacer(
+                this.localSelectedShift.rruleString,
+                this.localSelectedShift.rruleString.slice(-16),
                 newUNTILString,
                 0
             );

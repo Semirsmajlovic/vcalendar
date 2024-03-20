@@ -11,7 +11,7 @@ const storeCalendar = {
 	namespaced : true,
 	state: {
 		eventOpen: false, // Dialog open/closed status
-		newEventSignal: false, // Signal to components that an event has been created or deleted to repopulate names
+		emitRefreshAndResetNewShiftSignal: false, // Signal to components that an event has been created or deleted to repopulate names
 		volunteerNames: [], // Previous: caregiverNames | Names of all possible caregivers in view. Used in CalendarSideBar
 		driverHelperNames: [], // Previous: clientNames | Names of all the clients in view in view. Used in CalendarSideBar
 		selectedParticipant: {}, // Sets the calendar's view to this participant when clicking on names in CalendarSideBar
@@ -289,7 +289,7 @@ const storeCalendar = {
 			state.selectedParticipant = participant;
 		},
 		SET_NEW_EVENT_SIGNAL(state, status) {
-			state.newEventSignal = status;
+			state.emitRefreshAndResetNewShiftSignal = status;
 		},
 		SET_NAMES(state, namesArray) {
 			let [
@@ -304,27 +304,27 @@ const storeCalendar = {
 		},
 		ADD_SHIFT(state, payload) {
 			state.events.push(payload);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewShiftSignal = true;
 		},
 		UPDATE_SHIFT(state, { index, updatedShift }) {
 			state.events.splice(index, 1, updatedShift);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewShiftSignal = true;
 		},
 		DELETE_EVENTS_MULTIPLE(state, eventsFound) {
 			state.events = state.events.filter((ev) => !eventsFound.includes(ev));
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewShiftSignal = true;
 		},
 		ADD_EXCEPTION(state, payload) {
 			state.exceptions.push(payload);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewShiftSignal = true;
 		},
 		UPDATE_EXCEPTION(state, { index, payload }) {
 			state.exceptions.splice(index, 1, payload);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewShiftSignal = true;
 		},
 		DELETE_EXCEPTION(state, index) {
 			state.exceptions.splice(index, 1);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewShiftSignal = true;
 		}
 	},
 	getters: {
@@ -337,7 +337,7 @@ const storeCalendar = {
 		eventOpen: (state) => state.eventOpen,
 		getNamesVolunteers: (state) => state.volunteerNames,
 		getNamesDriverHelpers: (state) => state.driverHelperNames,
-		newEventSignal: (state) => state.newEventSignal,
+		emitRefreshAndResetNewShiftSignal: (state) => state.emitRefreshAndResetNewShiftSignal,
 
 
 		getSelectedParticipant: (state) => state.selectedParticipant,
