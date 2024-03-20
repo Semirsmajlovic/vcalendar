@@ -31,7 +31,6 @@
 
                 <v-card-text>
 
-
                     <v-row no-gutters class="pt-6">
                         <v-col cols="12">
                             <v-text-field
@@ -43,8 +42,6 @@
                             ></v-text-field>
                         </v-col>
                     </v-row>
-
-
 
                     <v-row no-gutters>
                         <v-col cols="12" sm="6" class="pr-6">
@@ -130,7 +127,6 @@
                         </v-row>
                     </v-expand-transition>
 
-
                     <v-row class="mt-3" no-gutters>
                         <v-col cols="12" sm="12">
                             <v-alert outlined dense class="grey lighten-3">
@@ -151,7 +147,6 @@
                             </v-alert>
                         </v-col>
                     </v-row>
-
 
                     <v-row justify="center" no-gutters v-if="safeVolunteerNames.length > 0 || safeDriverHelperNames.length > 0">
                         <v-expansion-panels accordion focusable>
@@ -178,9 +173,7 @@
                         </v-expansion-panels>
                     </v-row>
 
-
                 </v-card-text>
-
 
                 <!-- Start: Delete / Update / Create Button -->
                 <v-card-actions>
