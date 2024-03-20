@@ -499,8 +499,8 @@ export default {
                 volunteerNames: [], // Assigns the volunteer name to the event
                 driverHelperLimit: "2", // Assigns the driverHelper limit to the event
                 driverHelperNames: [], // Assigns the driverHelper name to the event
-                start: `${date} 12:00`, // Sets the event start time to 12:00 on the selected date
-                end: `${date} 16:00`, // Sets the event end time to 16:00 on the selected date
+                start: `${date} 08:30`, // Sets the event start time to 12:00 on the selected date
+                end: `${date} 12:30`, // Sets the event end time to 16:00 on the selected date
                 duration: "4", // Sets the event duration to 4 hours
                 isRecurring: false, // Flags the event as non-recurring
                 rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
@@ -667,6 +667,7 @@ export default {
             let endIndex = rruleString.indexOf(";", index);
             return rruleString.substring(index, endIndex);
         },
+
         changeINTERVAL(interval) {
             let intervalTextCurrent = this.localSelectedEvent.rruleString.substring(
                 this.localSelectedEvent.rruleString.indexOf("INTERVAL"),
@@ -701,7 +702,6 @@ export default {
             if (byDay.length === 0) {
                 return;
             }
-
             let byDayCurrentText = this.localSelectedEvent.rruleString.substring(
                 this.localSelectedEvent.rruleString.indexOf("BYDAY"),
                 this.localSelectedEvent.rruleString.indexOf(
@@ -709,7 +709,6 @@ export default {
                     this.localSelectedEvent.rruleString.indexOf("BYDAY")
                 )
             );
-
             let byDayNew = `BYDAY=${byDay.join(",")}`;
             this.localBYDAY = byDay;
             this.localSelectedEvent.rruleString = this.replacer(
@@ -775,16 +774,8 @@ export default {
                 0
             );
         },
+        
         replacer(s, subString, replacement, index) {
-            /**
-             * Generic string replace utility function
-             *
-             * @param {String} s - main String
-             * @param {String} subString - target string to replace
-             * @param {String} replacement - replacement string
-             * @param {String} index - index to start
-             *
-             */
             const p = s.split(subString, index + 1).join(subString);
             return p.length < s.length
                 ? p + replacement + s.slice(p.length + subString.length)
@@ -833,11 +824,6 @@ export default {
 
         // ============================================================================================ //
 
-        /**
-         * Formats the start date of a recurring event as a sentence with the full month name, day with suffix, and year.
-         * @param {String} rruleString - The RRULE string of the recurring event.
-         * @returns {String} The formatted start date sentence.
-         */
          dateStartSentence(rruleString) {
             if (!rruleString) {
                 return '';

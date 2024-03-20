@@ -129,49 +129,43 @@ export default {
     },
     methods: {
         async updateEvent() {
-            try {
-                const shift = this.selectedShift; // Retrieves the selected shift object from component data
-                let docRef;
-                if (shift.isRecurring) {
-                    docRef = doc(db, "events", shift.id); // Sets docRef to a Firestore document reference in the "events" collection if the shift is recurring
-                } else {
-                    docRef = doc(db, "exceptions", shift.id); // Sets docRef to a Firestore document reference in the "exceptions" collection if the shift is not recurring
-                }
-                let updatePayload = {};
-                if (this.selectedRole === 'Volunteer') {
-                    updatePayload = {
-                        volunteerNames: arrayUnion({ 
-                            name: this.volunteerName, 
-                            email: this.volunteerEmail 
-                        }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
-                    };
+    try {
+        const shift = this.selectedShift; // Retrieves the selected shift object from component data
+        let updatePayload = {};
 
+        // Check if the event is recurring and prepare the update payload accordingly
+        if (shift.isRecurring) {
+            // Since we're converting a recurring event to a one-time event, we mimic the Vuex action logic
+            updatePayload = {
+                ...shift, // Spread the existing shift data
+                isRecurring: false, // Mark as not recurring
+                rruleString: '', // Clear the recurrence rule
+            };
 
-                    // EmailJS:
-                    // Prepare the email data
-                    // const emailParams = {
-                    //     to_name: this.volunteerName,
-                    //     message: "Thank you for signing up as a volunteer. We are excited to have you on board!",
-                    //     reply_to: this.volunteerEmail,
-                    // };
-                    // console.log(emailParams);
-                    // await emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams, 'nQeNPSgRwskhINwUu');
-
-
-                } else if (this.selectedRole === 'Driver / Driver Helper') {
-                    updatePayload = {
-                        driverHelperNames: arrayUnion({ 
-                            name: this.driverHelperName, 
-                            email: this.driverHelperEmail 
-                        }) // Prepares the payload to add a new driver/helper to the driverHelperNames array in the document
-                    };
-                }
-                await updateDoc(docRef, updatePayload); // Updates the Firestore document with the new volunteer or driver/helper information
-                this.close(); // Closes the dialog after successful update
-            } catch (error) {
-                console.error("Failed to update event: ", error); // Logs an error if the update fails
+            // Prepare the payload based on the selected role
+            if (this.selectedRole === 'Volunteer') {
+                updatePayload.volunteerNames = [...(shift.volunteerNames || []), {
+                    name: this.volunteerName,
+                    email: this.volunteerEmail
+                }];
+            } else if (this.selectedRole === 'Driver / Driver Helper') {
+                updatePayload.driverHelperNames = [...(shift.driverHelperNames || []), {
+                    name: this.driverHelperName,
+                    email: this.driverHelperEmail
+                }];
             }
-        },
+
+            // Dispatch an action to your Vuex store to handle the update
+            // Assuming you have an action to handle adding an exception or updating an event
+            this.$store.dispatch('storeCalendar/updateEvent', updatePayload);
+
+            // Close the dialog
+            this.close();
+        }
+    } catch (error) {
+        console.error("Failed to update event: ", error);
+    }
+},
         resetDialog() {
             this.clearFields(); // Clears all input fields
             this.dialog = false; // Closes the dialog

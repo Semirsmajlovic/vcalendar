@@ -21,7 +21,7 @@
                         <!-- Show this button if the user is logged in -->
                         <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Update</v-btn>
                         <!-- Show this button if the user is not logged in -->
-                        <v-btn v-else class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Volunteer</v-btn>
+                        <v-btn v-else class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on" :disabled="isDayPassed">Volunteer</v-btn>
                     </template>
                     <span v-if="isLoggedIn">View participants for this shift.</span>
                     <span v-else>Sign up to help with the shift.</span>
@@ -64,6 +64,15 @@ export default {
                 return this.event.driverHelperLimit - this.event.driverHelperNames.length;
             }
             return 0;
+        },
+        isDayPassed() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to 00:00:00 for accurate comparison
+
+            // Assuming this.event.end is in "YYYY-MM-DD HH:MM" format
+            const eventEndDate = parseISO(this.event.end);
+
+            return eventEndDate < today; // Returns true if the event end day has passed
         },
     },
     methods: {
