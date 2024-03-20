@@ -274,7 +274,7 @@
                                 <v-list-item
                                     v-for="(item, index) in saveOptions"
                                     :key="index"
-                                    @click="patchEvent(localSelectedEvent, item.action)"
+                                    @click="updateRecurringOrSingleShift(localSelectedEvent, item.action)"
                                 >
                                     <v-list-item-title>
                                         {{ item.title }}
@@ -289,7 +289,7 @@
                             :disabled="!valid && newEvent"
                             depressed
                             color="green darken-1 white--text"
-                            @click="patchEvent(localSelectedEvent)"
+                            @click="updateRecurringOrSingleShift(localSelectedEvent)"
                         >
                             Save
                             <v-icon right dark>mdi-content-save</v-icon>
@@ -509,7 +509,12 @@ export default {
         },
 
 
-        async patchEvent(payload, patchType) {
+        async updateRecurringOrSingleShift(payload, patchType) {
+            if (!payload) {
+                console.error("updateRecurringOrSingleShift called without payload");
+                this.updateSnackMessage("Error: Missing event data");
+                return;
+            }
             if (payload.isRecurring) {
                 switch (patchType) {
                     case "updateInstance": {
@@ -526,14 +531,18 @@ export default {
                         break;
                     }
                     default:
-                        this.updateSnackMessage(`No actionType in patchEvent`);
+                        console.warn(`Invalid patchType: ${patchType}`);
+                        this.updateSnackMessage("Invalid action type specified for event update");
+                        return;
                 }
             }
             try {
                 await this.updateEvent(payload);
                 this.updateSnackMessage("Event updated");
+                console.log("Event successfully updated");
             } catch (e) {
-                this.updateSnackMessage(`Error ${e}`);
+                console.error(`Error updating event: ${e}`);
+                this.updateSnackMessage(`Error: ${e.message}`);
             } finally {
                 this.closeDialog();
             }
@@ -541,11 +550,18 @@ export default {
 
 
         async saveNewEvent(payload) {
+            if (!payload) {
+                console.error("saveNewEvent called without payload");
+                this.updateSnackMessage("Error: Missing event data");
+                return;
+            }
             try {
                 await this.actionCreateNewEvent(payload);
                 this.updateSnackMessage("New event created");
+                console.log("New event successfully created");
             } catch (e) {
-                this.updateSnackMessage(`Error ${e}`);
+                console.error(`Error creating new event: ${e}`);
+                this.updateSnackMessage(`Error: ${e.message}`);
             } finally {
                 this.newEvent = false;
                 this.closeDialog();
@@ -554,59 +570,78 @@ export default {
 
 
         async removeEvent(payload, removeType) {
+            if (!payload) {
+                console.error("removeEvent called without payload");
+                this.updateSnackMessage("Error: Missing event data");
+                return;
+            }
             if (payload.isRecurring) {
-                switch (removeType) {
-                    case "deleteInstance": {
-                        payload.actionType = this.createActionType("deleteInstance", this.originalData);
-                        break;
-                    }
-                    case "deleteForward": {
-                        payload.actionType = this.createActionType("deleteForward", "");
-                        break;
-                    }
-                    case "deleteAll": {
-                        payload.actionType = this.createActionType("deleteAll", "");
-                        break;
-                    }
-                    default:
-                        this.updateSnackMessage(`No actionType in removeEvent`);
+                const actionTypeResult = this.determineActionTypeForRecurringEvent(removeType);
+                if (actionTypeResult.success) {
+                    payload.actionType = actionTypeResult.actionType;
+                } else {
+                    console.warn(actionTypeResult.message);
+                    this.updateSnackMessage(actionTypeResult.message);
+                    return;
                 }
             }
             try {
                 await this.deleteEvent(payload);
                 this.updateSnackMessage("Event deleted");
+                console.log("Event successfully deleted");
             } catch (e) {
-                this.updateSnackMessage(`Error ${e}`);
+                console.error(`Error deleting event: ${e}`);
+                this.updateSnackMessage(`Error: ${e.message}`);
             } finally {
                 this.closeDialog();
             }
         },
+
+        determineActionTypeForRecurringEvent(removeType) {
+            switch (removeType) {
+                case "deleteInstance":
+                    return { success: true, actionType: this.createActionType("deleteInstance", this.originalData) };
+                case "deleteForward":
+                    return { success: true, actionType: this.createActionType("deleteForward", "") };
+                case "deleteAll":
+                    return { success: true, actionType: this.createActionType("deleteAll", "") };
+                default:
+                    return { success: false, message: "Invalid removeType specified" };
+            }
+        },
+        
         closeDialog() {
             this.adminShiftDialogOpen(false);
         },
+
+
         createRRULEString(payload) {
             if (!payload.isRecurring) {
+                console.log("Event is not recurring. No RRULE string generated.");
                 return "";
             }
-            let year = new Date(payload.start).getFullYear();
-            let monthUTC = new Date(payload.start).getUTCMonth();
-            let day = payload.start.substr(8, 2);
-            let hour = payload.start.substr(11, 2);
-            let minutes = payload.start.substr(14, 2);
-            const rule = new RRule({
-                freq: RRule.WEEKLY,
-                byweekday:
-                    this.localBYDAY.map((dayNames) => RRule[dayNames]) ||
-                    this.getWeekdayAbbreviationByIndex(
-                        new Date(year, monthUTC, day).getDay()
-                    ),
-                interval: this.localINTERVAL || "1",
-                dtstart: new Date(Date.UTC(year, monthUTC, day, hour, minutes)),
-                until:
-                    this.formatUNTILtoDate(this.localUNTIL) ||
-                    new Date(2025, 0, 1),
-            });
-            return rule.toString();
+            try {
+                const eventStartDate = new Date(payload.start);
+                const year = eventStartDate.getFullYear();
+                const monthUTC = eventStartDate.getUTCMonth();
+                const day = eventStartDate.getDate();
+                const hour = eventStartDate.getHours();
+                const minutes = eventStartDate.getMinutes();
+                const rule = new RRule({
+                    freq: RRule.WEEKLY,
+                    byweekday: this.localBYDAY.length > 0
+                        ? this.localBYDAY.map(dayName => RRule[dayName])
+                        : [this.getWeekdayAbbreviationByIndex(eventStartDate.getDay())],
+                    interval: parseInt(this.localINTERVAL, 10) || 1,
+                    dtstart: new Date(Date.UTC(year, monthUTC, day, hour, minutes)),
+                    until: this.formatUNTILtoDate(this.localUNTIL) || new Date(2025, 0, 1),
+                });
+                return rule.toString();
+            } catch (error) {
+                console.error("Error generating RRULE string:", error);
+                this.updateSnackMessage("Error generating recurrence rule");
+                return "";
+            }
         },
 
         /**
