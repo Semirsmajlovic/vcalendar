@@ -529,11 +529,14 @@ export default {
             }
         },
 
+        // ===================================================================================== //
 
+        // Execution:
+        // - Step 1: User clicks on "Create" -> This function is triggered.
         async saveNewEvent(payload) {
             try {
                 await this.actionCreateNewEvent(payload);
-                this.updateSnackMessage("New event created");
+                this.updateSnackMessage("New shift created");
             } catch (e) {
                 this.updateSnackMessage(`Error ${e}`);
             } finally {
@@ -542,6 +545,7 @@ export default {
             }
         },
 
+        // ===================================================================================== //
 
         async removeEvent(payload, removeType) {
             if (payload.isRecurring) {
