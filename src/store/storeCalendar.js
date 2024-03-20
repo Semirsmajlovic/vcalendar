@@ -105,7 +105,7 @@ const storeCalendar = {
 
 
 		
-		async updateEvent({ commit, state, getters, dispatch }, payload) {
+		async updateShift({ commit, state, getters, dispatch }, payload) {
 			let docRef;
 			if (!payload.isRecurring) {
 				if (!payload.actionType) {
@@ -163,7 +163,7 @@ const storeCalendar = {
 							payload.actionType.description = 'updateInstance';
 							payload.isRecurring = false;
 							payload.rruleString = '';
-							console.log('[storeCalendar/updateEvent]: ', payload);
+							console.log('[storeCalendar/updateShift]: ', payload);
 							commit('ADD_EXCEPTION', payload);
 						} catch(e) {
 							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
@@ -191,7 +191,7 @@ const storeCalendar = {
 						break;
 					}
 					default:
-						dispatch('updateSnackMessage', `Unknown actionType in updateEvent`, { root: true });
+						dispatch('updateSnackMessage', `Unknown actionType in updateShift`, { root: true });
 				}
 			}
 		},

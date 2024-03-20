@@ -62,7 +62,7 @@
                 <v-card-actions>
                     <v-btn color="grey darken-1" text @click="close">Close</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn :disabled="!canParticipate" color="primary" @click="updateEvent">Participate</v-btn>
+                    <v-btn :disabled="!canParticipate" color="primary" @click="updateShift">Participate</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -128,7 +128,7 @@ export default {
         }
     },
     methods: {
-        async updateEvent() {
+        async updateShift() {
     try {
         const shift = this.selectedShift; // Retrieves the selected shift object from component data
         let updatePayload = {};
@@ -157,7 +157,7 @@ export default {
 
             // Dispatch an action to your Vuex store to handle the update
             // Assuming you have an action to handle adding an exception or updating an event
-            this.$store.dispatch('storeCalendar/updateEvent', updatePayload);
+            this.$store.dispatch('storeCalendar/updateShift', updatePayload);
 
             // Close the dialog
             this.close();

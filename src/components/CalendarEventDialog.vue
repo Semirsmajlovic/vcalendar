@@ -1,12 +1,3 @@
-<!-- 
-    - Create Shift:
-      - Shift Title (Optional): shiftTitle
-      - Volunteer Limit: volunteerLimit
-      - Driver Limit: driverLimit
-
-      - Recurring
- -->
-
 <template>
     <v-form ref="form" v-model="valid">
         <v-dialog 
@@ -30,7 +21,6 @@
                 <!-- End: Toolbar -->
 
                 <v-card-text>
-
 
                     <v-row no-gutters class="pt-6">
                         <v-col cols="12">
@@ -307,7 +297,6 @@
 import { RRule } from "rrule";
 import { mapGetters, mapActions, mapMutations } from "vuex";
 import { format, parseISO } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
 import CalendarEventTime from "./CalendarEventTime.vue";
 import CalendarUntilDatePicker from "./CalendarUntilDatePicker.vue";
 
@@ -399,7 +388,7 @@ export default {
             "emitRefreshAndResetNewShiftSignal",
         ]),
         safeVolunteerNames() {
-        return this.localSelectedShift.volunteerNames || [];
+            return this.localSelectedShift.volunteerNames || [];
         },
         safeDriverHelperNames() {
             return this.localSelectedShift.driverHelperNames || [];
@@ -464,7 +453,7 @@ export default {
         ...mapActions("storeCalendar", [
             "adminShiftDialogOpen",
             "actionCreateNewEvent",
-            "updateEvent",
+            "updateShift",
             "deleteEvent",
         ]),
         ...mapMutations("storeCalendar", ["SET_NEW_EVENT_SIGNAL"]),
@@ -535,7 +524,7 @@ export default {
                 }
             }
             try {
-                await this.updateEvent(payload);
+                await this.updateShift(payload);
                 this.updateSnackMessage("Event updated");
                 console.log("Event successfully updated");
             } catch (e) {
