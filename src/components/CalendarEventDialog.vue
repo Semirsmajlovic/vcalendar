@@ -297,7 +297,6 @@
 import { RRule } from "rrule";
 import { mapGetters, mapActions, mapMutations } from "vuex";
 import { format, parseISO } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
 import CalendarEventTime from "./CalendarEventTime.vue";
 import CalendarUntilDatePicker from "./CalendarUntilDatePicker.vue";
 
@@ -400,9 +399,9 @@ export default {
     watch: {
 
 
-        newDay(val, oldVal) {
+        newDay(val) {
             if (this.objectHasProperties(val)) {
-                this.createEvent(val); // Creates a new event using the provided date if the newDay object has properties
+                this.openAdminShiftDialogAndPopulateDefaultData(val); // Creates a new event using the provided date if the newDay object has properties
             }
         },
 
@@ -480,7 +479,7 @@ export default {
         },
 
 
-        createEvent({ date }) {
+        openAdminShiftDialogAndPopulateDefaultData({ date }) {
             this.valid = false; // Resets form validation state
             this.newEvent = true; // Flags that a new event is being created
             this.localSelectedEvent = {
@@ -541,7 +540,7 @@ export default {
                 this.updateSnackMessage(`Error ${e}`);
             } finally {
                 this.newEvent = false; // Set newEvent as false.
-                this.closeAdminShiftDialog(); // 
+                this.closeAdminShiftDialog(); // Close the admin shift dialog.
             }
         },
 
