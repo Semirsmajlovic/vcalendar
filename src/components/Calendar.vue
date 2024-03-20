@@ -39,21 +39,21 @@
               ></calendar-tool-bar>
               <!-- End: Calendar Toolbar -->
                 <div class="printInformationArea"></div>
-              <v-calendar
-                ref="calendar"
-                v-model="focus"
-                :type="type"
-                :events="shifts"
-                event-color="#f1f3f4"
-                event-text-color="#333"
-                :event-height="135"
-                :events-more="false"
-                :show-week="false"
-                @click:event="handleClickEvent"
-                @click:date="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
-                @click:day="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
-                @change="loadAndUpdateShifts"
-              >
+                <v-calendar
+                    ref="calendar"
+                    v-model="focus"
+                    :type="type"
+                    :events="shifts"
+                    event-color="#f1f3f4"
+                    event-text-color="#333"
+                    :event-height="135"
+                    :events-more="false"
+                    :show-week="false"
+                    @click:event="handleClickEvent"
+                    @click:date="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
+                    @click:day="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
+                    @change="loadAndUpdateShifts"
+                >
                 <template v-slot:event="{ event }">
                   <calendar-day :event="event" :is-logged-in="isLoggedIn"></calendar-day>
                 </template>
@@ -193,16 +193,12 @@ export default {
         async loadAndUpdateShifts() {
             this.isBusy = true;
             try {
-                const result = await this.initInstances({ focus: this.focus, name: this.getSelectedParticipant.name, type: this.getSelectedParticipant.type });
+                await this.initInstances({ focus: this.focus, name: this.getSelectedParticipant.name, type: this.getSelectedParticipant.type });
             } catch (e) {
-                this.updateSnackMessage(`Error loading ${e} `); // Displays an error message if the initialization fails
+                this.updateSnackMessage(`Error loading ${e} `);
             } finally {
                 this.isBusy = false; 
-                this.shifts = this.getInstances(
-                    this.focus,
-                    this.getSelectedParticipant.name,
-                    this.getSelectedParticipant.type
-                );
+                this.shifts = this.getInstances(this.focus, this.getSelectedParticipant.name, this.getSelectedParticipant.type);
                 this.dateForNewShift = {};
                 this.selectedShift = {};
             }

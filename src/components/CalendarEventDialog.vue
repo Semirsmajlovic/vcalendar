@@ -398,31 +398,31 @@ export default {
 
     watch: {
 
+        // ===================================================================================== //
+        // Watch - Observe and react to data changes.
 
+        // Instructions:
+        // Step 1: Click "Calendar Date" -> Watch is triggered.
         dateForNewShift(val) {
             if (this.objectHasProperties(val)) {
-                this.openAdminShiftDialogAndPopulateDefaultData(val); // Creates a new event using the provided date if the dateForNewShift object has properties
+                this.openAdminShiftDialogAndPopulateDefaultData(val);
             }
         },
 
+        // ===================================================================================== //
+        // Watch - Observe and react to data changes.
 
         selectedEvent(val, oldVal) {
-            // Copy selectedEvent prop to localSelectedEvent for existing event
             if (this.objectHasProperties(val)) {
-                this.newEvent = false; // Indicates that an existing event is being edited, not a new one created
-                this.localSelectedEvent = val; // Assigns the selected event to the local state for editing
+                this.newEvent = false;
+                this.localSelectedEvent = val;
             }
-
-            // Extracts and sets the BYDAY value from the event's RRule string for recurrence pattern
             this.localBYDAY = this.getBYDAY(this.localSelectedEvent.rruleString);
-
-            // Extracts and sets the UNTIL date from the event's RRule string to indicate when recurrence ends
             this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
-
-            // Extracts and sets the INTERVAL number from the event's RRule string to indicate the frequency of recurrence
             this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
         },
 
+        // ===================================================================================== //
 
         localSelectedEvent: {
             deep: true,
