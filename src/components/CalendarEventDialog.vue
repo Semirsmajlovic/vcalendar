@@ -496,6 +496,7 @@ export default {
         },
 
 
+        // Previous: patchEvent
         async updateRecurringOrSingleShift(payload, patchType) {
             if (!payload) {
                 console.error("updateRecurringOrSingleShift called without payload");
@@ -504,10 +505,15 @@ export default {
             }
             if (payload.isRecurring) {
                 switch (patchType) {
+
+                    // Works
                     case "updateInstance": {
                         payload.actionType = this.createActionType("updateInstance", this.originalData);
+                        console.log("[updateRecurringOrSingleShift/updateInstance]: ", payload.actionType);
                         break;
                     }
+
+
                     case "updateForward": {
                         payload.actionType = this.createActionType("updateForward", "");
                         this.changeDTSTARTdate(payload.start);
@@ -524,9 +530,13 @@ export default {
                 }
             }
             try {
+
+
                 await this.updateShift(payload);
                 this.updateSnackMessage("Event updated");
                 console.log("Event successfully updated");
+
+
             } catch (e) {
                 console.error(`Error updating event: ${e}`);
                 this.updateSnackMessage(`Error: ${e.message}`);
@@ -563,6 +573,7 @@ export default {
                 return;
             }
             if (payload.isRecurring) {
+                console.log("We here");
                 const actionTypeResult = this.determineActionTypeForRecurringEvent(removeType);
                 if (actionTypeResult.success) {
                     payload.actionType = actionTypeResult.actionType;
