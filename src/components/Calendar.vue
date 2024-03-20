@@ -50,8 +50,8 @@
                 :events-more="false"
                 :show-week="false"
                 @click:event="handleClickEvent"
-                @click:date="handleClickDate"
-                @click:day="handleClickDay"
+                @click:date="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
+                @click:day="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
                 @change="loadAndUpdateShifts"
               >
                 <template v-slot:event="{ event }">
@@ -140,22 +140,6 @@ export default {
                 this.handleShiftSelection(event);
             } else {
                 this.openVolunteerDialog(event);
-            }
-        },
-
-        // ========================================================================================== //
-
-        handleClickDate(day) {
-            if (this.isLoggedIn) {
-                this.prepareAndOpenShiftCreationDialog(day); // If the user is logged in, prepares and opens the dialog for shift creation based on the clicked date. Used in the v-calendar component's @click:date event.
-            }
-        },
-
-        // ========================================================================================== //
-
-        handleClickDay(day) {
-            if (this.isLoggedIn) {
-                this.prepareAndOpenShiftCreationDialog(day); // If the user is logged in, prepares and opens the dialog for shift creation based on the clicked day. Used in the v-calendar component's @click:day event.
             }
         },
 
