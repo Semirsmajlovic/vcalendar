@@ -99,11 +99,12 @@ export default {
                 number_of_people: this.numberOfPeople,
                 days_to_volunteer: this.dates.join(', '), // Updated to use `dates`
             };
-
-            emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams, 'nQeNPSgRwskhINwUu')
+            emailjs.send('service_ug33hrl', 'template_56p6m9o', emailParams, 'nQeNPSgRwskhINwUu')
                 .then((response) => {
                     this.dialog = false; // Close the dialog on success
+                    console.log('SUCCESS!', response.status, response.text);
                 }, (error) => {
+                    console.log('FAILED...', error);
                 });
         }
     }
