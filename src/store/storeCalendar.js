@@ -82,19 +82,23 @@ const storeCalendar = {
 		},
 
         // ===================================================================================== //
+        // Actions - Asynchronous function used to commit mutations.
 
 		// Execution:
         // - Step 2: The function "createAndSaveNewShift" in CalendarEventDialog.vue is triggered before this.
 		async actionCreateNewEvent({ commit, dispatch }, payload) {
+			const logPrefix = "[storeCalendar.js/actionCreateNewEvent]:";
 			try {
 				const collectionName = payload.isRecurring ? "events" : "exceptions";
+				console.log(`${logPrefix} Processing new event for collection: ${collectionName}`);
 				const collectionRef = collection(db, collectionName);
 				const docRef = await addDoc(collectionRef, payload);
 				payload.id = docRef.id;
 				const mutationName = payload.isRecurring ? 'ADD_SHIFT' : 'ADD_EXCEPTION';
+				console.log(`${logPrefix} Committing mutation: ${mutationName}`);
 				commit(mutationName, payload);
 			} catch (e) {
-				console.error(`[storeCalendar.js/actionCreateNewEvent]: Error adding document: ${e}`);
+				console.error(`${logPrefix} Error adding document: ${e}`);
 				dispatch('updateSnackMessage', `Error: ${e.message}`, { root: true });
 			}
 		},
