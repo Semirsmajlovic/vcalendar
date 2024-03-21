@@ -86,7 +86,7 @@
                                         v-model="localBYDAY"
                                         :label="dayName"
                                         :value="dayName"
-                                        @change="changeBYDAY(localBYDAY)"
+                                        @change="updateRRULEWeekdays(localBYDAY)"
                                     ></v-checkbox>
                                 </v-col>
                             </div>
@@ -410,7 +410,7 @@ export default {
                 this.newEvent = false;
                 this.localSelectedEvent = val;
             }
-            this.localBYDAY = this.getBYDAY(this.localSelectedEvent.rruleString);
+            this.localBYDAY = this.getWeekdaysFromRRULE(this.localSelectedEvent.rruleString);
             this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
             this.localINTERVAL = this.getIntervalFromRRULE(this.localSelectedEvent.rruleString);
             console.log("[CalendarEventDialog.vue/updateLocalStateOnShiftSelectionChange]: Watch has triggered.", val);
@@ -774,39 +774,72 @@ export default {
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
-        getBYDAY(rruleString) {
+        // Execution:
+        // - Open "Shift" Dialog.
+        getWeekdaysFromRRULE(rruleString) {
             if (!rruleString) {
+                console.log("[CalendarEventDialog.vue/getWeekdaysFromRRULE]: No RRULE string provided. Using selected weekday number.");
                 return [this.getWeekdayAbbreviationByIndex(this.selectedWeekdayNum)];
             }
-
-            let index = rruleString.indexOf("BYDAY");
-            let startIndex = index + 6;
-            let endIndex = rruleString.indexOf(";", startIndex);
-            let between = rruleString.substring(startIndex, endIndex);
-            return between.split(",");
+            try {
+                const index = rruleString.indexOf("BYDAY");
+                if (index === -1) {
+                    throw new Error("BYDAY part not found in RRULE string.");
+                }
+                const startIndex = index + 6; // "BYDAY=" length is 6, so we start right after
+                const endIndex = rruleString.indexOf(";", startIndex);
+                if (endIndex === -1) {
+                    throw new Error("Semicolon not found after BYDAY in RRULE string.");
+                }
+                const byDayList = rruleString.substring(startIndex, endIndex).split(",");
+                console.log("[CalendarEventDialog.vue/getWeekdaysFromRRULE]: Successfully extracted weekdays from RRULE string.");
+                return byDayList;
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/getWeekdaysFromRRULE]: Error extracting weekdays from RRULE string: ${error.message}`);
+                return [];
+            }
         },
-        changeBYDAY(byDay) {
-            if (byDay.length === 0) {
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        updateRRULEWeekdays(byDay) {
+            if (!this.localSelectedEvent.rruleString) {
+                console.log("[CalendarEventDialog.vue/updateRRULEWeekdays]: No RRULE string available in the selected event.");
                 return;
             }
-
-            let byDayCurrentText = this.localSelectedEvent.rruleString.substring(
-                this.localSelectedEvent.rruleString.indexOf("BYDAY"),
-                this.localSelectedEvent.rruleString.indexOf(
-                    ";",
-                    this.localSelectedEvent.rruleString.indexOf("BYDAY")
-                )
-            );
-
-            let byDayNew = `BYDAY=${byDay.join(",")}`;
-            this.localBYDAY = byDay;
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
-                byDayCurrentText,
-                byDayNew,
-                0
-            );
+            if (byDay.length === 0) {
+                console.log("[CalendarEventDialog.vue/updateRRULEWeekdays]: Empty BYDAY array provided. No update performed.");
+                return;
+            }
+            try {
+                const byDayCurrentTextStartIndex = this.localSelectedEvent.rruleString.indexOf("BYDAY");
+                if (byDayCurrentTextStartIndex === -1) {
+                    throw new Error("BYDAY part not found in RRULE string.");
+                }
+                const byDayCurrentTextEndIndex = this.localSelectedEvent.rruleString.indexOf(";", byDayCurrentTextStartIndex);
+                const byDayCurrentText = this.localSelectedEvent.rruleString.substring(
+                    byDayCurrentTextStartIndex,
+                    byDayCurrentTextEndIndex !== -1 ? byDayCurrentTextEndIndex : undefined
+                );
+                const byDayNew = `BYDAY=${byDay.join(",")}`;
+                this.localBYDAY = byDay;
+                this.localSelectedEvent.rruleString = this.replacer(
+                    this.localSelectedEvent.rruleString,
+                    byDayCurrentText,
+                    byDayNew,
+                    0
+                );
+                console.log("[CalendarEventDialog.vue/updateRRULEWeekdays]: Successfully updated BYDAY in RRULE string.");
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/updateRRULEWeekdays]: Error updating BYDAY in RRULE string: ${error.message}`);
+            }
         },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+
         getUNTILstring(rruleString) {
             if (!rruleString) {
                 return "";
