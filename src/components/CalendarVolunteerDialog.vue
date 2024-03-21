@@ -149,24 +149,6 @@ export default {
                             email: this.volunteerEmail 
                         }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
                     };
-
-                    // Prepare the email data
-                    const emailParams = {
-                        to_name: this.volunteerName,
-                        message: "Thank you for signing up as a volunteer. We are excited to have you on board!",
-                        // reply_to: this.volunteerEmail,
-                        to_email: this.volunteerEmail,
-                    };
-
-                    // Send the email
-                    emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams)
-                        .then((response) => {
-                            console.log(emailParams);
-                            console.log('SUCCESS!', response.status, response.text);
-                        }, (error) => {
-                            console.log('FAILED...', error);
-                        });
-
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
                     updatePayload = {
                         driverHelperNames: arrayUnion({ 
@@ -176,6 +158,7 @@ export default {
                     };
                 }
                 await updateDoc(docRef, updatePayload); // Updates the Firestore document with the new volunteer or driver/helper information
+                this.$emit('dialogs-completed');
                 this.close(); // Closes the dialog after successful update
             } catch (error) {
                 console.error("Failed to update event: ", error); // Logs an error if the update fails

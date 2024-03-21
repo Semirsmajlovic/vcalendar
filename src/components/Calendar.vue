@@ -76,6 +76,7 @@
       <calendar-volunteer-dialog
         v-model="showVolunteerDialog"
         :selectedShift="selectedShift"
+        @dialogs-completed="fetchUpdatedShifts"
       ></calendar-volunteer-dialog>
     </v-container>
   </template>
@@ -135,6 +136,9 @@ export default {
             this.focus = "";
         },
 
+        fetchUpdatedShifts() {
+            this.loadAndUpdateShifts(); // Assuming this method refreshes the shifts displayed in the calendar
+        },
 
         handleClickEvent(event) {
             if (this.isLoggedIn) {
