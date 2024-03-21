@@ -377,12 +377,22 @@ export default {
             "getSelectedParticipant",
             "emitRefreshAndResetNewEventState",
         ]),
+
+        // ===================================================================================== //
+        // Computed - Automatically recalculate when their dependencies change
+
         safeVolunteerNames() {
             return this.localSelectedEvent.volunteerNames || [];
         },
+
+        // ===================================================================================== //
+        // Computed - Automatically recalculate when their dependencies change
+
         safeDriverHelperNames() {
             return this.localSelectedEvent.driverHelperNames || [];
         }
+        
+        // ===================================================================================== //
     },
 
     watch: {
