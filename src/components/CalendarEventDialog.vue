@@ -60,7 +60,7 @@
                         @startTimeChanged="
                             (...args) => {
                                 updateRecurringEventStartTime(...args), 
-                                changeUNTIL(...args, formatUNTILtoType(localUNTIL, '-', 'yyyymmdd'));
+                                updateRRULEUntilDateTime(...args, convertUNTILStringToFormattedDate(localUNTIL, '-', 'yyyymmdd'));
                             }
                         "
                     ></calendar-event-time>
@@ -110,9 +110,9 @@
                             </v-col>
                             <v-col cols="6" sm="6">
                                 <calendar-until-date-picker
-                                    :until="formatUNTILtoType(localUNTIL, '/', 'mmddyyyy')"
+                                    :until="convertUNTILStringToFormattedDate(localUNTIL, '/', 'mmddyyyy')"
                                     :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
-                                    @untilPicked="(...args) => changeUNTIL(localSelectedEvent.start, ...args)"
+                                    @untilPicked="(...args) => updateRRULEUntilDateTime(localSelectedEvent.start, ...args)"
                                 ></calendar-until-date-picker>
                             </v-col>
                         </v-row>
@@ -410,9 +410,9 @@ export default {
                 this.newEvent = false;
                 this.localSelectedEvent = val;
             }
-            this.localBYDAY = this.getWeekdaysFromRRULE(this.localSelectedEvent.rruleString);
-            this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
-            this.localINTERVAL = this.getIntervalFromRRULE(this.localSelectedEvent.rruleString);
+            this.localBYDAY = this.getBYDAYFromRRULE(this.localSelectedEvent.rruleString);
+            this.localUNTIL = this.getUNTILFromDateRRULE(this.localSelectedEvent.rruleString);
+            this.localINTERVAL = this.getINTERVALFromRRULE(this.localSelectedEvent.rruleString);
             console.log("[CalendarEventDialog.vue/updateLocalStateOnShiftSelectionChange]: Watch has triggered.", val);
         },
 
@@ -429,8 +429,8 @@ export default {
                     if (this.newEvent) {
                         if (this.localSelectedEvent.isRecurring) {
                             this.localSelectedEvent.rruleString = this.createRRULEStringDuringShiftCreation(this.localSelectedEvent);
-                            this.localINTERVAL = this.getIntervalFromRRULE(this.localSelectedEvent.rruleString);
-                            this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
+                            this.localINTERVAL = this.getINTERVALFromRRULE(this.localSelectedEvent.rruleString);
+                            this.localUNTIL = this.getUNTILFromDateRRULE(this.localSelectedEvent.rruleString);
                             console.log("[CalendarEventDialog.vue/updateRRULEForShift]: RRULE for shift updated as the shift is recurring.");
                         } else {
                             this.localSelectedEvent.rruleString = "";
@@ -621,7 +621,7 @@ export default {
                     byweekday,
                     interval: parseInt(this.localINTERVAL, 10) || 1,
                     dtstart: new Date(Date.UTC(year, monthUTC, day, hour, minutes)),
-                    until: this.formatUNTILtoDate(this.localUNTIL) || new Date(2025, 0, 1),
+                    until: this.convertUNTILStringToDate(this.localUNTIL) || new Date(2025, 0, 1),
                 });
                 console.log("[CalendarEventDialog.vue/createRRULEStringDuringShiftCreation]: Created RRule string: ", rule.toString());
                 return rule.toString();
@@ -679,7 +679,7 @@ export default {
                     throw new Error("Zulu time indicator (Z) not found in RRULE string after DTSTART.");
                 }
                 let replaceText = rruleString.substring(dtStartIndex + 17, zuluIndex);
-                this.localSelectedEvent.rruleString = this.replacer(rruleString, replaceText, formatStart, 0);
+                this.localSelectedEvent.rruleString = this.replaceSubstringAtIndex(rruleString, replaceText, formatStart, 0);
                 console.log("[CalendarEventDialog.vue/updateRecurringEventStartTime]: Successfully updated RRULE string.");
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/updateRecurringEventStartTime]: Error updating RRULE string: ${error.message}`);
@@ -709,7 +709,7 @@ export default {
                     throw new Error("Time (T) not found in RRULE string after DTSTART date.");
                 }
                 let currentDtstartDate = rruleString.substring(dateStartIndex, dateEndIndex);
-                this.localSelectedEvent.rruleString = this.replacer(rruleString, currentDtstartDate, dateForward, 0);
+                this.localSelectedEvent.rruleString = this.replaceSubstringAtIndex(rruleString, currentDtstartDate, dateForward, 0);
                 console.log("[CalendarEventDialog.vue/updateRecurringEventStartDate]: Successfully updated DTSTART date in RRULE string.");
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/updateRecurringEventStartDate]: Error updating DTSTART date in RRULE string: ${error.message}`);
@@ -721,9 +721,9 @@ export default {
 
         // Execution:
         // - Open "Shift" Dialog.
-        getIntervalFromRRULE(rruleString) {
+        getINTERVALFromRRULE(rruleString) {
             if (!rruleString) {
-                console.log("[CalendarEventDialog.vue/getIntervalFromRRULE]: No RRULE string provided.");
+                console.log("[CalendarEventDialog.vue/getINTERVALFromRRULE]: No RRULE string provided.");
                 return;
             }
             try {
@@ -732,10 +732,10 @@ export default {
                 if (index === 8 || endIndex === -1) { // If 'INTERVAL=' not found, or ';' not found after 'INTERVAL='
                     throw new Error("INTERVAL not found or malformed in RRULE string.");
                 }
-                console.log("[CalendarEventDialog.vue/getIntervalFromRRULE]: RRule interval has been loaded.");
+                console.log("[CalendarEventDialog.vue/getINTERVALFromRRULE]: Successfully extracted INTERVAL from RRULE string.");
                 return rruleString.substring(index, endIndex);
             } catch (error) {
-                console.error(`[CalendarEventDialog.vue/getIntervalFromRRULE]: Error extracting INTERVAL number: ${error.message}`);
+                console.error(`[CalendarEventDialog.vue/getINTERVALFromRRULE]: Error extracting INTERVAL number: ${error.message}`);
             }
         },
 
@@ -759,7 +759,7 @@ export default {
                 const intervalTextCurrent = rruleString.substring(intervalIndex, intervalEndIndex !== -1 ? intervalEndIndex : undefined);
                 const intervalTextNew = `INTERVAL=${interval}`;
                 this.localINTERVAL = interval;
-                this.localSelectedEvent.rruleString = this.replacer(
+                this.localSelectedEvent.rruleString = this.replaceSubstringAtIndex(
                     rruleString,
                     intervalTextCurrent,
                     intervalTextNew,
@@ -776,9 +776,9 @@ export default {
 
         // Execution:
         // - Open "Shift" Dialog.
-        getWeekdaysFromRRULE(rruleString) {
+        getBYDAYFromRRULE(rruleString) {
             if (!rruleString) {
-                console.log("[CalendarEventDialog.vue/getWeekdaysFromRRULE]: No RRULE string provided. Using selected weekday number.");
+                console.log("[CalendarEventDialog.vue/getBYDAYFromRRULE]: No RRULE string provided. Using selected weekday number.");
                 return [this.getWeekdayAbbreviationByIndex(this.selectedWeekdayNum)];
             }
             try {
@@ -792,10 +792,10 @@ export default {
                     throw new Error("Semicolon not found after BYDAY in RRULE string.");
                 }
                 const byDayList = rruleString.substring(startIndex, endIndex).split(",");
-                console.log("[CalendarEventDialog.vue/getWeekdaysFromRRULE]: Successfully extracted weekdays from RRULE string.");
+                console.log("[CalendarEventDialog.vue/getBYDAYFromRRULE]: Successfully extracted BYDAY from RRULE string.");
                 return byDayList;
             } catch (error) {
-                console.error(`[CalendarEventDialog.vue/getWeekdaysFromRRULE]: Error extracting weekdays from RRULE string: ${error.message}`);
+                console.error(`[CalendarEventDialog.vue/getBYDAYFromRRULE]: Error extracting BYDAY from RRULE string: ${error.message}`);
                 return [];
             }
         },
@@ -803,6 +803,8 @@ export default {
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
+        // Execution:
+        // - Open "Recurring" Shift -> Update "Days" field.
         updateRRULEWeekdays(byDay) {
             if (!this.localSelectedEvent.rruleString) {
                 console.log("[CalendarEventDialog.vue/updateRRULEWeekdays]: No RRULE string available in the selected event.");
@@ -824,7 +826,7 @@ export default {
                 );
                 const byDayNew = `BYDAY=${byDay.join(",")}`;
                 this.localBYDAY = byDay;
-                this.localSelectedEvent.rruleString = this.replacer(
+                this.localSelectedEvent.rruleString = this.replaceSubstringAtIndex(
                     this.localSelectedEvent.rruleString,
                     byDayCurrentText,
                     byDayNew,
@@ -839,78 +841,123 @@ export default {
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
-
-        getUNTILstring(rruleString) {
+        // Execution:
+        // - Open "Shift" Dialog.
+        getUNTILFromDateRRULE(rruleString) {
             if (!rruleString) {
+                console.log("[CalendarEventDialog.vue/getUNTILFromDateRRULE]: No RRULE string provided.");
                 return "";
             }
-            return rruleString.slice(-16);
-        },
-        formatUNTILtoDate(untilLocal) {
-            //Turns rrule until date string into new Date format
-            if (!untilLocal) {
+            try {
+                const untilIndex = rruleString.indexOf("UNTIL");
+                if (untilIndex === -1) {
+                    throw new Error("UNTIL part not found in RRULE string.");
+                }
+                const untilString = rruleString.slice(-16);
+                console.log("[CalendarEventDialog.vue/getUNTILFromDateRRULE]: Successfully extracted UNTIL date from RRULE string.");
+                return untilString;
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/getUNTILFromDateRRULE]: Error extracting UNTIL date from RRULE string: ${error.message}`);
                 return "";
             }
-            let year = untilLocal.slice(0, 4);
-            let month = untilLocal.substr(4, 2);
-            let day = untilLocal.substr(6, 2);
-            return new Date(year, month - 1, day);
         },
-        formatUNTILtoType(untilLocal, separator, type) {
-            if (!untilLocal) {
-                return;
-            }
-            let year = untilLocal.slice(0, 4);
-            let month = untilLocal.substr(4, 2);
-            let day = untilLocal.substr(6, 2);
 
-            if (type === "mmddyyyy") {
-                // Turns rrule until date string into mm/dd/yyyy format to use in date picker
-                return `${month}${separator}${day}${separator}${year}`;
-            } else {
-                // Used when start time changes
-                return `${year}${separator}${month}${separator}${day}`;
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        // Execution:
+        // - Open "Shift" Dialog -> Click "Recurring" Checkbox.
+        convertUNTILStringToDate(untilLocal) {
+            if (!untilLocal) {
+                console.log("[CalendarEventDialog.vue/convertUNTILStringToDate]: No UNTIL string provided.");
+                return "";
+            }
+            try {
+                let year = untilLocal.slice(0, 4);
+                let month = untilLocal.substr(4, 2);
+                let day = untilLocal.substr(6, 2);
+                let date = new Date(year, month - 1, day);
+                if (isNaN(date.getTime())) {
+                    throw new Error("Invalid date format.");
+                }
+                console.log("[CalendarEventDialog.vue/convertUNTILStringToDate]: Successfully converted UNTIL string to Date.");
+                return date;
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/convertUNTILStringToDate]: Error converting UNTIL string to Date: ${error.message}`);
+                return "";
             }
         },
-        changeUNTIL(startTime, untilDate) {
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        // Execution:
+        // - Open "Shift" Dialog -> Click "Recurring" Checkbox.
+        convertUNTILStringToFormattedDate(untilLocal, separator, type) {
+            if (!untilLocal) {
+                console.log("[CalendarEventDialog.vue/convertUNTILStringToFormattedDate]: No UNTIL string provided.");
+                return "";
+            }
+            try {
+                let year = untilLocal.slice(0, 4);
+                let month = untilLocal.substr(4, 2);
+                let day = untilLocal.substr(6, 2);
+                let formattedDate;
+                if (type === "mmddyyyy") {
+                    // Turns rrule until date string into mm/dd/yyyy format to use in date picker
+                    formattedDate = `${month}${separator}${day}${separator}${year}`;
+                } else {
+                    // Default format: yyyy-mm-dd or a variation based on the separator
+                    formattedDate = `${year}${separator}${month}${separator}${day}`;
+                }
+                console.log(`[CalendarEventDialog.vue/convertUNTILStringToFormattedDate]: Successfully converted UNTIL string to ${type} format.`);
+                return formattedDate;
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/convertUNTILStringToFormattedDate]: Error converting UNTIL string to formatted date: ${error.message}`);
+                return "";
+            }
+        },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        // Execution:
+        // - Open "Shift" Dialog -> Click "Recurring" Checkbox -> Update "Select Until Date".
+        updateRRULEUntilDateTime(startTime, untilDate) {
             if (!untilDate) {
+                console.log("[CalendarEventDialog.vue/updateRRULEUntilDateTime]: No untilDate provided.");
                 return;
             }
-            let [year, month, day] = untilDate.split("-");
-            month = month - 1;
-
-            let untilTime =
-                "T" + startTime.slice(-5).replace(":", "").concat("00Z");
-
-            let newUNTILString = format(
-                new Date(year, month, day),
-                "yyyyMMdd"
-            ).concat(untilTime);
-
-            this.localUNTIL = newUNTILString;
-
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
-                this.localSelectedEvent.rruleString.slice(-16),
-                newUNTILString,
-                0
-            );
+            try {
+                let [year, month, day] = untilDate.split("-");
+                month = month - 1;
+                let untilTime = "T" + startTime.slice(-5).replace(":", "") + "00Z";
+                let newUNTILString = format(new Date(year, month, day), "yyyyMMdd") + untilTime;
+                this.localUNTIL = newUNTILString;
+                this.localSelectedEvent.rruleString = this.replaceSubstringAtIndex(
+                    this.localSelectedEvent.rruleString,
+                    this.localSelectedEvent.rruleString.slice(-16),
+                    newUNTILString,
+                    0
+                );
+                console.log("[CalendarEventDialog.vue/updateRRULEUntilDateTime]: Successfully updated UNTIL in RRULE string.");
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/updateRRULEUntilDateTime]: Error updating UNTIL in RRULE string: ${error.message}`);
+            }
         },
-        replacer(s, subString, replacement, index) {
-            /**
-             * Generic string replace utility function
-             *
-             * @param {String} s - main String
-             * @param {String} subString - target string to replace
-             * @param {String} replacement - replacement string
-             * @param {String} index - index to start
-             *
-             */
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        replaceSubstringAtIndex(s, subString, replacement, index) {
             const p = s.split(subString, index + 1).join(subString);
             return p.length < s.length
                 ? p + replacement + s.slice(p.length + subString.length)
                 : s;
         },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
         createActionType(aType, ogData) {
             let actionType = {
