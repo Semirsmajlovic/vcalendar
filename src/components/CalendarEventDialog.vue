@@ -388,7 +388,6 @@ export default {
 
 
     watch: {
-
         // ===================================================================================== //
         // Watch - Observe and react to data changes.
 
@@ -421,17 +420,26 @@ export default {
         // ===================================================================================== //
         // Watch - Observe and react to data changes.
 
+        // Execution:
+        // Activates when there are changes to the "localSelectedEvent" object.
+        // Open "CalendarEventDialog" -> Watch is triggered.
         localSelectedEvent: {
             deep: true,
             handler() {
-                if (this.newEvent) {
-                    if (this.localSelectedEvent.isRecurring) {
-                        this.localSelectedEvent.rruleString = this.createRRULEString(this.localSelectedEvent);
-                        this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
-                        this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
-                    } else {
-                        this.localSelectedEvent.rruleString = "";
+                try {
+                    if (this.newEvent) {
+                        if (this.localSelectedEvent.isRecurring) {
+                            this.localSelectedEvent.rruleString = this.createRRULEString(this.localSelectedEvent);
+                            this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
+                            this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
+                            console.log("[CalendarEventDialog.vue/updateRRULEForShift]: RRULE for shift updated as the shift is recurring.");
+                        } else {
+                            this.localSelectedEvent.rruleString = "";
+                            console.log("[CalendarEventDialog.vue/updateRRULEForShift]: RRULE for shift cleared as the shift is not recurring.");
+                        }
                     }
+                } catch (error) {
+                    console.error("[CalendarEventDialog.vue/updateRRULEForShift]: Error updating RRULE for shift:", error);
                 }
             },
         },
