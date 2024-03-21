@@ -3,7 +3,6 @@ import App from './App.vue';
 import vuetify from './plugins/vuetify';
 import store from './store';
 import router from './routes/index';
-import emailjs from 'emailjs-com';
 import { initializeApp } from "firebase/app";
 import { getFirestore, Timestamp } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -25,18 +24,6 @@ export { db };
 
 Vue.prototype.$Timestamp = Timestamp;
 Vue.config.productionTip = false;
-
-emailjs.init({
-  publicKey: 'nQeNPSgRwskhINwUu',
-  blockHeadless: true,
-  blockList: {
-    list: ['foo@emailjs.com', 'bar@emailjs.com'],
-  },
-  limitRate: {
-    id: 'app',
-    throttle: 10000,
-  },
-});
 
 let app;
 

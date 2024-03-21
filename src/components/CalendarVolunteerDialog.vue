@@ -76,6 +76,9 @@ import emailjs from 'emailjs-com';
 
 export default {
     name: 'CalendarVolunteerDialog',
+    mounted() {
+        emailjs.init("nQeNPSgRwskhINwUu");
+    },
     props: {
         value: Boolean,
         selectedShift: {
@@ -151,12 +154,14 @@ export default {
                     const emailParams = {
                         to_name: this.volunteerName,
                         message: "Thank you for signing up as a volunteer. We are excited to have you on board!",
-                        reply_to: this.volunteerEmail,
+                        // reply_to: this.volunteerEmail,
+                        to_email: this.volunteerEmail,
                     };
 
                     // Send the email
-                    await emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams)
+                    emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams)
                         .then((response) => {
+                            console.log(emailParams);
                             console.log('SUCCESS!', response.status, response.text);
                         }, (error) => {
                             console.log('FAILED...', error);
