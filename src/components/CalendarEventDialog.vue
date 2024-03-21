@@ -412,7 +412,7 @@ export default {
             }
             this.localBYDAY = this.getBYDAY(this.localSelectedEvent.rruleString);
             this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
-            this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
+            this.localINTERVAL = this.getIntervalFromRRULE(this.localSelectedEvent.rruleString);
             console.log("[CalendarEventDialog.vue/updateLocalStateOnShiftSelectionChange]: Watch has triggered.", val);
         },
 
@@ -429,7 +429,7 @@ export default {
                     if (this.newEvent) {
                         if (this.localSelectedEvent.isRecurring) {
                             this.localSelectedEvent.rruleString = this.createRRULEStringDuringShiftCreation(this.localSelectedEvent);
-                            this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
+                            this.localINTERVAL = this.getIntervalFromRRULE(this.localSelectedEvent.rruleString);
                             this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
                             console.log("[CalendarEventDialog.vue/updateRRULEForShift]: RRULE for shift updated as the shift is recurring.");
                         } else {
@@ -522,7 +522,7 @@ export default {
                     updateInstance: () => this.createActionType("updateInstance", this.originalData),
                     updateForward: () => {
                         const actionType = this.createActionType("updateForward", "");
-                        this.changeDTSTARTdate(payload.start);
+                        this.updateRecurringEventStartDate(payload.start);
                         return actionType;
                     },
                     updateAll: () => this.createActionType("updateAll", "")
@@ -655,59 +655,93 @@ export default {
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
-        /**
-         * Updates the start time in the DTSTART portion of the RRULE string for a recurring event.
-         * @param {String} start_time - The new start time in HH:MM format.
-         * Previous: changeDTSTARTtime
-         */
+        // Notes:
+        // Updates the start time in the DTSTART portion of the RRULE string for a recurring event.
+
+        // Previous: changeDTSTARTtime()
+
+        // Execution:
+        // Click "Create/Update Shift" -> Change "Start Time".
         updateRecurringEventStartTime(start_time) {
-            if (!this.localSelectedEvent.isRecurring) { // If the shift is not recurring, return.
-                return;
-            }
-            let formatStart = start_time.replace(":", "") + "00";
-            let replaceText = this.localSelectedEvent.rruleString.substring(
-                17,
-                this.localSelectedEvent.rruleString.indexOf("Z")
-            );
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
-                replaceText,
-                formatStart,
-                0
-            );
-            return;
-        },
-
-        changeDTSTARTdate(dateUpdated) {
-            // Updating forward requires rruleStringToReplace ( payload.rruleString )'s DTSTART date portion to be updated with date of dateUpdated (payload.start)
-
             if (!this.localSelectedEvent.isRecurring) {
+                console.log("[CalendarEventDialog.vue/updateRecurringEventStartTime]: The shift is not recurring. Exiting method.");
                 return;
             }
-
-            let dateForward = dateUpdated.slice(0, 10).replaceAll("-", "");
-            let currentDtstartDate = this.localSelectedEvent.rruleString.slice(
-                8,
-                16
-            );
-
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
-                currentDtstartDate,
-                dateForward,
-                0
-            );
-            return;
+            try {
+                let formatStart = start_time.replace(":", "") + "00";
+                let rruleString = this.localSelectedEvent.rruleString;
+                let dtStartIndex = rruleString.indexOf("DTSTART");
+                if (dtStartIndex === -1) {
+                    throw new Error("DTSTART not found in RRULE string.");
+                }
+                let zuluIndex = rruleString.indexOf("Z", dtStartIndex);
+                if (zuluIndex === -1) {
+                    throw new Error("Zulu time indicator (Z) not found in RRULE string after DTSTART.");
+                }
+                let replaceText = rruleString.substring(dtStartIndex + 17, zuluIndex);
+                this.localSelectedEvent.rruleString = this.replacer(rruleString, replaceText, formatStart, 0);
+                console.log("[CalendarEventDialog.vue/updateRecurringEventStartTime]: Successfully updated RRULE string.");
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/updateRecurringEventStartTime]: Error updating RRULE string: ${error.message}`);
+            }
         },
 
-        getINTERVALnumber(rruleString) {
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        // Execution:
+        // - Open "Recurring Event" -> Change RRule -> Click "Save -> Update forward" -> Method is triggered.
+        updateRecurringEventStartDate(dateUpdated) {
+            if (!this.localSelectedEvent.isRecurring) {
+                console.log("[CalendarEventDialog.vue/updateRecurringEventStartDate]: The shift is not recurring. Exiting method.");
+                return;
+            }
+            try {
+                let dateForward = dateUpdated.slice(0, 10).replaceAll("-", "");
+                let rruleString = this.localSelectedEvent.rruleString;
+                let dtStartIndex = rruleString.indexOf("DTSTART");
+                if (dtStartIndex === -1) {
+                    throw new Error("DTSTART not found in RRULE string.");
+                }
+                let dateStartIndex = dtStartIndex + 8;
+                let dateEndIndex = rruleString.indexOf("T", dateStartIndex);
+                if (dateEndIndex === -1) {
+                    throw new Error("Time (T) not found in RRULE string after DTSTART date.");
+                }
+                let currentDtstartDate = rruleString.substring(dateStartIndex, dateEndIndex);
+                this.localSelectedEvent.rruleString = this.replacer(rruleString, currentDtstartDate, dateForward, 0);
+                console.log("[CalendarEventDialog.vue/updateRecurringEventStartDate]: Successfully updated DTSTART date in RRULE string.");
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/updateRecurringEventStartDate]: Error updating DTSTART date in RRULE string: ${error.message}`);
+            }
+        },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        // Execution:
+        // - Open "Shift" Dialog.
+        getIntervalFromRRULE(rruleString) {
             if (!rruleString) {
+                console.log("[CalendarEventDialog.vue/getIntervalFromRRULE]: No RRULE string provided.");
                 return;
             }
-            let index = rruleString.indexOf("INTERVAL") + 9;
-            let endIndex = rruleString.indexOf(";", index);
-            return rruleString.substring(index, endIndex);
+            try {
+                let index = rruleString.indexOf("INTERVAL") + 9; // Start after 'INTERVAL='
+                let endIndex = rruleString.indexOf(";", index);
+                if (index === 8 || endIndex === -1) { // If 'INTERVAL=' not found, or ';' not found after 'INTERVAL='
+                    throw new Error("INTERVAL not found or malformed in RRULE string.");
+                }
+                console.log("[CalendarEventDialog.vue/getIntervalFromRRULE]: RRule interval has been loaded.");
+                return rruleString.substring(index, endIndex);
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/getIntervalFromRRULE]: Error extracting INTERVAL number: ${error.message}`);
+            }
         },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
         changeINTERVAL(interval) {
             let intervalTextCurrent = this.localSelectedEvent.rruleString.substring(
                 this.localSelectedEvent.rruleString.indexOf("INTERVAL"),
