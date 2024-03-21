@@ -104,7 +104,7 @@
                                     persistent-hint
                                     single-line
                                     value="localINTERVAL"
-                                    @change="changeINTERVAL"
+                                    @change="updateRRULEInterval"
                                     :rules="[v => !!v || 'Interval selection is required']"
                                 ></v-select>
                             </v-col>
@@ -742,25 +742,38 @@ export default {
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
-        changeINTERVAL(interval) {
-            let intervalTextCurrent = this.localSelectedEvent.rruleString.substring(
-                this.localSelectedEvent.rruleString.indexOf("INTERVAL"),
-                this.localSelectedEvent.rruleString.indexOf(
-                    ";",
-                    this.localSelectedEvent.rruleString.indexOf("INTERVAL")
-                )
-            );
-
-            let intervalTextNew = `INTERVAL=${interval}`;
-            this.localINTERVAL = interval;
-
-            this.localSelectedEvent.rruleString = this.replacer(
-                this.localSelectedEvent.rruleString,
-                intervalTextCurrent,
-                intervalTextNew,
-                0
-            );
+        // Execution:
+        // - Open "Recurring" Shift -> Update "Internal" field.
+        updateRRULEInterval(interval) {
+            if (!this.localSelectedEvent.rruleString) {
+                console.log("[CalendarEventDialog.vue/updateRRULEInterval]: No RRULE string available in the selected event.");
+                return;
+            }
+            try {
+                const rruleString = this.localSelectedEvent.rruleString;
+                const intervalIndex = rruleString.indexOf("INTERVAL");
+                if (intervalIndex === -1) {
+                    throw new Error("INTERVAL part not found in RRULE string.");
+                }
+                const intervalEndIndex = rruleString.indexOf(";", intervalIndex);
+                const intervalTextCurrent = rruleString.substring(intervalIndex, intervalEndIndex !== -1 ? intervalEndIndex : undefined);
+                const intervalTextNew = `INTERVAL=${interval}`;
+                this.localINTERVAL = interval;
+                this.localSelectedEvent.rruleString = this.replacer(
+                    rruleString,
+                    intervalTextCurrent,
+                    intervalTextNew,
+                    0
+                );
+                console.log("[CalendarEventDialog.vue/updateRRULEInterval]: Successfully updated INTERVAL in RRULE string.");
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/updateRRULEInterval]: Error updating INTERVAL in RRULE string: ${error.message}`);
+            }
         },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
         getBYDAY(rruleString) {
             if (!rruleString) {
                 return [this.getWeekdayAbbreviationByIndex(this.selectedWeekdayNum)];
