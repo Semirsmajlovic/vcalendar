@@ -125,8 +125,8 @@
                                 <template v-if="localSelectedEvent.isRecurring">
                                     <div class="text-body-2">
                                         Shift start on 
-                                        {{ dateStartSentence(localSelectedEvent.rruleString) }}
-                                        {{ rruleDescription(localSelectedEvent.rruleString) }}
+                                        {{ formatDTSTARTDateWithSuffix(localSelectedEvent.rruleString) }}
+                                        {{ generateReadableRRULEDescription(localSelectedEvent.rruleString) }}
                                     </div>
                                 </template>
                                 <template v-else>
@@ -213,7 +213,7 @@
                             :disabled="!valid && newEvent"
                             depressed
                             color="primary darken-1 white--text"
-                            @click="saveNewEvent(localSelectedEvent)"
+                            @click="createAndSaveNewShift(localSelectedEvent)"
                         >
                             Create
                             <v-icon right dark>mdi-content-save</v-icon>
@@ -226,7 +226,7 @@
                             :disabled="!valid && newEvent"
                             depressed
                             color="green darken-1 white--text"
-                            @click="saveNewEvent(localSelectedEvent)"
+                            @click="createAndSaveNewShift(localSelectedEvent)"
                         >
                             Create
                             <v-icon right dark>mdi-content-save</v-icon>
@@ -519,13 +519,13 @@ export default {
         async updateShiftAfterSaveButtonClicked(payload, patchType) {
             if (payload.isRecurring) {
                 const actionTypeMap = {
-                    updateInstance: () => this.createActionType("updateInstance", this.originalData),
+                    updateInstance: () => this.generateActionTypeObject("updateInstance", this.originalData),
                     updateForward: () => {
-                        const actionType = this.createActionType("updateForward", "");
+                        const actionType = this.generateActionTypeObject("updateForward", "");
                         this.updateRecurringEventStartDate(payload.start);
                         return actionType;
                     },
-                    updateAll: () => this.createActionType("updateAll", "")
+                    updateAll: () => this.generateActionTypeObject("updateAll", "")
                 };
                 payload.actionType = actionTypeMap[patchType] ? actionTypeMap[patchType]() : this.updateSnackMessage(`No actionType in updateShiftAfterSaveButtonClicked`);
             }
@@ -546,12 +546,14 @@ export default {
 
         // Execution:
         // - Step 1: User clicks on "Create" -> This method is triggered.
-        async saveNewEvent(payload) {
+        async createAndSaveNewShift(payload) {
             try {
                 await this.actionCreateNewEvent(payload);
                 this.updateSnackMessage("New shift created");
+                console.log("[CalendarEventDialog.vue/createAndSaveNewShift]: New shift created successfully.");
             } catch (e) {
-                this.updateSnackMessage(`Error ${e}`);
+                console.error(`[CalendarEventDialog.vue/createAndSaveNewShift]: Error creating new shift: ${e}`);
+                this.updateSnackMessage(`Error creating new shift: ${e.message}`);
             } finally {
                 this.newEvent = false;
                 this.adminShiftDialogOpen(false);
@@ -566,7 +568,7 @@ export default {
         async removeShiftAfterDeleteButtonClicked(payload, removeType) {
             if (payload.isRecurring && removeType) {
                 try {
-                    const actionType = this.createActionType(
+                    const actionType = this.generateActionTypeObject(
                         removeType === 'deleteInstance' ? 'deleteInstance' :
                         removeType === 'deleteForward' ? 'deleteForward' :
                         removeType === 'deleteAll' ? 'deleteAll' : '',
@@ -959,81 +961,82 @@ export default {
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
-        createActionType(aType, ogData) {
-            let actionType = {
-                description: aType,
-                originalData: ogData,
-            };
-
-            return actionType;
-        },
-        showStartTime(startTime) {
-            if (!startTime) {
-                return;
+        generateActionTypeObject(actionDescription, originalData) {
+            try {
+                if (typeof actionDescription !== 'string') {
+                    throw new Error("Action description must be a string.");
+                }
+                const actionTypeObject = {
+                    description: actionDescription,
+                    originalData: originalData,
+                };
+                console.log("[CalendarEventDialog.vue/generateActionTypeObject]: Action type object created successfully.");
+                return actionTypeObject;
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/generateActionTypeObject]: Error creating action type object: ${error.message}`);
+                return null;
             }
-            return startTime.slice(-5) || "";
-        },
-        showEndTime(endTime) {
-            if (!endTime) {
-                return;
-            }
-            return endTime.slice(-5) || "";
         },
 
-        // ============================================================================================ //
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
-        rruleDescription(ruleString) {
+        generateReadableRRULEDescription(ruleString) {
             if (!ruleString) {
-                return;
+                console.log("[CalendarEventDialog.vue/generateReadableRRULEDescription]: No RRULE string provided.");
+                return "";
             }
             if (this.rruleDescriptionCache[ruleString]) {
+                console.log("[CalendarEventDialog.vue/generateReadableRRULEDescription]: Returning cached description.");
                 return this.rruleDescriptionCache[ruleString];
             }
             try {
                 const description = RRule.fromString(ruleString).toText();
                 this.rruleDescriptionCache[ruleString] = description;
+                console.log("[CalendarEventDialog.vue/generateReadableRRULEDescription]: RRULE description generated successfully.");
                 return description;
             } catch (error) {
-                console.error("Error parsing RRULE string:", error);
+                console.error(`[CalendarEventDialog.vue/generateReadableRRULEDescription]: Error parsing RRULE string: ${error}`);
                 return "Invalid RRULE string";
             }
         },
 
-        // ============================================================================================ //
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
-        /**
-         * Formats the start date of a recurring event as a sentence with the full month name, day with suffix, and year.
-         * @param {String} rruleString - The RRULE string of the recurring event.
-         * @returns {String} The formatted start date sentence.
-         */
-         dateStartSentence(rruleString) {
+        formatDTSTARTDateWithSuffix(rruleString) {
             if (!rruleString) {
+                console.log("[CalendarEventDialog.vue/formatDTSTARTDateWithSuffix]: No RRULE string provided.");
                 return '';
             }
-            const dtstart = RRule.fromString(rruleString).origOptions.dtstart;
-            const day = dtstart.getDate();
-            const suffix = ((day) => {
-                const j = day % 10,
-                    k = day % 100;
-                if (j == 1 && k != 11) {
-                    return "st";
-                }
-                if (j == 2 && k != 12) {
-                    return "nd";
-                }
-                if (j == 3 && k != 13) {
-                    return "rd";
-                }
-                return "th";
-            })(day);
-            const formattedDateWithoutDay = format(dtstart, `MMMM , yyyy`);
-            const formattedDate = formattedDateWithoutDay.replace(', ', `${day}${suffix}, `);
+            try {
+                const dtstart = RRule.fromString(rruleString).origOptions.dtstart;
+                const day = dtstart.getDate();
+                const suffix = ((day) => {
+                    const j = day % 10,
+                        k = day % 100;
+                    if (j == 1 && k != 11) {
+                        return "st";
+                    }
+                    if (j == 2 && k != 12) {
+                        return "nd";
+                    }
+                    if (j == 3 && k != 13) {
+                        return "rd";
+                    }
+                    return "th";
+                })(day);
+                const formattedDateWithoutDay = format(dtstart, `MMMM , yyyy`);
+                const formattedDate = formattedDateWithoutDay.replace(', ', `${day}${suffix}, `);
+                console.log("[CalendarEventDialog.vue/formatDTSTARTDateWithSuffix]: DTSTART date formatted successfully.");
+                return formattedDate;
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/formatDTSTARTDateWithSuffix]: Error formatting DTSTART date: ${error}`);
+                return "";
+            }
+        },
 
-            return formattedDate;
-        }
-
-        // ============================================================================================ //
-
+        // ===================================================================================== //
     },
 };
 </script>

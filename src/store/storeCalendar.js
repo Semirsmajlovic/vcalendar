@@ -84,7 +84,7 @@ const storeCalendar = {
         // ===================================================================================== //
 
 		// Execution:
-        // - Step 2: The function "saveNewEvent" in CalendarEventDialog.vue is triggered before this.
+        // - Step 2: The function "createAndSaveNewShift" in CalendarEventDialog.vue is triggered before this.
 		async actionCreateNewEvent({ commit, dispatch }, payload) {
 			try {
 				const collectionName = payload.isRecurring ? "events" : "exceptions";
