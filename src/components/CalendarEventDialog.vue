@@ -498,8 +498,8 @@ export default {
                     volunteerNames: [], // Assigns the volunteer name to the event
                     driverHelperLimit: "2", // Assigns the driverHelper limit to the event
                     driverHelperNames: [], // Assigns the driverHelper name to the event
-                    start: `${date} 12:00`, // Sets the event start time to 12:00 on the selected date
-                    end: `${date} 16:00`, // Sets the event end time to 16:00 on the selected date
+                    start: `${date} 08:30`, // Sets the event start time to 12:00 on the selected date
+                    end: `${date} 12:30`, // Sets the event end time to 16:00 on the selected date
                     duration: "4", // Sets the event duration to 4 hours
                     isRecurring: false, // Flags the event as non-recurring
                     rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
@@ -508,8 +508,6 @@ export default {
                 console.log("[CalendarEventDialog.vue/openAdminShiftDialogAndPopulateDefaultData]: Admin shift dialog opened successfully with default data populated.");
             } catch (error) {
                 console.error("[CalendarEventDialog.vue/openAdminShiftDialogAndPopulateDefaultData]: Error opening admin shift dialog and populating default data:", error);
-                // Handle the error appropriately
-                // For example, you might want to show a user-friendly error message or perform some cleanup
             }
         },
 
