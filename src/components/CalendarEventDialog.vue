@@ -4,7 +4,7 @@
             v-model="eventOpen" 
             persistent 
             max-width="720"
-            @click:outside="closeAdminShiftDialog(false)"
+            @click:outside="adminShiftDialogOpen(false)"
         >
             <v-card>
 
@@ -14,7 +14,7 @@
                         {{ newEvent ? 'Create Event' : 'Update Event' }}
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-btn depressed @click="closeAdminShiftDialog(false)">
+                    <v-btn depressed @click="adminShiftDialogOpen(false)">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </v-toolbar>
@@ -189,7 +189,7 @@
                                 <v-list-item 
                                     v-for="(item, index) in deleteOptions" 
                                     :key="index" 
-                                    @click="removeEvent(localSelectedEvent, item.action)"
+                                    @click="removeShiftAfterDeleteButtonClicked(localSelectedEvent, item.action)"
                                 >
                                     <v-list-item-title>
                                         {{ item.title }}
@@ -199,7 +199,7 @@
                         </v-menu>
                     </div>
                     <div v-else>
-                        <v-btn :disabled="newEvent" text color="orange" @click="removeEvent(localSelectedEvent)">
+                        <v-btn :disabled="newEvent" text color="orange" @click="removeShiftAfterDeleteButtonClicked(localSelectedEvent)">
                             Delete
                             <v-icon right dark> mdi-trash-can-outline </v-icon>
                         </v-btn>
@@ -255,7 +255,7 @@
                                 <v-list-item
                                     v-for="(item, index) in saveOptions"
                                     :key="index"
-                                    @click="patchEvent(localSelectedEvent, item.action)"
+                                    @click="updateShiftAfterSaveButtonClicked(localSelectedEvent, item.action)"
                                 >
                                     <v-list-item-title>
                                         {{ item.title }}
@@ -270,7 +270,7 @@
                             :disabled="!valid && newEvent"
                             depressed
                             color="green darken-1 white--text"
-                            @click="patchEvent(localSelectedEvent)"
+                            @click="updateShiftAfterSaveButtonClicked(localSelectedEvent)"
                         >
                             Save
                             <v-icon right dark>mdi-content-save</v-icon>
@@ -512,41 +512,40 @@ export default {
         },
 
         // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
-        async patchEvent(payload, patchType) {
+        // Execution:
+        // Step 1: Open "Admin Shift Dialog" -> Click "Save" -> Method is triggered.
+        async updateShiftAfterSaveButtonClicked(payload, patchType) {
             if (payload.isRecurring) {
-                switch (patchType) {
-                    case "updateInstance": {
-                        payload.actionType = this.createActionType("updateInstance", this.originalData);
-                        break;
-                    }
-                    case "updateForward": {
-                        payload.actionType = this.createActionType("updateForward", "");
+                const actionTypeMap = {
+                    updateInstance: () => this.createActionType("updateInstance", this.originalData),
+                    updateForward: () => {
+                        const actionType = this.createActionType("updateForward", "");
                         this.changeDTSTARTdate(payload.start);
-                        break;
-                    }
-                    case "updateAll": {
-                        payload.actionType = this.createActionType("updateAll", "");
-                        break;
-                    }
-                    default:
-                        this.updateSnackMessage(`No actionType in patchEvent`);
-                }
+                        return actionType;
+                    },
+                    updateAll: () => this.createActionType("updateAll", "")
+                };
+                payload.actionType = actionTypeMap[patchType] ? actionTypeMap[patchType]() : this.updateSnackMessage(`No actionType in updateShiftAfterSaveButtonClicked`);
             }
             try {
                 await this.updateEvent(payload);
-                this.updateSnackMessage("Event updated");
+                this.updateSnackMessage("Shift updated successfully.");
+                console.log("[CalendarEventDialog.vue/updateShiftAfterSaveButtonClicked]: Shift updated successfully:", payload);
             } catch (e) {
-                this.updateSnackMessage(`Error ${e}`);
+                console.error("[CalendarEventDialog.vue/updateShiftAfterSaveButtonClicked]: Error updating shift:", e);
+                this.updateSnackMessage(`Error updating shift: ${e.message}`);
             } finally {
-                this.closeAdminShiftDialog();
+                this.adminShiftDialogOpen(false);
             }
         },
 
         // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
         // Execution:
-        // - Step 1: User clicks on "Create" -> This function is triggered.
+        // - Step 1: User clicks on "Create" -> This method is triggered.
         async saveNewEvent(payload) {
             try {
                 await this.actionCreateNewEvent(payload);
@@ -554,65 +553,62 @@ export default {
             } catch (e) {
                 this.updateSnackMessage(`Error ${e}`);
             } finally {
-                this.newEvent = false; // Set newEvent as false.
-                this.closeAdminShiftDialog(); // Close the admin shift dialog.
+                this.newEvent = false;
+                this.adminShiftDialogOpen(false);
             }
         },
 
         // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
-        async removeEvent(payload, removeType) {
-            if (payload.isRecurring) {
-                switch (removeType) {
-                    case "deleteInstance": {
-                        payload.actionType = this.createActionType(
-                            "deleteInstance",
-                            this.originalData
-                        );
-                        break;
+        // Execution:
+        // - Step 1: User clicks on "Delete" -> This method is triggered.
+        async removeShiftAfterDeleteButtonClicked(payload, removeType) {
+            if (payload.isRecurring && removeType) {
+                try {
+                    const actionType = this.createActionType(
+                        removeType === 'deleteInstance' ? 'deleteInstance' :
+                        removeType === 'deleteForward' ? 'deleteForward' :
+                        removeType === 'deleteAll' ? 'deleteAll' : '',
+                        removeType === 'deleteInstance' ? this.originalData : ''
+                    );
+                    if (actionType.description) {
+                        payload.actionType = actionType;
+                    } else {
+                        this.updateSnackMessage(`No actionType in removeShiftAfterDeleteButtonClicked`);
+                        console.error(`[CalendarEventDialog.vue/removeShiftAfterDeleteButtonClicked]: Invalid removeType: ${removeType}`);
+                        return;
                     }
-                    case "deleteForward": {
-                        payload.actionType = this.createActionType(
-                            "deleteForward",
-                            ""
-                        );
-                        break;
-                    }
-                    case "deleteAll": {
-                        payload.actionType = this.createActionType(
-                            "deleteAll",
-                            ""
-                        );
-                        break;
-                    }
-                    default:
-                        this.updateSnackMessage(`No actionType in removeEvent`);
+                } catch (error) {
+                    console.error(`[CalendarEventDialog.vue/removeShiftAfterDeleteButtonClicked]: Error setting actionType in removeShiftAfterDeleteButtonClicked: ${error}`);
+                    this.updateSnackMessage(`Error setting actionType: ${error.message}`);
+                    return;
                 }
             }
-
             try {
                 await this.deleteEvent(payload);
-                this.updateSnackMessage("Event deleted");
+                this.updateSnackMessage("Shift deleted.");
+                console.log("[CalendarEventDialog.vue/removeShiftAfterDeleteButtonClicked]: Shift successfully deleted:", payload);
             } catch (e) {
-                this.updateSnackMessage(`Error ${e}`);
+                console.error(`[CalendarEventDialog.vue/removeShiftAfterDeleteButtonClicked]: Error deleting shift: ${e}`);
+                this.updateSnackMessage(`Error deleting shift: ${e.message}`);
             } finally {
-                this.closeAdminShiftDialog();
+                this.adminShiftDialogOpen(false);
             }
         },
-        closeAdminShiftDialog() {
-            this.adminShiftDialogOpen(false);
-        },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
         createRRULEString(payload) {
             if (!payload.isRecurring) {
                 return "";
             }
-
             let year = new Date(payload.start).getFullYear();
             let monthUTC = new Date(payload.start).getUTCMonth();
             let day = payload.start.substr(8, 2);
             let hour = payload.start.substr(11, 2);
             let minutes = payload.start.substr(14, 2);
-
             const rule = new RRule({
                 freq: RRule.WEEKLY,
                 byweekday:
@@ -628,6 +624,9 @@ export default {
             });
             return rule.toString();
         },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
         /**
          * Retrieves the abbreviation of a weekday based on its index.
