@@ -111,7 +111,7 @@
                             <v-col cols="6" sm="6">
                                 <calendar-until-date-picker
                                     :until="convertUNTILStringToFormattedDate(localUNTIL, '/', 'mmddyyyy')"
-                                    :minimumEventDate="formatDateYYYYMMDD(localSelectedEvent.start)"
+                                    :minimumEventDate="convertDateToISOFormat(localSelectedEvent.start)"
                                     @untilPicked="(...args) => updateRRULEUntilDateTime(localSelectedEvent.start, ...args)"
                                 ></calendar-until-date-picker>
                             </v-col>
@@ -393,7 +393,7 @@ export default {
         // Execution:
         // Step 1: Click on "Calendar Day".
         dateForNewShift(val) {
-            if (this.objectHasProperties(val)) {
+            if (this.isObjectNotEmpty(val)) {
                 this.openAdminShiftDialogAndPopulateDefaultData(val);
                 console.log("[CalendarEventDialog.vue/dateForNewShift]: Watch has triggered.");
             }
@@ -406,7 +406,7 @@ export default {
         // Page Load: Blank Object.
         // Event Click: Returns Shift Object.
         updateLocalStateOnShiftSelectionChange(val) {
-            if (this.objectHasProperties(val)) {
+            if (this.isObjectNotEmpty(val)) {
                 this.newEvent = false;
                 this.localSelectedEvent = val;
             }
@@ -465,22 +465,38 @@ export default {
         ]),
         ...mapMutations("storeCalendar", ["SET_NEW_EVENT_SIGNAL"]),
 
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
-        objectHasProperties(obj) {
-            return Object.keys(obj).length > 0; // Checks if the object has any properties (is not empty)
+        isObjectNotEmpty(obj) {
+            const hasProperties = Object.keys(obj).length > 0;
+            console.log(`[CalendarEventDialog.vue/isObjectNotEmpty]: Object has properties: ${hasProperties}`);
+            return hasProperties;
         },
 
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
         validate() {
             this.$refs.form.validate(); // Triggers validation on the form referenced by "form"
         },
 
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
-        formatDateYYYYMMDD(date) {
+        convertDateToISOFormat(date) {
             if (!date) {
-                return ""; // Returns an empty string if no date is provided
+                console.log("[CalendarEventDialog.vue/convertDateToISOFormat]: No date provided.");
+                return "";
             }
-            return format(parseISO(date), "yyyy-MM-dd"); // Converts the date to "YYYY-MM-DD" format
+            try {
+                const formattedDate = format(parseISO(date), "yyyy-MM-dd"); // Converts the date to "YYYY-MM-DD" format
+                console.log("[CalendarEventDialog.vue/convertDateToISOFormat]: Date converted to ISO format successfully.");
+                return formattedDate;
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/convertDateToISOFormat]: Error converting date to ISO format: ${error}`);
+                return "";
+            }
         },
 
         // ===================================================================================== //
