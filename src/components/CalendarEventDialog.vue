@@ -242,7 +242,6 @@
                                     v-bind="attrs"
                                     v-on="on"
                                     :disabled="!valid"
-                                    @click="validate()"
                                 >
                                     Save
                                     <v-icon right dark>
@@ -472,13 +471,6 @@ export default {
             const hasProperties = Object.keys(obj).length > 0;
             console.log(`[CalendarEventDialog.vue/isObjectNotEmpty]: Object has properties: ${hasProperties}`);
             return hasProperties;
-        },
-
-        // ===================================================================================== //
-        // Method - Accessible from the component's template.
-
-        validate() {
-            this.$refs.form.validate(); // Triggers validation on the form referenced by "form"
         },
 
         // ===================================================================================== //
