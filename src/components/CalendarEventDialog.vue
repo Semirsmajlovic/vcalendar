@@ -428,7 +428,7 @@ export default {
                 try {
                     if (this.newEvent) {
                         if (this.localSelectedEvent.isRecurring) {
-                            this.localSelectedEvent.rruleString = this.createRRULEString(this.localSelectedEvent);
+                            this.localSelectedEvent.rruleString = this.createRRULEStringDuringShiftCreation(this.localSelectedEvent);
                             this.localINTERVAL = this.getINTERVALnumber(this.localSelectedEvent.rruleString);
                             this.localUNTIL = this.getUNTILstring(this.localSelectedEvent.rruleString);
                             console.log("[CalendarEventDialog.vue/updateRRULEForShift]: RRULE for shift updated as the shift is recurring.");
@@ -600,42 +600,60 @@ export default {
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
-        createRRULEString(payload) {
+        // Execution:
+        // - Step 1: Create Shift -> Update "Recurring" Section.
+        createRRULEStringDuringShiftCreation(payload) {
             if (!payload.isRecurring) {
                 return "";
             }
-            let year = new Date(payload.start).getFullYear();
-            let monthUTC = new Date(payload.start).getUTCMonth();
-            let day = payload.start.substr(8, 2);
-            let hour = payload.start.substr(11, 2);
-            let minutes = payload.start.substr(14, 2);
-            const rule = new RRule({
-                freq: RRule.WEEKLY,
-                byweekday:
-                    this.localBYDAY.map((dayNames) => RRule[dayNames]) ||
-                    this.getWeekdayAbbreviationByIndex(
-                        new Date(year, monthUTC, day).getDay()
-                    ),
-                interval: this.localINTERVAL || "1",
-                dtstart: new Date(Date.UTC(year, monthUTC, day, hour, minutes)),
-                until:
-                    this.formatUNTILtoDate(this.localUNTIL) ||
-                    new Date(2025, 0, 1),
-            });
-            return rule.toString();
+            try {
+                const startDate = new Date(payload.start);
+                const year = startDate.getFullYear();
+                const monthUTC = startDate.getUTCMonth();
+                const day = startDate.getDate();
+                const hour = startDate.getHours();
+                const minutes = startDate.getMinutes();
+                const byweekday = this.localBYDAY.length > 0
+                    ? this.localBYDAY.map(dayName => RRule[dayName.toUpperCase()])
+                    : [this.getWeekdayAbbreviationByIndex(startDate.getDay())];
+                const rule = new RRule({
+                    freq: RRule.WEEKLY,
+                    byweekday,
+                    interval: parseInt(this.localINTERVAL, 10) || 1,
+                    dtstart: new Date(Date.UTC(year, monthUTC, day, hour, minutes)),
+                    until: this.formatUNTILtoDate(this.localUNTIL) || new Date(2025, 0, 1),
+                });
+                console.log("[CalendarEventDialog.vue/createRRULEStringDuringShiftCreation]: Created RRule string: ", rule.toString());
+                return rule.toString();
+            } catch (error) {
+                console.error(`[CalendarEventDialog.vue/createRRULEStringDuringShiftCreation]: Error creating RRULE string: ${error}`);
+                return "";
+            }
         },
 
         // ===================================================================================== //
         // Method - Accessible from the component's template.
 
-        /**
-         * Retrieves the abbreviation of a weekday based on its index.
-         * @param {Number} dayNum - The index of the weekday, where 0 is Sunday, 1 is Monday, etc.
-         * @returns {String} The abbreviation of the weekday.
-         */
+        // Notes:
+        // The method getWeekdayAbbreviationByIndex is called to convert a numeric day index into its corresponding weekday abbreviation within the component.
+
+        // Execution:
+        // N/A
         getWeekdayAbbreviationByIndex(dayNum) {
-            return this.weekdayNames[dayNum];
+            if (typeof dayNum !== 'number' || dayNum < 0 || dayNum >= this.weekdayNames.length) {
+                console.error("[CalendarEventDialog.vue/getWeekdayAbbreviationByIndex]: Invalid dayNum argument", dayNum);
+                return '';
+            }
+            try {
+                return this.weekdayNames[dayNum];
+            } catch (error) {
+                console.error("[CalendarEventDialog.vue/getWeekdayAbbreviationByIndex]: Error accessing weekdayNames with dayNum", dayNum, error);
+                return '';
+            }
         },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
         /**
          * Updates the start time in the DTSTART portion of the RRULE string for a recurring event.
