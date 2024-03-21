@@ -483,25 +483,37 @@ export default {
             return format(parseISO(date), "yyyy-MM-dd"); // Converts the date to "YYYY-MM-DD" format
         },
 
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
 
+        // Execution:
+        // Step 2: dateForNewShift -> This method triggers after.
         openAdminShiftDialogAndPopulateDefaultData({ date }) {
-            this.valid = false; // Resets form validation state
-            this.newEvent = true; // Flags that a new event is being created
-            this.localSelectedEvent = {
-                shiftTitle: "", // Assigns the shift title to the event
-                volunteerLimit: "3", // Assigns the volunteer limit to the event
-                volunteerNames: [], // Assigns the volunteer name to the event
-                driverHelperLimit: "2", // Assigns the driverHelper limit to the event
-                driverHelperNames: [], // Assigns the driverHelper name to the event
-                start: `${date} 12:00`, // Sets the event start time to 12:00 on the selected date
-                end: `${date} 16:00`, // Sets the event end time to 16:00 on the selected date
-                duration: "4", // Sets the event duration to 4 hours
-                isRecurring: false, // Flags the event as non-recurring
-                rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
-            };
-            this.adminShiftDialogOpen(true); // Opens the event dialog to show the event details form
+            try {
+                this.valid = false; // Resets form validation state
+                this.newEvent = true; // Flags that a new event is being created
+                this.localSelectedEvent = {
+                    shiftTitle: "", // Assigns the shift title to the event
+                    volunteerLimit: "3", // Assigns the volunteer limit to the event
+                    volunteerNames: [], // Assigns the volunteer name to the event
+                    driverHelperLimit: "2", // Assigns the driverHelper limit to the event
+                    driverHelperNames: [], // Assigns the driverHelper name to the event
+                    start: `${date} 12:00`, // Sets the event start time to 12:00 on the selected date
+                    end: `${date} 16:00`, // Sets the event end time to 16:00 on the selected date
+                    duration: "4", // Sets the event duration to 4 hours
+                    isRecurring: false, // Flags the event as non-recurring
+                    rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
+                };
+                this.adminShiftDialogOpen(true); // Opens the event dialog to show the event details form
+                console.log("[CalendarEventDialog.vue/openAdminShiftDialogAndPopulateDefaultData]: Admin shift dialog opened successfully with default data populated.");
+            } catch (error) {
+                console.error("[CalendarEventDialog.vue/openAdminShiftDialogAndPopulateDefaultData]: Error opening admin shift dialog and populating default data:", error);
+                // Handle the error appropriately
+                // For example, you might want to show a user-friendly error message or perform some cleanup
+            }
         },
 
+        // ===================================================================================== //
 
         async patchEvent(payload, patchType) {
             if (payload.isRecurring) {
