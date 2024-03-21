@@ -158,21 +158,20 @@ export default {
                     .then(() => {})
                     .catch(error => {
                         console.error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Failed to open dialog: ', error); // Logs error if dialog opening fails
-                        this.resetShiftData(); // Resets shift data on failure to open dialog
+                        this.selectedWeekdayNum = 0; // Resets the selected weekday number to its default value
+                        this.selectedShift = {}; // Clears the selected shift data
+                        this.originalData = {}; // Clears the original data stored for comparison or rollback
+                        this.dateForNewShift = {}; // Resets the dateForNewShift object, clearing any data prepared for a new event
                         this.updateSnackMessage(`Error: ${error.message}`); // Displays an error message to the user
                     });
             } catch (error) {
                 console.error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Failed to create event: ', error); // Logs error if the entire operation fails
-                this.resetShiftData(); // Resets shift data on operation failure
+                this.selectedWeekdayNum = 0; // Resets the selected weekday number to its default value
+                this.selectedShift = {}; // Clears the selected shift data
+                this.originalData = {}; // Clears the original data stored for comparison or rollback
+                this.dateForNewShift = {}; // Resets the dateForNewShift object, clearing any data prepared for a new event
                 this.updateSnackMessage(`Error: ${error.message}`); // Displays an error message to the user
             }
-        },
-
-        resetShiftData() {
-            this.selectedWeekdayNum = 0; // Resets the selected weekday number to its default value
-            this.selectedShift = {}; // Clears the selected shift data
-            this.originalData = {}; // Clears the original data stored for comparison or rollback
-            this.dateForNewShift = {}; // Resets the dateForNewShift object, clearing any data prepared for a new event
         },
 
         // ========================================================================================== //
