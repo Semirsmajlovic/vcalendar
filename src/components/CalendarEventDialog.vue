@@ -376,16 +376,15 @@ export default {
             "eventOpen",
             "getIndexEvent",
             "getSelectedParticipant",
-            "newEventSignal",
+            "emitRefreshAndResetNewEventState",
         ]),
         safeVolunteerNames() {
-        return this.localSelectedEvent.volunteerNames || [];
+            return this.localSelectedEvent.volunteerNames || [];
         },
         safeDriverHelperNames() {
             return this.localSelectedEvent.driverHelperNames || [];
         }
     },
-
 
     watch: {
         // ===================================================================================== //
@@ -445,13 +444,16 @@ export default {
         },
 
         // ===================================================================================== //
+        // Watch - Observe and react to data changes.
 
-        newEventSignal() {
-            this.$emit("refresh"); // Emits a "refresh" event to the parent component
-            this.SET_NEW_EVENT_SIGNAL(false); // Calls the Vuex mutation to set the new event signal state to false
+        // Execution:
+        // Keeps watch for changes, to refresh state management.
+        emitRefreshAndResetNewEventState() {
+            this.$emit("refresh");
+            this.SET_NEW_EVENT_SIGNAL(false);
         },
 
-
+        // ===================================================================================== //
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
