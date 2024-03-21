@@ -147,17 +147,20 @@ export default {
                         }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
                     };
 
-
-                    // EmailJS:
                     // Prepare the email data
-                    // const emailParams = {
-                    //     to_name: this.volunteerName,
-                    //     message: "Thank you for signing up as a volunteer. We are excited to have you on board!",
-                    //     reply_to: this.volunteerEmail,
-                    // };
-                    // console.log(emailParams);
-                    // await emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams, 'nQeNPSgRwskhINwUu');
+                    const emailParams = {
+                        to_name: this.volunteerName,
+                        message: "Thank you for signing up as a volunteer. We are excited to have you on board!",
+                        reply_to: this.volunteerEmail,
+                    };
 
+                    // Send the email
+                    await emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams)
+                        .then((response) => {
+                            console.log('SUCCESS!', response.status, response.text);
+                        }, (error) => {
+                            console.log('FAILED...', error);
+                        });
 
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
                     updatePayload = {
