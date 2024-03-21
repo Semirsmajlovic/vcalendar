@@ -21,27 +21,37 @@
                 min-width="auto"
             >
                 <template v-slot:activator="{ on, attrs }">
-                <v-combobox
-                    v-model="dates"
-                    multiple
-                    chips
-                    small-chips
-                    label="Choose dates to volunteer"
-                    prepend-icon="mdi-calendar"
-                    readonly
-                    v-bind="attrs"
-                    v-on="on"
-                ></v-combobox>
+                    <v-combobox
+                        v-model="dates"
+                        multiple
+                        chips
+                        small-chips
+                        label="Choose dates to volunteer"
+                        prepend-icon="mdi-calendar"
+                        readonly
+                        v-bind="attrs"
+                        v-on="on"
+                    >
+                        <template v-slot:selection="{ item, index }">
+                            <v-chip
+                                :key="index"
+                                close
+                                @click:close="removeDate(index)"
+                            >
+                                {{ formatDate(item) }}
+                            </v-chip>
+                        </template>
+                    </v-combobox>
                 </template>
                 <v-date-picker
-                v-model="dates"
-                multiple
-                no-title
-                scrollable
-                >
-                <v-spacer></v-spacer>
-                <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
-                <v-btn text color="primary" @click="$refs.menu.save(dates)">OK</v-btn>
+                    v-model="dates"
+                    multiple
+                    no-title
+                    scrollable
+                    >
+                    <v-spacer></v-spacer>
+                    <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
+                    <v-btn text color="primary" @click="$refs.menu.save(dates)">OK</v-btn>
                 </v-date-picker>
             </v-menu>
           </v-form>
@@ -106,7 +116,28 @@ export default {
                 }, (error) => {
                     console.log('FAILED...', error);
                 });
-        }
+        },
+        formatDate(date) {
+            const dt = new Date(date);
+            const day = dt.getDate();
+            const month = dt.toLocaleString('en-US', { month: 'long' });
+            const year = dt.getFullYear();
+            const suffix = this.getDaySuffix(day);
+
+            return `${month} ${day}${suffix}, ${year}`;
+        },
+        getDaySuffix(day) {
+            if (day > 3 && day < 21) return 'th';
+            switch (day % 10) {
+                case 1:  return "st";
+                case 2:  return "nd";
+                case 3:  return "rd";
+                default: return "th";
+            }
+        },
+        removeDate(index) {
+            this.dates.splice(index, 1);
+        },
     }
 }
 </script>

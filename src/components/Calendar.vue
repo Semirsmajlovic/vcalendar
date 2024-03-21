@@ -46,6 +46,7 @@
                     :events="shifts"
                     event-color="#f1f3f4"
                     event-text-color="#333"
+                    :event-margin-bottom="5"
                     :event-height="135"
                     :events-more="false"
                     :show-week="false"

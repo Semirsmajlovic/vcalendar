@@ -72,7 +72,8 @@
 <script>
 import { db } from '../main.js';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import emailjs from 'emailjs-com'
+import emailjs from 'emailjs-com';
+
 export default {
     name: 'CalendarVolunteerDialog',
     props: {

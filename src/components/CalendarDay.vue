@@ -82,8 +82,10 @@ export default {
 <style lang="scss" scoped>
 /* day event container styling */
 .event__inner {
-    outline: 1px solid #cccccc; /* Light gray outline */
-    outline-offset: -1px; /* Adjusts the outline to be inside the element if needed */
+    box-shadow: 0 0 0 2px #000000;
+    border-top: 3px solid #2091ea;
+    /* No need for outline and outline-offset properties */
+
     &:hover {
         background-color: #e3eefa;
     }
