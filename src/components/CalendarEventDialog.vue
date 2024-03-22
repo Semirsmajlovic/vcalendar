@@ -642,7 +642,7 @@ export default {
                     byweekday,
                     interval: parseInt(this.localINTERVAL, 10) || 1,
                     dtstart: new Date(Date.UTC(year, monthUTC, day, hour, minutes)),
-                    until: this.convertUNTILStringToDate(this.localUNTIL) || new Date(2025, 0, 1),
+                    until: this.convertUNTILStringToDate(this.localUNTIL) || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 });
                 console.log("[CalendarEventDialog.vue/createRRULEStringDuringShiftCreation]: Created RRule string: ", rule.toString());
                 return rule.toString();
