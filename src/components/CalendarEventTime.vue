@@ -14,7 +14,7 @@
             >
                 <template v-slot:activator="{ on, attrs }">
                     <v-text-field
-                        v-model="compuStart"
+                        :value="formattedCompuStart"
                         label="Start Time"
                         readonly
                         v-bind="attrs"
@@ -25,9 +25,11 @@
                     :allowed-minutes="allowedStep"
                     v-if="menu_start"
                     v-model="compuStart"
-                    full-width
+                    ampm-in-title
+                    format="ampm"
                     @click:minute="$refs.menu.save(compuStart)"
                     use-ampm
+                    full-width
                 ></v-time-picker>
             </v-menu>
         </v-col>
@@ -41,7 +43,7 @@
         </v-col>
         <v-col cols="4">
             <v-text-field
-                v-model="compuEnd"
+                :value="formattedCompuEnd"
                 label="End time"
                 disabled
             ></v-text-field>
@@ -120,6 +122,40 @@ export default {
                 this.event.end = format(addMinutes(parseISO(this.event.start), minutesToAdd),"yyyy-MM-dd HH:mm");
             },
         },
+        formattedCompuStart: {
+            get() {
+                // Assuming compuStart is in 'HH:mm' format (24-hour format)
+                if (!this.compuStart) return '';
+                let [hour, minute] = this.compuStart.split(':');
+                const h = parseInt(hour, 10);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                hour = h % 12;
+                hour = hour ? hour : 12; // Convert '0' hour to '12'
+                minute = parseInt(minute, 10); // Remove any leading zeros
+
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+            },
+            set(value) {
+                // The setter is not needed for display purposes only
+            }
+        },
+        formattedCompuEnd: {
+            get() {
+                // Assuming compuEnd is in 'HH:mm' format (24-hour format)
+                if (!this.compuEnd) return '';
+                let [hour, minute] = this.compuEnd.split(':');
+                const h = parseInt(hour, 10);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                hour = h % 12;
+                hour = hour ? hour : 12; // Convert '0' hour to '12'
+                minute = parseInt(minute, 10); // Remove any leading zeros
+
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+            },
+            set(value) {
+                // The setter is not needed for display purposes only
+            }
+        }
     },
     watch: {
         start_time(val) {
