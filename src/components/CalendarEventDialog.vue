@@ -57,12 +57,13 @@
 
                     <calendar-event-time
                         :event="localSelectedEvent"
-                        @startTimeChanged="
-                            (...args) => {
-                                updateRecurringEventStartTime(...args), 
-                                updateRRULEUntilDateTime(...args, convertUNTILStringToFormattedDate(localUNTIL, '-', 'yyyymmdd'));
-                            }
-                        "
+                        @startTimeChanged="(...args) => {
+                            updateRecurringEventStartTime(...args), 
+                            updateRRULEUntilDateTime(
+                                ...args, 
+                                convertUNTILStringToFormattedDate(localUNTIL, '-', 'yyyymmdd')
+                            );
+                        }"
                     ></calendar-event-time>
 
                     <v-row v-if="localSelectedEvent.isRecurring || newEvent" align="start" no-gutters>
