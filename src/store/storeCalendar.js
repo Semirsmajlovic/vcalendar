@@ -19,8 +19,8 @@ const storeCalendar = {
 	},
 	actions: {
 		async initInstances({ commit, dispatch }, payload) {
-			const logPrefix = "[storeCalendar.js/initInstances]:";
 			try {
+
 				// Fetch events from Firestore
 				const eventsCollectionRef = collection(db, "events");
 				const eventsSnapshot = await getDocs(eventsCollectionRef);
@@ -31,36 +31,53 @@ const storeCalendar = {
 					}
 					return { id: doc.id, ...data };
 				});
-		
+
 				// Fetch exceptions from Firestore
 				const exceptionsCollectionRef = collection(db, "exceptions");
 				const exceptionsSnapshot = await getDocs(exceptionsCollectionRef);
 				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-		
+
 				// Set the Vuex state.
 				commit('SET_INIT_RECURRING_SHIFTS', events);
 				commit('SET_INIT_EXCEPTIONS', exceptions);
-		
-				let allEvents = createAllEvents(events, exceptions, getFocus(payload.focus), '', '');
-		
+
+				let allEvents = createAllEvents(
+					events,
+					exceptions,
+					getFocus(payload.focus),
+					'',
+					''
+				);
+
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
 				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteerNames'); // Previous: caregiver
 				let clNames = getNamesInView(allEvents, payload.focus, 'driverHelperNames'); // Previous: client
-		
+
 				// Set the names.
-				commit('SET_NAMES', [cgNames, clNames]);
-		
+				commit('SET_NAMES', [
+					cgNames,
+					clNames
+				]);
+
+				let { name, type } = payload;
+
 				// If name and type is provided, filter allEvents to that participant only
-				if (payload.name || payload.type) {
+				if (name || type) {
 					allEvents = allEvents.filter((event) => {
-						return event[payload.type]?.some(participant => participant.name == payload.name);
+						let isMatching = false;
+						if (event[type] && Array.isArray(event[type])) { // Ensure the property exists and is an array
+							for (var participant of event[type]) {
+								if (participant.name == name) {
+									isMatching = true;
+								}
+							}
+						}
+						return isMatching;
 					});
 				}
 				commit('SET_INIT_INSTANCES', allEvents);
-				console.log(`${logPrefix} Instances initialized successfully.`);
 			} catch (e) {
-				console.error(`${logPrefix} Error initializing instances: ${e}`);
-				dispatch('updateSnackMessage', `Error: ${e.message}`, { root: true });
+				dispatch('updateSnackMessage', `Error at ${e}`, { root: true });
 			}
 		},
 

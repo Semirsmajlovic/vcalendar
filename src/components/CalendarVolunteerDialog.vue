@@ -72,6 +72,7 @@
 <script>
 import { db } from '../main.js';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { mapActions } from "vuex";
 import emailjs from 'emailjs-com';
 
 export default {
@@ -132,36 +133,55 @@ export default {
         }
     },
     methods: {
+        ...mapActions(["updateSnackMessage"]),
         async updateEvent() {
             try {
-                const shift = this.selectedShift; // Retrieves the selected shift object from component data
+                const shift = this.selectedShift;
                 let docRef;
                 if (shift.isRecurring) {
-                    docRef = doc(db, "events", shift.id); // Sets docRef to a Firestore document reference in the "events" collection if the shift is recurring
+                    docRef = doc(db, "events", shift.id);
                 } else {
-                    docRef = doc(db, "exceptions", shift.id); // Sets docRef to a Firestore document reference in the "exceptions" collection if the shift is not recurring
+                    docRef = doc(db, "exceptions", shift.id);
                 }
+
+                // Convert input name and email to lowercase for case-insensitive comparison
+                const inputName = this.selectedRole === 'Volunteer' ? this.volunteerName.toLowerCase() : this.driverHelperName.toLowerCase();
+                const inputEmail = this.selectedRole === 'Volunteer' ? this.volunteerEmail.toLowerCase() : this.driverHelperEmail.toLowerCase();
+
+                // Check if the user's name and email combination already exists (case-insensitive)
+                const nameEmailCombinationExists = (this.selectedRole === 'Volunteer' && shift.volunteerNames?.some(v => v.name.toLowerCase() === inputName && v.email.toLowerCase() === inputEmail)) ||
+                    (this.selectedRole === 'Driver / Driver Helper' && shift.driverHelperNames?.some(d => d.name.toLowerCase() === inputName && d.email.toLowerCase() === inputEmail));
+
+                if (nameEmailCombinationExists) {
+                    this.updateSnackMessage(`You have already registered to participate.`);
+                    console.log("User already registered for this shift.");
+                    this.$emit('dialogs-completed');
+                    this.close();
+                    return;
+                }
+
                 let updatePayload = {};
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
-                        volunteerNames: arrayUnion({ 
-                            name: this.volunteerName, 
-                            email: this.volunteerEmail 
-                        }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
+                        volunteerNames: arrayUnion({
+                            name: this.volunteerName,
+                            email: this.volunteerEmail
+                        })
                     };
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
                     updatePayload = {
-                        driverHelperNames: arrayUnion({ 
-                            name: this.driverHelperName, 
-                            email: this.driverHelperEmail 
-                        }) // Prepares the payload to add a new driver/helper to the driverHelperNames array in the document
+                        driverHelperNames: arrayUnion({
+                            name: this.driverHelperName,
+                            email: this.driverHelperEmail
+                        })
                     };
                 }
-                await updateDoc(docRef, updatePayload); // Updates the Firestore document with the new volunteer or driver/helper information
+
+                await updateDoc(docRef, updatePayload);
                 this.$emit('dialogs-completed');
-                this.close(); // Closes the dialog after successful update
+                this.close();
             } catch (error) {
-                console.error("Failed to update event: ", error); // Logs an error if the update fails
+                console.error("Failed to update event: ", error);
             }
         },
         resetDialog() {
