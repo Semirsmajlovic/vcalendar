@@ -83,8 +83,6 @@
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";
-import { db } from '../main.js'; // Assuming this is the path to your Firebase initialization
-import { deleteDoc, collection, getDocs } from 'firebase/firestore';
 import CalendarDay from "./CalendarDay.vue";
 import CalendarToolBar from "./CalendarToolBar.vue";
 import CalendarSideBar from "./CalendarSideBar.vue";

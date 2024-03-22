@@ -87,18 +87,15 @@ export default {
     },
     methods: {
         ...mapMutations(["drawerChange"]),
-
         deleteCollections() {
             this.$store.dispatch('deleteCollectionsAndRefresh')
             .then(() => {
-            // Handle success, maybe show a notification
+                window.location.reload();
             })
             .catch(error => {
-            // Handle error, maybe show an error notification
             console.error("Failed to delete collections:", error);
             });
         },
-
         changeDrawer() {
             this.drawerChange();
         },
