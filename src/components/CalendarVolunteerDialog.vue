@@ -73,13 +73,10 @@
 import { db } from '../main.js';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { mapActions } from "vuex";
-import emailjs from 'emailjs-com';
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
     name: 'CalendarVolunteerDialog',
-    mounted() {
-        emailjs.init("nQeNPSgRwskhINwUu");
-    },
     props: {
         value: Boolean,
         selectedShift: {
@@ -134,6 +131,9 @@ export default {
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
+        generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        },
         async updateEvent() {
             try {
                 const shift = this.selectedShift;
@@ -164,6 +164,7 @@ export default {
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
                         volunteerNames: arrayUnion({
+                            id: uuidv4(), // Generate a unique ID for the volunteer
                             name: this.volunteerName,
                             email: this.volunteerEmail
                         })
@@ -171,6 +172,7 @@ export default {
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
                     updatePayload = {
                         driverHelperNames: arrayUnion({
+                            id: uuidv4(), // Generate a unique ID for the driver/helper
                             name: this.driverHelperName,
                             email: this.driverHelperEmail
                         })
