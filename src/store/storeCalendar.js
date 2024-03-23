@@ -253,6 +253,7 @@ const storeCalendar = {
 		updateSelectedParticipant({ commit }, participant) {
 			const logPrefix = "[storeCalendar.js/updateSelectedParticipant]:";
 			try {
+				console.log(participant);
 				commit('SET_PARTICIPANT', participant);
 				console.log(`${logPrefix} Participant updated successfully.`, participant);
 			} catch (error) {

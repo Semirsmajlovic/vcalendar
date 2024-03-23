@@ -196,6 +196,7 @@ export default {
         async loadAndUpdateShifts() {
             this.isBusy = true;
             try {
+                // this.getSelectedParticipant: { name: "Michael Smith", type: "volunteerName" }
                 await this.initInstances({ focus: this.focus, name: this.getSelectedParticipant.name, type: this.getSelectedParticipant.type });
             } catch (e) {
                 this.updateSnackMessage(`Error loading ${e} `);

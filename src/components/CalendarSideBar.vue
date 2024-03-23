@@ -154,8 +154,8 @@ export default {
         ...mapActions("storeCalendar", ["updateSelectedParticipant"]),
         ...mapMutations(["drawerChange"]),
 
-
-        async eventsByName(name, type) { // name: Semir 1 / type: volunteerNames
+        // Return: name = "Michael Smith"
+        async eventsByName(name, type) {
             try {
                 await this.updateSelectedParticipant({ name, type });
                 this.$emit("selectedParticipant");
