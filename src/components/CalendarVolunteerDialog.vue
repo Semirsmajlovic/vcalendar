@@ -124,12 +124,12 @@ export default {
             roles: ['Volunteer', 'Driver / Driver Helper'],
             rules: {
                 name: [
-                    v => !!v || 'Name is required. Example: John Doe',
-                    v => /^[a-zA-Z\s]*$/.test(v) || 'Name must contain only letters and spaces',
+                    v => !!v || 'Name is required.',
+                    v => /^[a-zA-Z\s]*$/.test(v) || 'Name must contain only letters and spaces.',
                 ],
                 email: [
-                    v => !!v || 'E-mail is required',
-                    v => /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid and contain only letters and numbers before the @',
+                    v => !!v || 'E-mail is required.',
+                    v => /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid.',
                 ],
             },
         };
@@ -182,18 +182,19 @@ export default {
                 const inputName = this.selectedRole === 'Volunteer' ? this.volunteerName.toLowerCase() : this.driverHelperName.toLowerCase();
                 const inputEmail = this.selectedRole === 'Volunteer' ? this.volunteerEmail.toLowerCase() : this.driverHelperEmail.toLowerCase();
 
-                // Check if the user's name and email combination already exists (case-insensitive)
-                const nameEmailCombinationExists = (this.selectedRole === 'Volunteer' && shift.volunteerNames?.some(v => v.name.toLowerCase() === inputName && v.email.toLowerCase() === inputEmail)) ||
-                    (this.selectedRole === 'Driver / Driver Helper' && shift.driverHelperNames?.some(d => d.name.toLowerCase() === inputName && d.email.toLowerCase() === inputEmail));
+                // Check if the user's name and email combination already exists in either role (case-insensitive)
+                const nameEmailCombinationExistsInVolunteers = shift.volunteerNames?.some(v => v.name.toLowerCase() === inputName && v.email.toLowerCase() === inputEmail);
+                const nameEmailCombinationExistsInDriverHelpers = shift.driverHelperNames?.some(d => d.name.toLowerCase() === inputName && d.email.toLowerCase() === inputEmail);
 
-                // Does the name and email combination already exist? Return.
-                if (nameEmailCombinationExists) {
-                    this.updateSnackMessage(`You have already registered to participate.`);
-                    console.log("User already registered for this shift.");
+                // Does the name and email combination already exist in any role? Return.
+                if (nameEmailCombinationExistsInVolunteers || nameEmailCombinationExistsInDriverHelpers) {
+                    this.updateSnackMessage(`You have already registered to participate in one of the roles.`);
+                    console.log("User already registered for this shift in one of the roles.");
                     this.$emit('dialogs-completed');
                     this.close();
                     return;
                 }
+
                 let updatePayload = {};
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
