@@ -1,5 +1,5 @@
 <template>
-    <v-form ref="form">
+    <v-form ref="form" v-model="formValid">
         <v-dialog v-model="dialog" persistent max-width="600px" @click:outside="close">
             <v-card>
                 <v-card-title>
@@ -17,8 +17,18 @@
                     <div v-if="selectedRole === 'Volunteer' && !isVolunteerLimitReached">
                         <h3>General Volunteer Signup</h3>
                         <p>As a general volunteer, you'll have the opportunity to contribute through various tasks and activities that support our cause.</p>
-                        <v-text-field v-model="volunteerName" type="text" label="Volunteer Name" required name="volunteerName"></v-text-field>
-                        <v-text-field v-model="volunteerEmail" type="email" label="Volunteer Email (Optional)" name="volunteerEmail"></v-text-field>
+                        <v-text-field
+                            v-model="volunteerName"
+                            :rules="rules.name"
+                            label="Volunteer Name"
+                            required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="volunteerEmail"
+                            :rules="rules.email"
+                            label="Volunteer Email"
+                            required
+                        ></v-text-field>
                     </div>
                     <v-alert 
                         v-else-if="selectedRole === 'Volunteer'" 
@@ -35,8 +45,18 @@
                         <h3>Driver / Helper Volunteer</h3>
                         <p>As a driver or helper, you play a crucial role in logistics and transportation, ensuring resources and people reach where they are needed most.</p>
                         <!-- Add your Driver / Helper specific fields here -->
-                        <v-text-field v-model="driverHelperName" type="text" label="Driver or Driver Helper Name" required name="driverHelperName"></v-text-field>
-                        <v-text-field v-model="driverHelperEmail" type="email" label="Driver or Driver Helper Email" required name="driverHelperEmail"></v-text-field>
+                        <v-text-field
+                            v-model="driverHelperName"
+                            :rules="rules.name"
+                            label="Driver or Driver Helper Name"
+                            required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="driverHelperEmail"
+                            :rules="rules.email"
+                            label="Driver or Driver Helper Email"
+                            required
+                        ></v-text-field>
                         <v-alert
                             class="mt-3"
                             border="top"
@@ -62,7 +82,13 @@
                 <v-card-actions>
                     <v-btn color="grey darken-1" text @click="close">Close</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn :disabled="!canParticipate" color="primary" @click="updateEvent">Participate</v-btn>
+                    <v-btn
+                        :disabled="!canParticipate || !formValid"
+                        color="primary"
+                        @click="updateEvent"
+                    >
+                        Participate
+                    </v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -88,6 +114,7 @@ export default {
     },
     data() {
         return {
+            formValid: false,
             dialog: this.value,
             selectedRole: 'Volunteer',
             volunteerName: '',
@@ -95,6 +122,16 @@ export default {
             driverHelperName: '',
             driverHelperEmail: '',
             roles: ['Volunteer', 'Driver / Driver Helper'],
+            rules: {
+                name: [
+                    v => !!v || 'Name is required. Example: John Doe',
+                    v => /^[a-zA-Z\s]*$/.test(v) || 'Name must contain only letters and spaces',
+                ],
+                email: [
+                    v => !!v || 'E-mail is required',
+                    v => /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid and contain only letters and numbers before the @',
+                ],
+            },
         };
     },
     computed: {
@@ -131,9 +168,6 @@ export default {
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
-        generateUniqueId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        },
         async updateEvent() {
             try {
                 const shift = this.selectedShift;
@@ -152,6 +186,7 @@ export default {
                 const nameEmailCombinationExists = (this.selectedRole === 'Volunteer' && shift.volunteerNames?.some(v => v.name.toLowerCase() === inputName && v.email.toLowerCase() === inputEmail)) ||
                     (this.selectedRole === 'Driver / Driver Helper' && shift.driverHelperNames?.some(d => d.name.toLowerCase() === inputName && d.email.toLowerCase() === inputEmail));
 
+                // Does the name and email combination already exist? Return.
                 if (nameEmailCombinationExists) {
                     this.updateSnackMessage(`You have already registered to participate.`);
                     console.log("User already registered for this shift.");
@@ -159,7 +194,6 @@ export default {
                     this.close();
                     return;
                 }
-
                 let updatePayload = {};
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
@@ -178,7 +212,6 @@ export default {
                         })
                     };
                 }
-
                 await updateDoc(docRef, updatePayload);
                 this.$emit('dialogs-completed');
                 this.close();
