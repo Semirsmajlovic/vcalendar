@@ -21,65 +21,76 @@
             </v-col>
         </v-row>
         <v-row class="fill-height">
-        <v-col>
-          <v-row>
-            <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
-
-              <!-- Start: Calendar Toolbar -->
-              <calendar-tool-bar
-                :reference="this.$refs.calendar"
-                :focus="focus"
-                :shifts="shifts"
-                :propType="type"
-                @todayButtonClick="viewToday"
-                @typeDay="updateCalendarViewType('day')"
-                @typeWeek="updateCalendarViewType('week')"
-                @typeMonth="updateCalendarViewType('month')"
-                @type4day="updateCalendarViewType('4day')"
-              ></calendar-tool-bar>
-              <!-- End: Calendar Toolbar -->
-                <div class="printInformationArea"></div>
-                <v-calendar
-                    ref="calendar"
-                    v-model="focus"
-                    :type="type"
-                    :events="shifts"
-                    event-color="#f1f3f4"
-                    event-text-color="#333"
-                    :event-margin-bottom="5"
-                    :event-height="135"
-                    :events-more="false"
-                    :show-week="false"
-                    @click:event="handleClickEvent"
-                    @click:date="!isDateBeforeToday($event) && isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
-                    @click:day="!isDateBeforeToday($event) && isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
-                    @change="loadAndUpdateShifts"
-                >
-                <template v-slot:event="{ event }">
-                  <calendar-day :event="event" :is-logged-in="isLoggedIn"></calendar-day>
-                </template>
-              </v-calendar>
+            <v-col>
+                <!-- Start: Calendar Toolbar -->
+                <calendar-tool-bar
+                    :reference="this.$refs.calendar"
+                    :focus="focus"
+                    :shifts="shifts"
+                    :propType="type"
+                    @todayButtonClick="viewToday"
+                    @typeDay="updateCalendarViewType('day')"
+                    @typeWeek="updateCalendarViewType('week')"
+                    @typeMonth="updateCalendarViewType('month')"
+                    @type4day="updateCalendarViewType('4day')"
+                ></calendar-tool-bar>
+                <!-- End: Calendar Toolbar -->
+                <v-row>
+                    <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
+                        <v-overlay
+                            :value="isBusy"
+                            :opacity="0.6"
+                            color="white"
+                        >
+                            <v-progress-circular
+                                indeterminate
+                                color="blue"
+                                size="128"
+                            ></v-progress-circular>
+                        </v-overlay>
+                        <div class="printInformationArea"></div>
+                        <v-calendar
+                            ref="calendar"
+                            v-model="focus"
+                            :type="type"
+                            :events="shifts"
+                            event-color="#f1f3f4"
+                            event-text-color="#333"
+                            :event-margin-bottom="5"
+                            :event-height="135"
+                            :events-more="false"
+                            :show-week="false"
+                            @click:event="handleClickEvent"
+                            @click:date="!isDateBeforeToday($event) && isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
+                            @click:day="!isDateBeforeToday($event) && isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
+                            @change="loadAndUpdateShifts"
+                        >
+                        <template v-slot:event="{ event }">
+                        <calendar-day :event="event" :is-logged-in="isLoggedIn"></calendar-day>
+                        </template>
+                    </v-calendar>
+                    </v-col>
+                    <v-col v-if="isLoggedIn" cols="12" lg="2">
+                    <calendar-side-bar @selectedParticipant="loadAndUpdateShifts()" :focus="focus"></calendar-side-bar>
+                    </v-col>
+                </v-row>
             </v-col>
-            <v-col v-if="isLoggedIn" cols="12" lg="2">
-              <calendar-side-bar @selectedParticipant="loadAndUpdateShifts()" :focus="focus"></calendar-side-bar>
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
-      <calendar-event-dialog
-        :dateForNewShift="dateForNewShift"
-        :updateLocalStateOnShiftSelectionChange="selectedShift"
-        :selectedWeekdayNum="selectedWeekdayNum"
-        :originalData="originalData"
-        @refresh="loadAndUpdateShifts()"
-      ></calendar-event-dialog>
-      <calendar-volunteer-dialog
-        v-model="showVolunteerDialog"
-        :selectedShift="selectedShift"
-        @dialogs-completed="fetchUpdatedShifts"
-      ></calendar-volunteer-dialog>
+        </v-row>
+        <!-- Components -->
+        <calendar-event-dialog
+            :dateForNewShift="dateForNewShift"
+            :updateLocalStateOnShiftSelectionChange="selectedShift"
+            :selectedWeekdayNum="selectedWeekdayNum"
+            :originalData="originalData"
+            @refresh="loadAndUpdateShifts()"
+        ></calendar-event-dialog>
+        <calendar-volunteer-dialog
+            v-model="showVolunteerDialog"
+            :selectedShift="selectedShift"
+            @dialogs-completed="fetchUpdatedShifts"
+        ></calendar-volunteer-dialog>
     </v-container>
-  </template>
+</template>
 
 <script>
 import { mapGetters, mapActions, mapMutations } from "vuex";

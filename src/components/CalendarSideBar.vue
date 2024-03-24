@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-16">
+    <div>
         <v-navigation-drawer
             v-model="drawerSwitch"
             width="100%"
