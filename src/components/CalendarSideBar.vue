@@ -75,10 +75,6 @@
                         </template>
                     </v-virtual-scroll>
                 </v-list-group>
-
-
-                
-
             </v-list>
         </v-navigation-drawer>
     </div>
