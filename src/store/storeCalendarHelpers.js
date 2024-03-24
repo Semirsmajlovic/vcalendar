@@ -27,18 +27,12 @@ export function getFocus(focus) {
 
 export function getNamesInView(allEvents, current, type) {
 	try {
-
-		// Return: 2024-03
 		const focusedMonth = getFocus(current);
 		console.log("[getNamesInView}: ", focusedMonth);
-
-		// Return: Array of event objects, which have volunteerNames and driverHelperNames arrays.
         const filteredEvents = allEvents.filter((event) => {
             return event.start.includes(focusedMonth);
         });
 		console.log("[getNamesInView}: ", filteredEvents);
-
-		// Return: ["Michael Smith", "Michael Smith"]
         const names = filteredEvents.flatMap((event) => {
             if (Array.isArray(event[type])) {
                 return event[type].map(participant => participant.name);
@@ -47,17 +41,12 @@ export function getNamesInView(allEvents, current, type) {
             }
         });
 		console.log("[getNamesInView}: ", names);
-
-		// Return: ["Michael Smith", "Michael Smith"]
         const sortedNames = names.sort((a, b) => {
             return a.split(' ')[1].localeCompare(b.split(' ')[1]);
         });
 		console.log("[getNamesInView}: ", sortedNames);
-
-		// Return: ["Michael"]
         const uniqueNames = [...new Set(sortedNames)];
 		console.log("[getNamesInView}: ", uniqueNames);
-
         return uniqueNames;
 	}  catch (error) {
 		console.error(`Error in getNamesInView: ${error}`);

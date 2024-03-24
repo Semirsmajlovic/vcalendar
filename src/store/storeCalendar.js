@@ -338,11 +338,11 @@ const storeCalendar = {
 			return state.exceptions;
 		},
 		eventOpen: (state) => state.eventOpen,
-		getNamesVolunteers: (state) => state.volunteerNames,
-		getNamesDriverHelpers: (state) => state.driverHelperNames,
 		emitRefreshAndResetNewEventState: (state) => state.emitRefreshAndResetNewEventState,
 
 
+		getNamesVolunteers: (state) => state.volunteerNames,
+		getNamesDriverHelpers: (state) => state.driverHelperNames,
 		getSelectedParticipant: (state) => state.selectedParticipant,
 
 
@@ -366,6 +366,8 @@ const storeCalendar = {
 				return element.id === data.id && element.actionType.originalData.start === data.start;
 			});
 		},
+
+
 		getNames: (state, getters) => (current, type) => {
 			return [
 				...new Set(
@@ -381,6 +383,8 @@ const storeCalendar = {
 				)
 			];
 		},
+
+		
 	}
 };
 

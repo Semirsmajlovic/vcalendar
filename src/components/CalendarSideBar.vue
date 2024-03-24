@@ -150,16 +150,20 @@ export default {
         ...mapActions("storeCalendar", ["updateSelectedParticipant"]),
         ...mapMutations(["drawerChange"]),
 
-        // Return: name = "Michael Smith"
-        async eventsByName(name, type) {
+
+
+        // Email has been added.
+        async eventsByName(name, email, type) {
             try {
-                await this.updateSelectedParticipant({ name, type });
+                await this.updateSelectedParticipant({ name, email, type });
                 this.$emit("selectedParticipant");
                 this.drawerChange();
             } catch (error) {
                 console.error("[CalendarSideBar/eventsByName]: Error updating selected participant.", error);
             }
         },
+
+
 
 
         handleGroupToggle(groupName) {
