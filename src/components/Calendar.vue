@@ -51,8 +51,8 @@
                     :events-more="false"
                     :show-week="false"
                     @click:event="handleClickEvent"
-                    @click:date="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
-                    @click:day="isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
+                    @click:date="!isDateBeforeToday($event) && isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
+                    @click:day="!isDateBeforeToday($event) && isLoggedIn ? prepareAndOpenShiftCreationDialog($event) : null"
                     @change="loadAndUpdateShifts"
                 >
                 <template v-slot:event="{ event }">
@@ -135,21 +135,40 @@ export default {
             this.focus = "";
         },
 
+        isDateBeforeToday(dateStr) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to 00:00:00 for accurate comparison
+            const eventDate = new Date(dateStr);
+            return eventDate < today; // Returns true if eventDate is before today
+        },
+
         fetchUpdatedShifts() {
             this.loadAndUpdateShifts(); // Assuming this method refreshes the shifts displayed in the calendar
         },
 
         handleClickEvent(event) {
-            if (this.isLoggedIn) {
-                this.handleShiftSelection(event);
-            } else {
-                this.openVolunteerDialog(event);
+            // Extracting the date string from event.day
+            const eventDateStr = event.day.date;
+            if (!this.isDateBeforeToday(eventDateStr)) {
+                if (this.isLoggedIn) {
+                    this.handleShiftSelection(event);
+                } else {
+                    this.openVolunteerDialog(event);
+                }
             }
+            // If the event's date is before today, do nothing.
         },
 
         // ========================================================================================== //
 
         prepareAndOpenShiftCreationDialog(day) {
+            // Check if the selected day is before today and exit if true
+            if (this.isDateBeforeToday(day.date)) {
+                this.updateSnackMessage(`Shift creation is not permitted for past dates or the current day.`);
+                console.warn('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Attempted to create or edit a shift for a past date.');
+                return; // Exit the method to prevent opening the dialog for past dates
+            }
+
             try {
                 if (typeof day.weekday === 'undefined') {
                     throw new Error('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Invalid day object: missing weekday'); // Validates the day object to ensure it has a 'weekday' property
