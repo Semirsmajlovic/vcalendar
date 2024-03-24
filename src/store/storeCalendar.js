@@ -50,8 +50,12 @@ const storeCalendar = {
 				);
 
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
+				// Return: ['Semir Smajlovic']
 				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteerNames'); // Previous: caregiver
+				console.warn("[storeCalendar.js/cgNames]: ", cgNames);
+
 				let clNames = getNamesInView(allEvents, payload.focus, 'driverHelperNames'); // Previous: client
+				console.warn("[storeCalendar.js/clNames]: ", clNames);
 
 				// Set the names.
 				commit('SET_NAMES', [
@@ -384,7 +388,7 @@ const storeCalendar = {
 			];
 		},
 
-		
+
 	}
 };
 

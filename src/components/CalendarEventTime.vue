@@ -37,6 +37,7 @@
             <v-text-field
                 label="Shift Duration"
                 v-model="compuDur"
+                hint="Example: 4.25 (4 Hours, 15 Minutes)"
                 @blur="duration = compuDur"
                 :rules="rulesDuration"
             ></v-text-field>

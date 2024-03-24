@@ -21,13 +21,24 @@
                             v-model="volunteerName"
                             :rules="rules.name"
                             label="Volunteer Name"
+                            hint="Example: Bob Smith"
+                            persistent-hint
                             required
                         ></v-text-field>
                         <v-text-field
                             v-model="volunteerEmail"
                             :rules="rules.email"
                             label="Volunteer Email"
+                            hint="Example: bobsmith@yahoo.com"
+                            persistent-hint
                             required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="volunteerPhone"
+                            :rules="rules.phone"
+                            label="Volunteer Phone (Optional)"
+                            hint="Example: 123-456-7890"
+                            persistent-hint
                         ></v-text-field>
                     </div>
                     <v-alert 
@@ -49,16 +60,27 @@
                             v-model="driverHelperName"
                             :rules="rules.name"
                             label="Driver or Driver Helper Name"
+                            hint="Example: Bob Smith"
+                            persistent-hint
                             required
                         ></v-text-field>
                         <v-text-field
                             v-model="driverHelperEmail"
                             :rules="rules.email"
                             label="Driver or Driver Helper Email"
+                            hint="Example: bobsmith@yahoo.com"
+                            persistent-hint
                             required
                         ></v-text-field>
+                        <v-text-field
+                            v-model="driverHelperPhone"
+                            :rules="rules.phone"
+                            label="Driver / Helper Phone (Optional)"
+                            hint="Example: 123-456-7890"
+                            persistent-hint
+                        ></v-text-field>
                         <v-alert
-                            class="mt-3"
+                            class="mt-6"
                             border="top"
                             color="info"
                             colored-border
@@ -119,8 +141,10 @@ export default {
             selectedRole: 'Volunteer',
             volunteerName: '',
             volunteerEmail: '',
+            volunteerPhone: '',
             driverHelperName: '',
             driverHelperEmail: '',
+            driverHelperPhone: '',
             roles: ['Volunteer', 'Driver / Driver Helper'],
             rules: {
                 name: [
@@ -130,6 +154,9 @@ export default {
                 email: [
                     v => !!v || 'E-mail is required.',
                     v => /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid.',
+                ],
+                phone: [
+                    v => !v || /^\d{3}-\d{3}-\d{4}$/.test(v) || 'Phone must be in the format 123-456-7890',
                 ],
             },
         };
@@ -162,7 +189,12 @@ export default {
         },
         selectedRole(newVal, oldVal) {
             if (newVal !== oldVal) {
-                this.clearFields(); // Call clearFields method when the selected role changes
+                this.volunteerName = '';
+                this.volunteerEmail = '';
+                this.volunteerPhone = '';
+                this.driverHelperName = '';
+                this.driverHelperEmail = '';
+                this.driverHelperPhone = '';
             }
         }
     },
@@ -201,7 +233,8 @@ export default {
                         volunteerNames: arrayUnion({
                             id: uuidv4(), // Generate a unique ID for the volunteer
                             name: this.volunteerName,
-                            email: this.volunteerEmail
+                            email: this.volunteerEmail,
+                            phone: this.volunteerPhone
                         })
                     };
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
@@ -209,7 +242,8 @@ export default {
                         driverHelperNames: arrayUnion({
                             id: uuidv4(), // Generate a unique ID for the driver/helper
                             name: this.driverHelperName,
-                            email: this.driverHelperEmail
+                            email: this.driverHelperEmail,
+                            phone: this.driverHelperPhone
                         })
                     };
                 }
@@ -220,19 +254,15 @@ export default {
                 console.error("Failed to update event: ", error);
             }
         },
-        resetDialog() {
-            this.clearFields(); // Clears all input fields
-            this.dialog = false; // Closes the dialog
-            this.selectedRole = 'Volunteer'; // Resets the selected role to its default value if needed
-        },
-        clearFields() {
+        close() {
             this.volunteerName = '';
             this.volunteerEmail = '';
+            this.volunteerPhone = '';
             this.driverHelperName = '';
             this.driverHelperEmail = '';
-        },
-        close() {
-            this.resetDialog();
+            this.driverHelperPhone = '';
+            this.dialog = false; // Closes the dialog
+            this.selectedRole = 'Volunteer'; // Resets the selected role to its default value if needed
         },
     },
 };

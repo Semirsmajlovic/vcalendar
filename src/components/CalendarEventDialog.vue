@@ -34,7 +34,7 @@
                         </v-col>
                     </v-row>
 
-                    <v-row no-gutters>
+                    <v-row no-gutters class="pt-3">
                         <v-col cols="12" sm="6" class="pr-6">
                             <v-text-field
                                 v-model="localSelectedEvent.volunteerLimit"
@@ -146,20 +146,36 @@
                                 <v-expansion-panel-header>Volunteers</v-expansion-panel-header>
                                 <v-expansion-panel-content>
                                     <v-data-table
-                                        :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }]"
+                                        :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Phone', value: 'phone' }]"
                                         :items="safeVolunteerNames"
                                         hide-default-footer
-                                    ></v-data-table>
+                                    >
+                                        <template v-slot:item.email="{ item }">
+                                            <a :href="`mailto:${item.email}`" target="_blank">{{ item.email }}</a>
+                                        </template>
+                                        <template v-slot:item.phone="{ item }">
+                                            <a v-if="item.phone" :href="`tel:${item.phone}`">{{ item.phone }}</a>
+                                            <span v-else>-</span>
+                                        </template>
+                                    </v-data-table>
                                 </v-expansion-panel-content>
                             </v-expansion-panel>
                             <v-expansion-panel v-if="safeDriverHelperNames.length > 0">
                                 <v-expansion-panel-header>Driver / Driver Helpers</v-expansion-panel-header>
                                 <v-expansion-panel-content>
                                     <v-data-table
-                                        :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }]"
+                                        :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Phone', value: 'phone' }]"
                                         :items="safeDriverHelperNames"
                                         hide-default-footer
-                                    ></v-data-table>
+                                    >
+                                        <template v-slot:item.email="{ item }">
+                                            <a :href="`mailto:${item.email}`" target="_blank">{{ item.email }}</a>
+                                        </template>
+                                        <template v-slot:item.phone="{ item }">
+                                            <a v-if="item.phone" :href="`tel:${item.phone}`">{{ item.phone }}</a>
+                                            <span v-else>-</span>
+                                        </template>
+                                    </v-data-table>
                                 </v-expansion-panel-content>
                             </v-expansion-panel>
                         </v-expansion-panels>
