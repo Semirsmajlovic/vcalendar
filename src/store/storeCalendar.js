@@ -128,6 +128,12 @@ const storeCalendar = {
 						payload.actionType.description = 'updateInstance';
 						payload.isRecurring = false;
 						payload.rruleString = '';
+						const collectionRef = collection(db, 'exceptions');
+						const docRef = await addDoc(collectionRef, payload);
+						payload.eventRefId=payload.id
+						payload.id = docRef.id;
+						const originalDocRef = doc(db, "exceptions", docRef.id);
+						await updateDoc(originalDocRef, payload);
 						commit('ADD_EXCEPTION', payload);
 						console.log(`${logPrefix} Updated a single instance of a recurring event.`);
 						break;

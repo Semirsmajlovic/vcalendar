@@ -105,7 +105,7 @@ export function createAllEvents(events, exceptionArray, focus, name, type) {
 	// Loop through recurring events while omitting any instances from recurring events if a matching exception is found in exceptions.
 	let index = allEvents.length - 1;
 	while (index >= 0) {
-		let exceptionFound = exceptionArray.some((exception) => exception.id === allEvents[index].id && exception.actionType.originalData.start === allEvents[index].start);
+		let exceptionFound = exceptionArray.some((exception) => exception.eventRefId === allEvents[index].id && exception.actionType.originalData.start === allEvents[index].start);
 		if (exceptionFound) {
 			allEvents.splice(index, 1);
 		}
