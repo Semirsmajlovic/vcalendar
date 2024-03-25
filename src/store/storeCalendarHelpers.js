@@ -28,13 +28,14 @@ export function getFocus(focus) {
 export function getNamesInView(allEvents, current, type) {
 	try {
 		const focusedMonth = getFocus(current);
-		console.log("[getNamesInView}: ", focusedMonth);
+		console.warn("[getNamesInView/focusedMonth]: ", focusedMonth);
         const filteredEvents = allEvents.filter((event) => {
             return event.start.includes(focusedMonth);
         });
-		console.log("[getNamesInView}: ", filteredEvents);
+		console.warn("[getNamesInView/filteredEvents]: ", filteredEvents);
         const names = filteredEvents.flatMap((event) => {
             if (Array.isArray(event[type])) {
+				console.warn("[getNamesInView/event]: ", event[type]);
                 return event[type].map(participant => participant.name);
             } else {
                 return [];
