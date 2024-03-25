@@ -47,10 +47,4 @@ npm run lint
 
 
 ### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
-
-
-### Bugs
-
-- Create Single Shift -> Volunteer (Identical: Name, Email) -> Clicked Save -> Volunteer
+See [Configuration Reference](https://cli.vuejs.org/config/). 
