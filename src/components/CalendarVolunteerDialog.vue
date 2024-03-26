@@ -210,15 +210,16 @@ export default {
                     docRef = doc(db, "exceptions", shift.id);
                 }
 
-                // Convert input name and email to lowercase for case-insensitive comparison
-                const inputName = this.selectedRole === 'Volunteer' ? this.volunteerName.toLowerCase() : this.driverHelperName.toLowerCase();
-                const inputEmail = this.selectedRole === 'Volunteer' ? this.volunteerEmail.toLowerCase() : this.driverHelperEmail.toLowerCase();
 
-                // Check if the user's name and email combination already exists in either role (case-insensitive)
-                const nameEmailCombinationExistsInVolunteers = shift.volunteerNames?.some(v => v.name.toLowerCase() === inputName && v.email.toLowerCase() === inputEmail);
-                const nameEmailCombinationExistsInDriverHelpers = shift.driverHelperNames?.some(d => d.name.toLowerCase() === inputName && d.email.toLowerCase() === inputEmail);
 
-                // Does the name and email combination already exist in any role? Return.
+                // Prepare the combined name and email in the desired format
+                const combinedNameEmail = this.selectedRole === 'Volunteer' ? `${this.volunteerName} (${this.volunteerEmail})` : `${this.driverHelperName} (${this.driverHelperEmail})`;
+
+                // Check if the combined name and email already exists in either role
+                const nameEmailCombinationExistsInVolunteers = shift.volunteerNames?.some(v => v.name.toLowerCase() === combinedNameEmail.toLowerCase());
+                const nameEmailCombinationExistsInDriverHelpers = shift.driverHelperNames?.some(d => d.name.toLowerCase() === combinedNameEmail.toLowerCase());
+
+                // Does the combined name and email already exist in any role? Return.
                 if (nameEmailCombinationExistsInVolunteers || nameEmailCombinationExistsInDriverHelpers) {
                     this.updateSnackMessage(`You have already registered to participate in one of the roles.`);
                     console.log("User already registered for this shift in one of the roles.");
@@ -227,12 +228,14 @@ export default {
                     return;
                 }
 
+
+
                 let updatePayload = {};
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
                         volunteerNames: arrayUnion({
                             id: uuidv4(), // Generate a unique ID for the volunteer
-                            name: this.volunteerName,
+                            name: `${this.volunteerName} (${this.volunteerEmail})`, // Combine name and email
                             email: this.volunteerEmail,
                             phone: this.volunteerPhone
                         })
@@ -241,7 +244,7 @@ export default {
                     updatePayload = {
                         driverHelperNames: arrayUnion({
                             id: uuidv4(), // Generate a unique ID for the driver/helper
-                            name: this.driverHelperName,
+                            name: `${this.driverHelperName} (${this.driverHelperEmail})`, // Combine name and email
                             email: this.driverHelperEmail,
                             phone: this.driverHelperPhone
                         })

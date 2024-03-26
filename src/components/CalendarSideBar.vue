@@ -29,8 +29,6 @@
                             <span class="caption grey--text">{{ namesVolunteers.length }}</span>
                         </v-list-item-title>
                     </template>
-
-
                     <v-virtual-scroll
                         :items="namesVolunteers"
                         :item-height="40"
@@ -41,15 +39,13 @@
                                 link
                                 dense
                                 @click="eventsByName(item, 'volunteerNames')"
-                                :class="item === getSelectedParticipant.name ? 'blue' : ''">
-                                <v-list-item-title :class="item === getSelectedParticipant.name ? 'white--text' : ''">
+                                :class="item === getSelectedParticipant.name && 'volunteerNames' === getSelectedParticipant.type ? 'blue' : ''">
+                                <v-list-item-title :class="item === getSelectedParticipant.name && 'volunteerNames' === getSelectedParticipant.type ? 'white--text' : ''">
                                     {{ item }}
                                 </v-list-item-title>
                             </v-list-item>
                         </template>
                     </v-virtual-scroll>
-
-
                 </v-list-group>
 
                 <!-- Updated v-list-group for Driver / Driver Helper -->
@@ -70,15 +66,16 @@
                                 link
                                 dense
                                 @click="eventsByName(item, 'driverHelperNames')"
-                                :class="item === getSelectedParticipant.name ? 'blue' : ''"
-                            >
-                                <v-list-item-title :class="item === getSelectedParticipant.name ? 'white--text' : ''">
+                                :class="item === getSelectedParticipant.name && 'driverHelperNames' === getSelectedParticipant.type ? 'blue' : ''">
+                                <v-list-item-title :class="item === getSelectedParticipant.name && 'driverHelperNames' === getSelectedParticipant.type ? 'white--text' : ''">
                                     {{ item }}
                                 </v-list-item-title>
                             </v-list-item>
                         </template>
                     </v-virtual-scroll>
                 </v-list-group>
+
+
             </v-list>
         </v-navigation-drawer>
     </div>
