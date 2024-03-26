@@ -20,7 +20,7 @@ const storeCalendar = {
 	actions: {
 		async initInstances({ commit, dispatch }, payload) {
 			try {
-
+				
 				// Fetch events from Firestore
 				const eventsCollectionRef = collection(db, "events");
 				const eventsSnapshot = await getDocs(eventsCollectionRef);
@@ -209,7 +209,8 @@ const storeCalendar = {
 						const index = getters.getIndexExceptionDiverged(payload);
 						if (index !== -1) {
 							payload.actionType.description = 'deleteInstance';
-							await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
+							const docRef = doc(db, "exceptions", state.exceptions[index].id);
+							await updateDoc(docRef, payload);
 							commit('UPDATE_EXCEPTION', { index, payload });
 							console.log(`${logPrefix} Updated exception for a diverged instance.`);
 						}
