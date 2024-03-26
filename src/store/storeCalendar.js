@@ -11,7 +11,7 @@ const storeCalendar = {
 	namespaced : true,
 	state: {
 		eventOpen: false, // Dialog open/closed status
-		newEventSignal: false, // Signal to components that an event has been created or deleted to repopulate names
+		emitRefreshAndResetNewEventState: false, // Signal to components that an event has been created or deleted to repopulate names
 		volunteerNames: [], // Previous: caregiverNames | Names of all possible caregivers in view. Used in CalendarSideBar
 		driverHelperNames: [], // Previous: clientNames | Names of all the clients in view in view. Used in CalendarSideBar
 		selectedParticipant: {}, // Sets the calendar's view to this participant when clicking on names in CalendarSideBar
@@ -31,13 +31,11 @@ const storeCalendar = {
 					}
 					return { id: doc.id, ...data };
 				});
-				console.log("[storeCalendar.js/initInstances/events]: ", events);
 
 				// Fetch exceptions from Firestore
 				const exceptionsCollectionRef = collection(db, "exceptions");
 				const exceptionsSnapshot = await getDocs(exceptionsCollectionRef);
 				const exceptions = exceptionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-				console.log("[storeCalendar.js/initInstances/exceptions]: ", exceptions);
 
 				// Set the Vuex state.
 				commit('SET_INIT_RECURRING_SHIFTS', events);
@@ -52,8 +50,12 @@ const storeCalendar = {
 				);
 
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
+				// Return: ['Semir Smajlovic']
 				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteerNames'); // Previous: caregiver
+				console.warn("[storeCalendar.js/cgNames]: ", cgNames);
+
 				let clNames = getNamesInView(allEvents, payload.focus, 'driverHelperNames'); // Previous: client
+				console.warn("[storeCalendar.js/clNames]: ", clNames);
 
 				// Set the names.
 				commit('SET_NAMES', [
@@ -61,19 +63,20 @@ const storeCalendar = {
 					clNames
 				]);
 
-				/*
-					payload: {
-						focus: ""
-						name: "Semir 1"
-						type: "volunteerNames"
-					}
-				*/
 				let { name, type } = payload;
 
 				// If name and type is provided, filter allEvents to that participant only
 				if (name || type) {
 					allEvents = allEvents.filter((event) => {
-						return event[type] === name;
+						let isMatching = false;
+						if (event[type] && Array.isArray(event[type])) { // Ensure the property exists and is an array
+							for (var participant of event[type]) {
+								if (participant.name == name) {
+									isMatching = true;
+								}
+							}
+						}
+						return isMatching;
 					});
 				}
 				commit('SET_INIT_INSTANCES', allEvents);
@@ -82,80 +85,42 @@ const storeCalendar = {
 			}
 		},
 
+        // ===================================================================================== //
+        // Actions - Asynchronous function used to commit mutations.
 
-
+		// Execution:
+        // - Step 2: The function "createAndSaveNewShift" in CalendarEventDialog.vue is triggered before this.
 		async actionCreateNewEvent({ commit, dispatch }, payload) {
+			const logPrefix = "[storeCalendar.js/actionCreateNewEvent]:";
 			try {
-				let collectionRef; // Set the collectionRef
-				if (!payload.isRecurring) { // Is payload {id: dfvf, caregiver: "", recurring: false} false?
-					collectionRef = collection(db, "exceptions"); // Set as exceptions database.
-				} else {
-					collectionRef = collection(db, "events"); // Set as events database.
-				}
-				const plainPayload = { ...payload }; // Sets a plain object: {id: dfvf, caregiver: "", recurring: false}
-				const docRef = await addDoc(collectionRef, plainPayload);
-				payload.id = docRef.id; // Update the payload with the Firestore document ID
-				if (!payload.isRecurring) { // Is payload an exception?
-					commit('ADD_EXCEPTION', payload); // Commit the change
-				} else {
-					commit('ADD_SHIFT', payload); // Commit the change
-				}
+				const collectionName = payload.isRecurring ? "events" : "exceptions";
+				console.log(`${logPrefix} Processing new event for collection: ${collectionName}`);
+				const collectionRef = collection(db, collectionName);
+				const docRef = await addDoc(collectionRef, payload);
+				payload.id = docRef.id;
+				const mutationName = payload.isRecurring ? 'ADD_SHIFT' : 'ADD_EXCEPTION';
+				console.log(`${logPrefix} Committing mutation: ${mutationName}`);
+				commit(mutationName, payload);
 			} catch (e) {
-				console.error("[storeCalendar.js/actionCreateNewEvent]: Error adding document: ", e);
-				dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+				console.error(`${logPrefix} Error adding document: ${e}`);
+				dispatch('updateSnackMessage', `Error: ${e.message}`, { root: true });
 			}
 		},
 
-
+        // ===================================================================================== //
+        // Actions - Asynchronous function used to commit mutations.
 		
 		async updateEvent({ commit, state, getters, dispatch }, payload) {
-			let docRef;
-			if (!payload.isRecurring) {
-				if (!payload.actionType) {
-					// Update one-time event
-					try {
-						let exceptionIndex = getters.getIndexException(payload);
-						if (exceptionIndex !== -1) {
-							docRef = doc(db, "exceptions", payload.id); // Assuming payload.id is the Firestore document ID
-							await updateDoc(docRef, payload);
-							commit('UPDATE_EXCEPTION', {
-								exceptionIndex,
-								payload
-							});
-						}
-					} catch (e) {
-						dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
-					}
-				} else {
-					// Update recurring event to one-time event.
-					try {
-						let divergedIndex = getters.getIndexExceptionDiverged(payload);
-						if (divergedIndex !== -1) {
-							docRef = doc(db, "exceptions", payload.id); // Assuming payload.id is the Firestore document ID
-							await updateDoc(docRef, payload);
-							commit('UPDATE_EXCEPTION', {
-								divergedIndex,
-								payload
-							});
-						}
-					} catch(e) {
-						dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
-					}
-				}
-			} else {
+			const logPrefix = "[storeCalendar.js/updateEvent]";
+			const handleRecurringEventUpdate = async (payload) => {
 				switch (payload.actionType.description) {
 					case 'updateAll': {
-
-						try {
-							let index = getters.getIndexEvent(payload);
-							if (index !== -1) {
-								docRef = doc(db, "events", payload.id); // Assuming payload.id is the Firestore document ID
-								let updatedShift = { ...payload };
-								await updateDoc(docRef, payload);
-								commit('UPDATE_SHIFT', { index, updatedShift });
-							}
-						} catch(e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+						const index = getters.getIndexEvent(payload);
+						if (index !== -1) {
+							const docRef = doc(db, "events", payload.id);
+							await updateDoc(docRef, payload);
+							commit('UPDATE_SHIFT', { index, updatedShift: { ...payload } });
+							console.log(`${logPrefix} Updated all instances of a recurring event.`);
 						}
 						break;
 					}
@@ -163,115 +128,166 @@ const storeCalendar = {
 						payload.actionType.description = 'updateInstance';
 						payload.isRecurring = false;
 						payload.rruleString = '';
-						const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
-						payload.id = exceptionDocRef.id;
+						const collectionRef = collection(db, 'exceptions');
+						const docRef = await addDoc(collectionRef, payload);
+						payload.eventRefId=payload.id
+						payload.id = docRef.id;
+						const originalDocRef = doc(db, "exceptions", docRef.id);
+						await updateDoc(originalDocRef, payload);
 						commit('ADD_EXCEPTION', payload);
+						console.log(`${logPrefix} Updated a single instance of a recurring event.`);
 						break;
 					}
 					case 'updateForward': {
-						try {
-								let index = getters.getIndexEvent(payload);
-								let updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
-								let originalDocRef = doc(db, "events", state.events[index].id);
-								await updateDoc(originalDocRef, updatedShift);
-								commit('UPDATE_SHIFT', { index, updatedShift }); // Reflect the update in Vuex state
-					
-								// Create a new event for the forward part
-								let recurringObjGoingForward = { ...payload };
-								delete recurringObjGoingForward.id; // Ensure a new ID is generated by Firestore
-								const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
-								recurringObjGoingForward.id = newEventDocRef.id; // Update with new Firestore document ID
-								commit('ADD_SHIFT', recurringObjGoingForward); // Add the new event to Vuex state
-						} catch (e) {
-							console.error("Error in updateForward: ", e);
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+						const forwardIndex = getters.getIndexEvent(payload);
+						if (forwardIndex !== -1) {
+							const updatedShift = changeRecurringEnd({ ...state.events[forwardIndex] }, payload.start);
+							const originalDocRef = doc(db, "events", state.events[forwardIndex].id);
+							await updateDoc(originalDocRef, updatedShift);
+							commit('UPDATE_SHIFT', { index: forwardIndex, updatedShift });
+							let recurringObjGoingForward = { ...payload, id: undefined };
+							const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
+							commit('ADD_SHIFT', { ...recurringObjGoingForward, id: newEventDocRef.id });
+							console.log(`${logPrefix} Updated recurring event going forward.`);
 						}
 						break;
 					}
 					default:
+						console.warn(`${logPrefix} Unknown actionType: ${payload.actionType.description}`);
 						dispatch('updateSnackMessage', `Unknown actionType in updateEvent`, { root: true });
 				}
-			}
-		},
-
-
-
-
-		async deleteEvent({ commit, state, getters, dispatch }, payload) {
+			};
 			try {
 				if (!payload.isRecurring) {
+					// Logic for non-recurring events
 					if (!payload.actionType) {
-						try {
-							let exceptionIndex = getters.getIndexException(payload);
-							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
-							commit('DELETE_EXCEPTION', exceptionIndex);
-						} catch(e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+						// Update one-time event
+						const exceptionIndex = getters.getIndexException(payload);
+						if (exceptionIndex !== -1) {
+							const docRef = doc(db, "exceptions", payload.id);
+							await updateDoc(docRef, payload);
+							commit('UPDATE_EXCEPTION', { exceptionIndex, payload });
+							console.log(`${logPrefix} Updated one-time event.`);
 						}
 					} else {
-						try {
-							let index = getters.getIndexExceptionDiverged(payload);
-							payload.actionType.description = 'deleteInstance';
-							await deleteDoc(doc(db, "exceptions", state.exceptions[index].id));
-							//commit('DELETE_EXCEPTION', index);
-							commit('UPDATE_EXCEPTION', { index, payload });
-						} catch(e) {
-							dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+						// Logic for updating a recurring event to a one-time event
+						const divergedIndex = getters.getIndexExceptionDiverged(payload);
+						if (divergedIndex !== -1) {
+							const docRef = doc(db, "exceptions", payload.id);
+							await updateDoc(docRef, payload);
+							commit('UPDATE_EXCEPTION', { divergedIndex, payload });
+							console.log(`${logPrefix} Updated recurring event to one-time event.`);
 						}
 					}
 				} else {
+					// Handle recurring events by calling the inner function
+					await handleRecurringEventUpdate(payload);
+				}
+			} catch (e) {
+				console.error(`${logPrefix} Error updating event: ${e}`);
+				dispatch('updateSnackMessage', `Error: ${e.message}`, { root: true });
+			}
+		},
+
+        // ===================================================================================== //
+        // Actions - Asynchronous function used to commit mutations.
+
+		async deleteEvent({ commit, state, getters, dispatch }, payload) {
+			const logPrefix = "[storeCalendar.js/deleteEvent]";
+			try {
+				if (!payload.isRecurring) {
+					if (!payload.actionType) {
+						// Delete one-time event
+						const exceptionIndex = getters.getIndexException(payload);
+						if (exceptionIndex !== -1) {
+							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
+							commit('DELETE_EXCEPTION', exceptionIndex);
+							console.log(`${logPrefix} Deleted one-time event.`);
+						}
+					} else {
+						// Handle specific non-recurring event cases
+						const index = getters.getIndexExceptionDiverged(payload);
+						if (index !== -1) {
+							payload.actionType.description = 'deleteInstance';
+							const docRef = doc(db, "exceptions", state.exceptions[index].id);
+							await updateDoc(docRef, payload);
+							commit('UPDATE_EXCEPTION', { index, payload });
+							console.log(`${logPrefix} Updated exception for a diverged instance.`);
+						}
+					}
+				} else {
+					// Handle recurring events
 					switch (payload.actionType.description) {
-						case 'deleteAll':
-							try {
-								let shiftsFound = state.events.filter(element => element.id === payload.id);
-								for (let shift of shiftsFound) {
-									await deleteDoc(doc(db, "events", shift.id));
-								}
-								commit('DELETE_EVENTS_MULTIPLE', shiftsFound);
-							} catch (error) {
-								dispatch('updateSnackMessage', `Error with ${error}`, { root: true });
+						case 'deleteAll': {
+							const shiftsFound = state.events.filter(element => element.id === payload.id);
+							for (let shift of shiftsFound) {
+								await deleteDoc(doc(db, "events", shift.id));
 							}
+							commit('DELETE_EVENTS_MULTIPLE', shiftsFound);
+							console.log(`${logPrefix} Deleted all instances of a recurring event.`);
 							break;
-						case 'deleteForward':
-							try {
-								let index = getters.getIndexEvent(payload);
-								let updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
+						}
+						case 'deleteForward': {
+							const index = getters.getIndexEvent(payload);
+							if (index !== -1) {
+								const updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
 								await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
-								commit('UPDATE_SHIFT', { index, updatedShift: updatedShift });
-							} catch (e) {
-								dispatch('updateSnackMessage', `Error with ${e}`, { root: true });
+								commit('UPDATE_SHIFT', { index, updatedShift });
+								console.log(`${logPrefix} Updated recurring event going forward.`);
 							}
 							break;
-						case 'deleteInstance':
-							try {
-								const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
-								payload.id = exceptionDocRef.id;
-								payload.actionType.description = 'deleteInstance';
-								commit('ADD_EXCEPTION', payload);
-							} catch (error) {
-								console.error('Error in deleteSingleRecurringInstance:', error);
-								throw error;
-							}
+						}
+						case 'deleteInstance': {
+							const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
+							payload.id = exceptionDocRef.id;
+							payload.actionType.description = 'deleteInstance';
+							commit('ADD_EXCEPTION', payload);
+							console.log(`${logPrefix} Added exception for deleting a single instance.`);
 							break;
+						}
 						default:
+							console.warn(`${logPrefix} Unknown actionType for recurring shift.`);
 							dispatch('updateSnackMessage', 'Unknown actionType for recurring shift', { root: true });
 					}
 				}
 			} catch (e) {
-				console.error("[storeCalendar.js/deleteEvent]: Error processing shift: ", e);
+				console.error(`${logPrefix} Error processing event: ${e}`);
 				dispatch('updateSnackMessage', `Operation failed: ${e.message}`, { root: true });
 			}
 		},
 
+        // ===================================================================================== //
+        // Actions - Asynchronous function used to commit mutations.
 
-
-		// Previous: updateSelectedPerson | 1 Instance old file | 1 Instance this file.
-		updateSelectedParticipant({ commit, state }, participant) {
-			commit('SET_PARTICIPANT', participant);
+		// Execution:
+		// - Select "All" or "Participant" inside the Sidebar.
+		updateSelectedParticipant({ commit }, participant) {
+			const logPrefix = "[storeCalendar.js/updateSelectedParticipant]:";
+			try {
+				console.log(participant);
+				commit('SET_PARTICIPANT', participant);
+				console.log(`${logPrefix} Participant updated successfully.`, participant);
+			} catch (error) {
+				console.error(`${logPrefix} Error updating participant:`, error);
+			}
 		},
-		adminShiftDialogOpen({ commit, state }, dialogStatus) {
-			commit('SET_DIALOG', dialogStatus);
-		}
+
+        // ===================================================================================== //
+        // Actions - Asynchronous function used to commit mutations.
+
+		// Execution:
+		// - Open "Shift Dialog" -> Close "Shift Dialog".
+		adminShiftDialogOpen({ commit }, dialogStatus) {
+			const logPrefix = "[storeCalendar.js/adminShiftDialogOpen]:";
+			try {
+				commit('SET_DIALOG', dialogStatus);
+				console.log(`${logPrefix} Dialog status updated successfully. Status:`, dialogStatus);
+			} catch (error) {
+				console.error(`${logPrefix} Error updating dialog status:`, error);
+			}
+		},
+
+        // ===================================================================================== //
 	},
 	mutations  : {
 		SET_INIT_INSTANCES(state, payload) {
@@ -287,7 +303,7 @@ const storeCalendar = {
 			state.selectedParticipant = participant;
 		},
 		SET_NEW_EVENT_SIGNAL(state, status) {
-			state.newEventSignal = status;
+			state.emitRefreshAndResetNewEventState = status;
 		},
 		SET_NAMES(state, namesArray) {
 			let [
@@ -302,27 +318,27 @@ const storeCalendar = {
 		},
 		ADD_SHIFT(state, payload) {
 			state.events.push(payload);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewEventState = true;
 		},
 		UPDATE_SHIFT(state, { index, updatedShift }) {
 			state.events.splice(index, 1, updatedShift);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewEventState = true;
 		},
 		DELETE_EVENTS_MULTIPLE(state, eventsFound) {
 			state.events = state.events.filter((ev) => !eventsFound.includes(ev));
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewEventState = true;
 		},
 		ADD_EXCEPTION(state, payload) {
 			state.exceptions.push(payload);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewEventState = true;
 		},
 		UPDATE_EXCEPTION(state, { index, payload }) {
 			state.exceptions.splice(index, 1, payload);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewEventState = true;
 		},
 		DELETE_EXCEPTION(state, index) {
 			state.exceptions.splice(index, 1);
-			state.newEventSignal = true;
+			state.emitRefreshAndResetNewEventState = true;
 		}
 	},
 	getters: {
@@ -333,11 +349,11 @@ const storeCalendar = {
 			return state.exceptions;
 		},
 		eventOpen: (state) => state.eventOpen,
+		emitRefreshAndResetNewEventState: (state) => state.emitRefreshAndResetNewEventState,
+
+
 		getNamesVolunteers: (state) => state.volunteerNames,
 		getNamesDriverHelpers: (state) => state.driverHelperNames,
-		newEventSignal: (state) => state.newEventSignal,
-
-
 		getSelectedParticipant: (state) => state.selectedParticipant,
 
 
@@ -361,6 +377,8 @@ const storeCalendar = {
 				return element.id === data.id && element.actionType.originalData.start === data.start;
 			});
 		},
+
+
 		getNames: (state, getters) => (current, type) => {
 			return [
 				...new Set(
@@ -376,6 +394,8 @@ const storeCalendar = {
 				)
 			];
 		},
+
+
 	}
 };
 

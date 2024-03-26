@@ -66,11 +66,11 @@
 
                 <!-- Right Column for Chips -->
                 <v-col cols="4" md="4" class="text-right">
-                    <v-chip color="blue lighten-2" label text-color="white">
+                    <v-chip color="blue darken-1" label text-color="white">
                         <v-icon left>mdi-clock-outline</v-icon>
                         Total Hours: {{ totalHours }}
                     </v-chip>
-                    <v-chip class="ma-2" color="blue lighten-2" label text-color="white">
+                    <v-chip class="ma-2" color="blue darken-1" label text-color="white">
                         <v-icon left>mdi-calendar-range</v-icon>
                         Total Shifts: {{ shifts.length }}
                     </v-chip>
@@ -131,22 +131,17 @@ export default {
             get: function () {
                 try {
                     if (!this.shifts.length) {
-                        console.log("No shifts found.");
                         return 0;
                     }
                     const total = this.shifts.reduce((sum, shift) => {
                         const duration = parseFloat(shift.duration);
                         if (isNaN(duration)) {
-                            console.warn(`Invalid duration encountered: ${shift.duration}`);
                             return sum;
                         }
                         return sum + duration;
                     }, 0);
-
-                    console.log(`Total hours calculated: ${total}`);
                     return total;
                 } catch (error) {
-                    console.error("Error calculating total hours:", error);
                     return 0; // Return 0 in case of any error
                 }
             },
@@ -170,53 +165,72 @@ export default {
             this.reference.next();
         },
         PDFCalendar(name, focus) {
-
-            console.log("[PDFCalendar]: ", name);
-
+            // Find the calendar area and clone it
             let target = document.querySelector("#calendarContent");
+            let clone = target.cloneNode(true);
+            clone.id = "printCalendarClone";
+            target.after(clone);
 
+            // Create the information area that houses the name and date
+            let newContent = document.createElement("h3");
+            newContent.style.paddingTop = "1rem";
+            newContent.style.paddingBottom = "1rem";
 
+            let personName = name === undefined ? "All" : name;
+            let date = !focus || focus === ""
+                ? `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
+                : focus.substr(0, 7);
 
-            // let clone = target.cloneNode(true);
-            // clone.id = "printCalendarClone";
-            // target.after(clone);
+            // Convert 'date' to a more readable format "Month, Year"
+            let readableDate = new Date(date);
+            let options = { year: 'numeric', month: 'long' };
+            let formattedDate = readableDate.toLocaleDateString('en-US', options);
 
-            // // Create the information area that houses the name and date
-            // let newContent = document.createElement("h3");
-            // newContent.style.paddingTop = "1rem";
-            // newContent.style.paddingBottom = "1rem";
+            // Update the innerHTML to use the new format
+            newContent.innerHTML = `Selected: ${personName} - Date: ${formattedDate}`;
 
-            // let personName = name === undefined ? "All" : name;
-            // let date =
-            //     !focus || focus === ""
-            //         ? `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
-            //         : focus.substr(0, 7);
+            let newTarget = document.querySelector("#printCalendarClone").getElementsByClassName("printInformationArea")[0];
+            if (!newTarget) {
+                newTarget = document.createElement("div");
+                newTarget.className = "printInformationArea";
+                clone.insertBefore(newTarget, clone.firstChild);
+            }
+            newTarget.appendChild(newContent);
 
-            // newContent.innerHTML = `${personName} ${date}`;
+            // Adjust clone styles for PDF rendering
+            clone.style.width = "auto";
+            clone.style.height = "auto";
 
-            // // Attach the information area to cloned calendar
-            // let newTarget = document
-            //     .querySelector("#printCalendarClone")
-            //     .getElementsByClassName("printInformationArea")[0];
-            // newTarget.appendChild(newContent);
+            // Create PDF in landscape orientation
+            const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "pt",
+                format: "a4",
+            });
 
-            // // Create PDF
-            // const pdf = new jsPDF({
-            //     orientation: "portrait",
-            //     format: [470, 500],
-            // });
-            // let element = document.querySelector("#printCalendarClone");
-            // let width = element.style.width;
-            // let height = element.style.height;
-            // html2canvas(element)
-            //     .then((canvas) => {
-            //         let image = canvas.toDataURL("image/png");
-            //         pdf.addImage(image, "JPEG", 20, 20, width, height);
-            //         pdf.save(`${personName}-${date}.pdf`);
-            //     })
-            //     .catch(function (e) {
-            //         this.updateSnackMessage(`Error at html2canvas : ${e} `);
-            //     });
+            html2canvas(clone, { scale: 1, useCORS: true }).then((canvas) => {
+                const contentWidth = canvas.width;
+                const contentHeight = canvas.height;
+
+                // Calculate the width and height ratio to fit the PDF page
+                const pdfPageWidth = pdf.internal.pageSize.getWidth();
+                const pdfPageHeight = pdf.internal.pageSize.getHeight();
+                const widthRatio = pdfPageWidth / contentWidth;
+                const heightRatio = pdfPageHeight / contentHeight;
+                const scaleRatio = Math.min(widthRatio, heightRatio);
+
+                const imageWidth = contentWidth * scaleRatio;
+                const imageHeight = contentHeight * scaleRatio;
+
+                let image = canvas.toDataURL("image/png");
+                pdf.addImage(image, "PNG", 0, 0, imageWidth, imageHeight);
+                pdf.save(`${personName}-${date}.pdf`);
+            }).catch(function (e) {
+                console.error(`Error at html2canvas: ${e}`);
+            }).finally(() => {
+                // Remove the cloned calendar after PDF generation
+                clone.remove();
+            });
         },
     },
 };

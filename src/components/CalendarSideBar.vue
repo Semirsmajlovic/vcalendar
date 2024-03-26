@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-16">
+    <div>
         <v-navigation-drawer
             v-model="drawerSwitch"
             width="100%"
@@ -12,7 +12,7 @@
                 <v-list-item-group>
                     <v-list-item
                         link
-                        @click="eventsByName('', '')"
+                        @click="eventsByName('', '', '')"
                         class="mt-n2"
                         :class="getSelectedParticipant.name === '' || !getSelectedParticipant.name ? 'blue' : 'white'">
                         <v-list-item-title :class="getSelectedParticipant.name === '' || !getSelectedParticipant.name? 'white--text' : ''">
@@ -39,8 +39,8 @@
                                 link
                                 dense
                                 @click="eventsByName(item, 'volunteerNames')"
-                                :class="item === getSelectedParticipant.name ? 'blue' : ''">
-                                <v-list-item-title :class="item === getSelectedParticipant.name ? 'white--text' : ''">
+                                :class="item === getSelectedParticipant.name && 'volunteerNames' === getSelectedParticipant.type ? 'blue' : ''">
+                                <v-list-item-title :class="item === getSelectedParticipant.name && 'volunteerNames' === getSelectedParticipant.type ? 'white--text' : ''">
                                     {{ item }}
                                 </v-list-item-title>
                             </v-list-item>
@@ -65,10 +65,9 @@
                             <v-list-item
                                 link
                                 dense
-                                @click="eventsByName(item, 'driverHelper')"
-                                :class="item === getSelectedParticipant.name ? 'blue' : ''"
-                            >
-                                <v-list-item-title :class="item === getSelectedParticipant.name ? 'white--text' : ''">
+                                @click="eventsByName(item, 'driverHelperNames')"
+                                :class="item === getSelectedParticipant.name && 'driverHelperNames' === getSelectedParticipant.type ? 'blue' : ''">
+                                <v-list-item-title :class="item === getSelectedParticipant.name && 'driverHelperNames' === getSelectedParticipant.type ? 'white--text' : ''">
                                     {{ item }}
                                 </v-list-item-title>
                             </v-list-item>
@@ -76,8 +75,6 @@
                     </v-virtual-scroll>
                 </v-list-group>
 
-
-                
 
             </v-list>
         </v-navigation-drawer>
@@ -116,6 +113,9 @@ export default {
             },
             set: function () {},
         },
+
+
+
         namesVolunteers: {
             get: function () {
                 return [...this.getNamesVolunteers]
@@ -136,6 +136,9 @@ export default {
                     });
             },
         },
+
+
+
         volunteersScrollHeight() {
             const itemHeight = 40; // Height of each item
             const maxHeight = 220; // Maximum height
@@ -155,7 +158,9 @@ export default {
         ...mapMutations(["drawerChange"]),
 
 
-        async eventsByName(name, type) { // name: Semir 1 / type: volunteerNames
+
+
+        async eventsByName(name, type) {
             try {
                 await this.updateSelectedParticipant({ name, type });
                 this.$emit("selectedParticipant");
@@ -164,6 +169,8 @@ export default {
                 console.error("[CalendarSideBar/eventsByName]: Error updating selected participant.", error);
             }
         },
+
+
 
 
         handleGroupToggle(groupName) {

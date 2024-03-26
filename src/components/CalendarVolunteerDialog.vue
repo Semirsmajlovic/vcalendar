@@ -1,6 +1,6 @@
 <template>
-    <v-form ref="form">
-        <v-dialog v-model="dialog" persistent max-width="600px">
+    <v-form ref="form" v-model="formValid">
+        <v-dialog v-model="dialog" persistent max-width="600px" @click:outside="close">
             <v-card>
                 <v-card-title>
                     Role Selection
@@ -17,8 +17,29 @@
                     <div v-if="selectedRole === 'Volunteer' && !isVolunteerLimitReached">
                         <h3>General Volunteer Signup</h3>
                         <p>As a general volunteer, you'll have the opportunity to contribute through various tasks and activities that support our cause.</p>
-                        <v-text-field v-model="volunteerName" type="text" label="Volunteer Name" required name="volunteerName"></v-text-field>
-                        <v-text-field v-model="volunteerEmail" type="email" label="Volunteer Email (Optional)" name="volunteerEmail"></v-text-field>
+                        <v-text-field
+                            v-model="volunteerName"
+                            :rules="rules.name"
+                            label="Volunteer Name"
+                            hint="Example: Bob Smith"
+                            persistent-hint
+                            required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="volunteerEmail"
+                            :rules="rules.email"
+                            label="Volunteer Email"
+                            hint="Example: bobsmith@yahoo.com"
+                            persistent-hint
+                            required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="volunteerPhone"
+                            :rules="rules.phone"
+                            label="Volunteer Phone (Optional)"
+                            hint="Example: 123-456-7890"
+                            persistent-hint
+                        ></v-text-field>
                     </div>
                     <v-alert 
                         v-else-if="selectedRole === 'Volunteer'" 
@@ -35,10 +56,31 @@
                         <h3>Driver / Helper Volunteer</h3>
                         <p>As a driver or helper, you play a crucial role in logistics and transportation, ensuring resources and people reach where they are needed most.</p>
                         <!-- Add your Driver / Helper specific fields here -->
-                        <v-text-field v-model="driverHelperName" type="text" label="Driver or Driver Helper Name" required name="driverHelperName"></v-text-field>
-                        <v-text-field v-model="driverHelperEmail" type="email" label="Driver or Driver Helper Email" required name="driverHelperEmail"></v-text-field>
+                        <v-text-field
+                            v-model="driverHelperName"
+                            :rules="rules.name"
+                            label="Driver or Driver Helper Name"
+                            hint="Example: Bob Smith"
+                            persistent-hint
+                            required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="driverHelperEmail"
+                            :rules="rules.email"
+                            label="Driver or Driver Helper Email"
+                            hint="Example: bobsmith@yahoo.com"
+                            persistent-hint
+                            required
+                        ></v-text-field>
+                        <v-text-field
+                            v-model="driverHelperPhone"
+                            :rules="rules.phone"
+                            label="Driver / Helper Phone (Optional)"
+                            hint="Example: 123-456-7890"
+                            persistent-hint
+                        ></v-text-field>
                         <v-alert
-                            class="mt-3"
+                            class="mt-6"
                             border="top"
                             color="info"
                             colored-border
@@ -62,7 +104,13 @@
                 <v-card-actions>
                     <v-btn color="grey darken-1" text @click="close">Close</v-btn>
                     <v-spacer></v-spacer>
-                    <v-btn :disabled="!canParticipate" color="primary" @click="updateEvent">Participate</v-btn>
+                    <v-btn
+                        :disabled="!canParticipate || !formValid"
+                        color="primary"
+                        @click="updateEvent"
+                    >
+                        Participate
+                    </v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -72,7 +120,9 @@
 <script>
 import { db } from '../main.js';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import emailjs from 'emailjs-com'
+import { mapActions } from "vuex";
+import { v4 as uuidv4 } from 'uuid';
+
 export default {
     name: 'CalendarVolunteerDialog',
     props: {
@@ -86,13 +136,29 @@ export default {
     },
     data() {
         return {
+            formValid: false,
             dialog: this.value,
             selectedRole: 'Volunteer',
             volunteerName: '',
             volunteerEmail: '',
+            volunteerPhone: '',
             driverHelperName: '',
             driverHelperEmail: '',
+            driverHelperPhone: '',
             roles: ['Volunteer', 'Driver / Driver Helper'],
+            rules: {
+                name: [
+                    v => !!v || 'Name is required.',
+                    v => /^[a-zA-Z\s]*$/.test(v) || 'Name must contain only letters and spaces.',
+                ],
+                email: [
+                    v => !!v || 'E-mail is required.',
+                    v => /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid.',
+                ],
+                phone: [
+                    v => !v || /^\d{3}-\d{3}-\d{4}$/.test(v) || 'Phone must be in the format 123-456-7890',
+                ],
+            },
         };
     },
     computed: {
@@ -117,77 +183,89 @@ export default {
             this.dialog = newVal; // Syncs the dialog visibility with the external prop value
         },
         dialog(newVal) {
-            if (newVal) {
-                console.log(this.selectedShift); // Logs the selected shift details when the dialog is opened
-            }
             if (!newVal) {
                 this.$emit('input', newVal); // Emits an event to update the parent component about the dialog's closure
             }
         },
         selectedRole(newVal, oldVal) {
             if (newVal !== oldVal) {
-                this.clearFields(); // Call clearFields method when the selected role changes
+                this.volunteerName = '';
+                this.volunteerEmail = '';
+                this.volunteerPhone = '';
+                this.driverHelperName = '';
+                this.driverHelperEmail = '';
+                this.driverHelperPhone = '';
             }
         }
     },
     methods: {
+        ...mapActions(["updateSnackMessage"]),
         async updateEvent() {
             try {
-                const shift = this.selectedShift; // Retrieves the selected shift object from component data
+                const shift = this.selectedShift;
                 let docRef;
                 if (shift.isRecurring) {
-                    docRef = doc(db, "events", shift.id); // Sets docRef to a Firestore document reference in the "events" collection if the shift is recurring
+                    docRef = doc(db, "events", shift.id);
                 } else {
-                    docRef = doc(db, "exceptions", shift.id); // Sets docRef to a Firestore document reference in the "exceptions" collection if the shift is not recurring
+                    docRef = doc(db, "exceptions", shift.id);
                 }
+
+
+
+                // Prepare the combined name and email in the desired format
+                const combinedNameEmail = this.selectedRole === 'Volunteer' ? `${this.volunteerName} (${this.volunteerEmail})` : `${this.driverHelperName} (${this.driverHelperEmail})`;
+
+                // Check if the combined name and email already exists in either role
+                const nameEmailCombinationExistsInVolunteers = shift.volunteerNames?.some(v => v.name.toLowerCase() === combinedNameEmail.toLowerCase());
+                const nameEmailCombinationExistsInDriverHelpers = shift.driverHelperNames?.some(d => d.name.toLowerCase() === combinedNameEmail.toLowerCase());
+
+                // Does the combined name and email already exist in any role? Return.
+                if (nameEmailCombinationExistsInVolunteers || nameEmailCombinationExistsInDriverHelpers) {
+                    this.updateSnackMessage(`You have already registered to participate in one of the roles.`);
+                    console.log("User already registered for this shift in one of the roles.");
+                    this.$emit('dialogs-completed');
+                    this.close();
+                    return;
+                }
+
+
+
                 let updatePayload = {};
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
-                        volunteerNames: arrayUnion({ 
-                            name: this.volunteerName, 
-                            email: this.volunteerEmail 
-                        }) // Prepares the payload to add a new volunteer to the volunteerNames array in the document
+                        volunteerNames: arrayUnion({
+                            id: uuidv4(), // Generate a unique ID for the volunteer
+                            name: `${this.volunteerName} (${this.volunteerEmail})`, // Combine name and email
+                            email: this.volunteerEmail,
+                            phone: this.volunteerPhone
+                        })
                     };
-
-
-                    // EmailJS:
-                    // Prepare the email data
-                    // const emailParams = {
-                    //     to_name: this.volunteerName,
-                    //     message: "Thank you for signing up as a volunteer. We are excited to have you on board!",
-                    //     reply_to: this.volunteerEmail,
-                    // };
-                    // console.log(emailParams);
-                    // await emailjs.send('service_ug33hrl', 'template_00ob19j', emailParams, 'nQeNPSgRwskhINwUu');
-
-
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
                     updatePayload = {
-                        driverHelperNames: arrayUnion({ 
-                            name: this.driverHelperName, 
-                            email: this.driverHelperEmail 
-                        }) // Prepares the payload to add a new driver/helper to the driverHelperNames array in the document
+                        driverHelperNames: arrayUnion({
+                            id: uuidv4(), // Generate a unique ID for the driver/helper
+                            name: `${this.driverHelperName} (${this.driverHelperEmail})`, // Combine name and email
+                            email: this.driverHelperEmail,
+                            phone: this.driverHelperPhone
+                        })
                     };
                 }
-                await updateDoc(docRef, updatePayload); // Updates the Firestore document with the new volunteer or driver/helper information
-                this.close(); // Closes the dialog after successful update
+                await updateDoc(docRef, updatePayload);
+                this.$emit('dialogs-completed');
+                this.close();
             } catch (error) {
-                console.error("Failed to update event: ", error); // Logs an error if the update fails
+                console.error("Failed to update event: ", error);
             }
         },
-        resetDialog() {
-            this.clearFields(); // Clears all input fields
-            this.dialog = false; // Closes the dialog
-            this.selectedRole = 'Volunteer'; // Resets the selected role to its default value if needed
-        },
-        clearFields() {
+        close() {
             this.volunteerName = '';
             this.volunteerEmail = '';
+            this.volunteerPhone = '';
             this.driverHelperName = '';
             this.driverHelperEmail = '';
-        },
-        close() {
-            this.resetDialog();
+            this.driverHelperPhone = '';
+            this.dialog = false; // Closes the dialog
+            this.selectedRole = 'Volunteer'; // Resets the selected role to its default value if needed
         },
     },
 };

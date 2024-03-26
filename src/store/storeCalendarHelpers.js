@@ -28,21 +28,26 @@ export function getFocus(focus) {
 export function getNamesInView(allEvents, current, type) {
 	try {
 		const focusedMonth = getFocus(current);
+		console.warn("[getNamesInView/focusedMonth]: ", focusedMonth);
         const filteredEvents = allEvents.filter((event) => {
             return event.start.includes(focusedMonth);
         });
+		console.warn("[getNamesInView/filteredEvents]: ", filteredEvents);
         const names = filteredEvents.flatMap((event) => {
             if (Array.isArray(event[type])) {
+				console.warn("[getNamesInView/event]: ", event[type]);
                 return event[type].map(participant => participant.name);
             } else {
                 return [];
             }
         });
+		console.log("[getNamesInView}: ", names);
         const sortedNames = names.sort((a, b) => {
             return a.split(' ')[1].localeCompare(b.split(' ')[1]);
         });
+		console.log("[getNamesInView}: ", sortedNames);
         const uniqueNames = [...new Set(sortedNames)];
-		console.log("[storeCalendarHelpers.js/getNamesInView/uniqueNames]: ", uniqueNames);
+		console.log("[getNamesInView}: ", uniqueNames);
         return uniqueNames;
 	}  catch (error) {
 		console.error(`Error in getNamesInView: ${error}`);
@@ -89,8 +94,6 @@ export function changeRecurringEnd(eventToStop, newEndDate) {
 export function createAllEvents(events, exceptionArray, focus, name, type) {
 	let allEvents = [];
 
-	console.log("[storeCalendarHelpers.js/createAllEvents]: ", name);
-
 	// Create all recurring instances within month using RRULE string
 	events.map((item) => {
 		allEvents = [
@@ -102,7 +105,7 @@ export function createAllEvents(events, exceptionArray, focus, name, type) {
 	// Loop through recurring events while omitting any instances from recurring events if a matching exception is found in exceptions.
 	let index = allEvents.length - 1;
 	while (index >= 0) {
-		let exceptionFound = exceptionArray.some((exception) => exception.id === allEvents[index].id && exception.actionType.originalData.start === allEvents[index].start);
+		let exceptionFound = exceptionArray.some((exception) => exception.eventRefId === allEvents[index].id && exception.actionType.originalData.start === allEvents[index].start);
 		if (exceptionFound) {
 			allEvents.splice(index, 1);
 		}

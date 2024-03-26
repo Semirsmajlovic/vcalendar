@@ -29,19 +29,23 @@
                 <v-icon left dark>mdi-login</v-icon>
                 Login
             </v-btn>
-            <v-btn 
+            <v-btn color="error" class="ma-2 white--text" @click="deleteCollections" v-if="isLoggedIn">
+                <v-icon left dark>mdi-delete</v-icon>
+                Delete DB
+            </v-btn>
+            <!-- <v-btn 
                 color="secondary" 
                 class="ma-2 white--text" 
                 @click="$router.push('/register')"
                 v-if="!isLoggedIn">
                 <v-icon left dark>mdi-account-plus</v-icon>
                 Signup
-            </v-btn>
+            </v-btn> -->
             <v-btn 
                 @click="handleSignOut" 
                 color="red" 
                 class="ma-2 white--text"
-                v-else>
+                v-if="isLoggedIn">
                 <v-icon left dark>mdi-logout</v-icon>
                 Sign Out
             </v-btn>
@@ -83,6 +87,15 @@ export default {
     },
     methods: {
         ...mapMutations(["drawerChange"]),
+        deleteCollections() {
+            this.$store.dispatch('deleteCollectionsAndRefresh')
+            .then(() => {
+                window.location.reload();
+            })
+            .catch(error => {
+            console.error("Failed to delete collections:", error);
+            });
+        },
         changeDrawer() {
             this.drawerChange();
         },

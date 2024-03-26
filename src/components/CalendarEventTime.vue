@@ -14,7 +14,7 @@
             >
                 <template v-slot:activator="{ on, attrs }">
                     <v-text-field
-                        v-model="compuStart"
+                        :value="formattedCompuStart"
                         label="Start Time"
                         readonly
                         v-bind="attrs"
@@ -22,26 +22,29 @@
                     ></v-text-field>
                 </template>
                 <v-time-picker
-                    format="24hr"
                     :allowed-minutes="allowedStep"
                     v-if="menu_start"
                     v-model="compuStart"
-                    full-width
+                    ampm-in-title
+                    format="ampm"
                     @click:minute="$refs.menu.save(compuStart)"
+                    use-ampm
+                    full-width
                 ></v-time-picker>
             </v-menu>
         </v-col>
         <v-col cols="4">
             <v-text-field
-                label="Duration"
+                label="Shift Duration"
                 v-model="compuDur"
+                hint="Example: 4.25 (4 Hours, 15 Minutes)"
                 @blur="duration = compuDur"
                 :rules="rulesDuration"
             ></v-text-field>
         </v-col>
         <v-col cols="4">
             <v-text-field
-                v-model="compuEnd"
+                :value="formattedCompuEnd"
                 label="End time"
                 disabled
             ></v-text-field>
@@ -81,35 +84,24 @@ export default {
                 return this.timeOnly(this.event.start);
             },
             set: function (setTime) {
-                // This variable keeps the current duration since changing event.start will automatically change the duration based on input
                 let tmpDur = this.compuDur;
                 this.event.start = this.formatFull(setTime, "start");
-
-                // Set the duration back to original duration before changing start time
                 this.compuDur = tmpDur;
-
-                // Emit change of start time to main dialog component to change DTSTART
                 this.$emit("startTimeChanged", setTime);
             },
         },
         compuDur: {
             get: function () {
                 let diffMinutes = Math.abs(
-                    differenceInMinutes(
-                        parseISO(this.event.start),
-                        parseISO(this.event.end)
-                    )
+                    differenceInMinutes(parseISO(this.event.start), parseISO(this.event.end))
                 );
-
                 let durationInHours = diffMinutes / 60;
                 return durationInHours;
             },
             set: function (dur) {
                 let tmpDur = this.compuDur;
-
                 let checkDurationFormat = /^\s*(?=.*[1-9])\d+(\.(?:0|00|25|5|50|75))?$/;
                 let durationFormatPass = checkDurationFormat.test(dur);
-
                 if (durationFormatPass) {
                     this.event.duration = dur;
                     let durationInMinutes = dur * 60;
@@ -127,14 +119,44 @@ export default {
                 if (isNaN(minutesToAdd)) {
                     return;
                 }
-
                 let endDate = this.displayDate(this.event.start);
-                this.event.end = format(
-                    addMinutes(parseISO(this.event.start), minutesToAdd),
-                    "yyyy-MM-dd HH:mm"
-                );
+                this.event.end = format(addMinutes(parseISO(this.event.start), minutesToAdd),"yyyy-MM-dd HH:mm");
             },
         },
+        formattedCompuStart: {
+            get() {
+                // Assuming compuStart is in 'HH:mm' format (24-hour format)
+                if (!this.compuStart) return '';
+                let [hour, minute] = this.compuStart.split(':');
+                const h = parseInt(hour, 10);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                hour = h % 12;
+                hour = hour ? hour : 12; // Convert '0' hour to '12'
+                minute = parseInt(minute, 10); // Remove any leading zeros
+
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+            },
+            set(value) {
+                // The setter is not needed for display purposes only
+            }
+        },
+        formattedCompuEnd: {
+            get() {
+                // Assuming compuEnd is in 'HH:mm' format (24-hour format)
+                if (!this.compuEnd) return '';
+                let [hour, minute] = this.compuEnd.split(':');
+                const h = parseInt(hour, 10);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                hour = h % 12;
+                hour = hour ? hour : 12; // Convert '0' hour to '12'
+                minute = parseInt(minute, 10); // Remove any leading zeros
+
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+            },
+            set(value) {
+                // The setter is not needed for display purposes only
+            }
+        }
     },
     watch: {
         start_time(val) {
@@ -143,7 +165,9 @@ export default {
     },
     methods: {
         timeOnly(time) {
-            if (!time) return "00:00";
+            if (!time) {
+                return "00:00";
+            }
             return time.slice(11);
         },
         displayDate(date) {
@@ -153,17 +177,13 @@ export default {
             return date.substring(0, 10);
         },
         formatFull(time, startOrEnd) {
-            if (!time || !startOrEnd) return null;
-            let date =
-                startOrEnd === "start"
-                    ? this.event.start.substring(0, 10)
-                    : this.event.end.substring(0, 10);
+            if (!time || !startOrEnd) {
+                return null;
+            }
+            let date = startOrEnd === "start" ? this.event.start.substring(0, 10) : this.event.end.substring(0, 10);
             return `${date} ${time}`;
         },
         allowedStep: (m) => m % 15 === 0,
     },
 };
 </script>
-
-<style lang="scss" scoped>
-</style>
