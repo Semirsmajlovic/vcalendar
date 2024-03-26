@@ -12,7 +12,7 @@
                 <v-list-item-group>
                     <v-list-item
                         link
-                        @click="eventsByName('', '')"
+                        @click="eventsByName('', '', '')"
                         class="mt-n2"
                         :class="getSelectedParticipant.name === '' || !getSelectedParticipant.name ? 'blue' : 'white'">
                         <v-list-item-title :class="getSelectedParticipant.name === '' || !getSelectedParticipant.name? 'white--text' : ''">
@@ -29,6 +29,8 @@
                             <span class="caption grey--text">{{ namesVolunteers.length }}</span>
                         </v-list-item-title>
                     </template>
+
+
                     <v-virtual-scroll
                         :items="namesVolunteers"
                         :item-height="40"
@@ -46,6 +48,8 @@
                             </v-list-item>
                         </template>
                     </v-virtual-scroll>
+
+
                 </v-list-group>
 
                 <!-- Updated v-list-group for Driver / Driver Helper -->
@@ -112,6 +116,9 @@ export default {
             },
             set: function () {},
         },
+
+
+
         namesVolunteers: {
             get: function () {
                 return [...this.getNamesVolunteers]
@@ -132,6 +139,9 @@ export default {
                     });
             },
         },
+
+
+
         volunteersScrollHeight() {
             const itemHeight = 40; // Height of each item
             const maxHeight = 220; // Maximum height
@@ -152,10 +162,10 @@ export default {
 
 
 
-        // Email has been added.
-        async eventsByName(name, email, type) {
+
+        async eventsByName(name, type) {
             try {
-                await this.updateSelectedParticipant({ name, email, type });
+                await this.updateSelectedParticipant({ name, type });
                 this.$emit("selectedParticipant");
                 this.drawerChange();
             } catch (error) {
