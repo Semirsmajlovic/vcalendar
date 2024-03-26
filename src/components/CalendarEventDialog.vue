@@ -147,7 +147,7 @@
                                 <v-expansion-panel-content>
                                     <v-data-table
                                         :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Phone', value: 'phone' }]"
-                                        :items="safeVolunteerNames"
+                                        :items="processedVolunteerNames"
                                         hide-default-footer
                                     >
                                         <template v-slot:item.email="{ item }">
@@ -165,7 +165,7 @@
                                 <v-expansion-panel-content>
                                     <v-data-table
                                         :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Phone', value: 'phone' }]"
-                                        :items="safeDriverHelperNames"
+                                        :items="processedDriverHelperNames"
                                         hide-default-footer
                                     >
                                         <template v-slot:item.email="{ item }">
@@ -394,6 +394,27 @@ export default {
             "getSelectedParticipant",
             "emitRefreshAndResetNewEventState",
         ]),
+
+        processedVolunteerNames() {
+            return this.safeVolunteerNames.map(volunteer => {
+                // Use a regular expression to remove the email and parentheses
+                const nameWithoutEmail = volunteer.name.replace(/\s*\(.*?\)\s*/g, '');
+                return {
+                    ...volunteer,
+                    name: nameWithoutEmail
+                };
+            });
+        },
+        processedDriverHelperNames() {
+            return this.safeDriverHelperNames.map(driverHelper => {
+                // Use a regular expression to remove the email and parentheses
+                const nameWithoutEmail = driverHelper.name.replace(/\s*\(.*?\)\s*/g, '');
+                return {
+                    ...driverHelper,
+                    name: nameWithoutEmail
+                };
+            });
+        },
 
         // ===================================================================================== //
         // Computed - Automatically recalculate when their dependencies change
