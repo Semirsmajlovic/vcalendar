@@ -12,7 +12,7 @@
                 <v-list-item-group>
                     <v-list-item
                         link
-                        @click="eventsByName('', '')"
+                        @click="eventsByName('', '', '')"
                         class="mt-n2"
                         :class="getSelectedParticipant.name === '' || !getSelectedParticipant.name ? 'blue' : 'white'">
                         <v-list-item-title :class="getSelectedParticipant.name === '' || !getSelectedParticipant.name? 'white--text' : ''">
@@ -39,8 +39,8 @@
                                 link
                                 dense
                                 @click="eventsByName(item, 'volunteerNames')"
-                                :class="item === getSelectedParticipant.name ? 'blue' : ''">
-                                <v-list-item-title :class="item === getSelectedParticipant.name ? 'white--text' : ''">
+                                :class="item === getSelectedParticipant.name && 'volunteerNames' === getSelectedParticipant.type ? 'blue' : ''">
+                                <v-list-item-title :class="item === getSelectedParticipant.name && 'volunteerNames' === getSelectedParticipant.type ? 'white--text' : ''">
                                     {{ item }}
                                 </v-list-item-title>
                             </v-list-item>
@@ -66,15 +66,16 @@
                                 link
                                 dense
                                 @click="eventsByName(item, 'driverHelperNames')"
-                                :class="item === getSelectedParticipant.name ? 'blue' : ''"
-                            >
-                                <v-list-item-title :class="item === getSelectedParticipant.name ? 'white--text' : ''">
+                                :class="item === getSelectedParticipant.name && 'driverHelperNames' === getSelectedParticipant.type ? 'blue' : ''">
+                                <v-list-item-title :class="item === getSelectedParticipant.name && 'driverHelperNames' === getSelectedParticipant.type ? 'white--text' : ''">
                                     {{ item }}
                                 </v-list-item-title>
                             </v-list-item>
                         </template>
                     </v-virtual-scroll>
                 </v-list-group>
+
+
             </v-list>
         </v-navigation-drawer>
     </div>
@@ -112,6 +113,9 @@ export default {
             },
             set: function () {},
         },
+
+
+
         namesVolunteers: {
             get: function () {
                 return [...this.getNamesVolunteers]
@@ -132,6 +136,9 @@ export default {
                     });
             },
         },
+
+
+
         volunteersScrollHeight() {
             const itemHeight = 40; // Height of each item
             const maxHeight = 220; // Maximum height
@@ -152,10 +159,10 @@ export default {
 
 
 
-        // Email has been added.
-        async eventsByName(name, email, type) {
+
+        async eventsByName(name, type) {
             try {
-                await this.updateSelectedParticipant({ name, email, type });
+                await this.updateSelectedParticipant({ name, type });
                 this.$emit("selectedParticipant");
                 this.drawerChange();
             } catch (error) {

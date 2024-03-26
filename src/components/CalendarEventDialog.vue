@@ -147,7 +147,7 @@
                                 <v-expansion-panel-content>
                                     <v-data-table
                                         :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Phone', value: 'phone' }]"
-                                        :items="safeVolunteerNames"
+                                        :items="processedVolunteerNames"
                                         hide-default-footer
                                     >
                                         <template v-slot:item.email="{ item }">
@@ -165,7 +165,7 @@
                                 <v-expansion-panel-content>
                                     <v-data-table
                                         :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Phone', value: 'phone' }]"
-                                        :items="safeDriverHelperNames"
+                                        :items="processedDriverHelperNames"
                                         hide-default-footer
                                     >
                                         <template v-slot:item.email="{ item }">
@@ -360,10 +360,10 @@ export default {
                     title: "Delete this instance", // Option to delete a single instance of a recurring event
                     action: "deleteInstance",
                 },
-                {
-                    title: "Delete forward", // Option to delete this and all future instances of a recurring event
-                    action: "deleteForward",
-                },
+                // {
+                //     title: "Delete forward", // Option to delete this and all future instances of a recurring event
+                //     action: "deleteForward",
+                // },
                 {
                     title: "Delete All", // Option to delete all instances of a recurring event
                     action: "deleteAll",
@@ -374,10 +374,10 @@ export default {
                     title: "Update this only", // Option to update only the current instance of a recurring event
                     action: "updateInstance",
                 },
-                {
-                    title: "Update forward", // Option to update this and all future instances of a recurring event
-                    action: "updateForward",
-                },
+                // {
+                //     title: "Update forward", // Option to update this and all future instances of a recurring event
+                //     action: "updateForward",
+                // },
                 {
                     title: "Update All", // Option to update all instances of a recurring event
                     action: "updateAll",
@@ -394,6 +394,27 @@ export default {
             "getSelectedParticipant",
             "emitRefreshAndResetNewEventState",
         ]),
+
+        processedVolunteerNames() {
+            return this.safeVolunteerNames.map(volunteer => {
+                // Use a regular expression to remove the email and parentheses
+                const nameWithoutEmail = volunteer.name.replace(/\s*\(.*?\)\s*/g, '');
+                return {
+                    ...volunteer,
+                    name: nameWithoutEmail
+                };
+            });
+        },
+        processedDriverHelperNames() {
+            return this.safeDriverHelperNames.map(driverHelper => {
+                // Use a regular expression to remove the email and parentheses
+                const nameWithoutEmail = driverHelper.name.replace(/\s*\(.*?\)\s*/g, '');
+                return {
+                    ...driverHelper,
+                    name: nameWithoutEmail
+                };
+            });
+        },
 
         // ===================================================================================== //
         // Computed - Automatically recalculate when their dependencies change
