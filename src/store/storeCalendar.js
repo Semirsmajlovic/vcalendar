@@ -20,7 +20,7 @@ const storeCalendar = {
 	actions: {
 		async initInstances({ commit, dispatch }, payload) {
 			try {
-
+				
 				// Fetch events from Firestore
 				const eventsCollectionRef = collection(db, "events");
 				const eventsSnapshot = await getDocs(eventsCollectionRef);
