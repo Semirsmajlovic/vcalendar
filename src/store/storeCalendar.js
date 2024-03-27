@@ -112,76 +112,103 @@ const storeCalendar = {
 		
 		async updateEvent({ commit, state, getters, dispatch }, payload) {
 			const logPrefix = "[storeCalendar.js/updateEvent]";
-			const handleRecurringEventUpdate = async (payload) => {
+	
+			// Helper to update a single, non-recurring event
+			const updateSingleEvent = async (payload) => {
+				const exceptionIndex = getters.getIndexException(payload);
+				if (exceptionIndex !== -1) {
+					const docRef = doc(db, "exceptions", payload.id);
+					await updateDoc(docRef, payload);
+					commit('UPDATE_EXCEPTION', { exceptionIndex, payload });
+					console.log(`${logPrefix} Updated one-time event.`);
+				}
+			};
+	
+			// Helper to update a diverged event from a recurring series to a one-time event
+			const updateDivergedEvent = async (payload) => {
+				const divergedIndex = getters.getIndexExceptionDiverged(payload);
+				if (divergedIndex !== -1) {
+					const docRef = doc(db, "exceptions", payload.id);
+					await updateDoc(docRef, payload);
+					commit('UPDATE_EXCEPTION', { divergedIndex, payload });
+					console.log(`${logPrefix} Updated recurring event to one-time event.`);
+				}
+			};
+	
+			// Helper to update all instances of a recurring event
+			const updateAllInstances = async (payload) => {
+				const index = getters.getIndexEvent(payload);
+				if (index !== -1) {
+					const docRef = doc(db, "events", payload.id);
+					await updateDoc(docRef, payload);
+					commit('UPDATE_SHIFT', { index, updatedShift: { ...payload } });
+					console.log(`${logPrefix} Updated all instances of a recurring event.`);
+				}
+			};
+	
+			// Helper to update a single instance of a recurring event
+			const updateSingleInstance = async (payload) => {
+				payload.actionType.description = 'updateInstance';
+				payload.isRecurring = false;
+				payload.rruleString = '';
+				const collectionRef = collection(db, 'exceptions');
+				const docRef = await addDoc(collectionRef, payload);
+				payload.eventRefId = payload.id;
+				payload.id = docRef.id;
+				const originalDocRef = doc(db, "exceptions", docRef.id);
+				await updateDoc(originalDocRef, payload);
+				commit('ADD_EXCEPTION', payload);
+				console.log(`${logPrefix} Updated a single instance of a recurring event.`);
+			};
+	
+			// Helper to update instances of a recurring event going forward
+			const updateForwardInstances = async (payload) => {
+				const forwardIndex = getters.getIndexEvent(payload);
+				if (forwardIndex !== -1) {
+					const updatedShift = changeRecurringEnd({ ...state.events[forwardIndex] }, payload.start);
+					const originalDocRef = doc(db, "events", state.events[forwardIndex].id);
+					await updateDoc(originalDocRef, updatedShift);
+					commit('UPDATE_SHIFT', { index: forwardIndex, updatedShift });
+					let recurringObjGoingForward = { ...payload, id: undefined };
+					const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
+					commit('ADD_SHIFT', { ...recurringObjGoingForward, id: newEventDocRef.id });
+					console.log(`${logPrefix} Updated recurring event going forward.`);
+				}
+			};
+	
+			// Internal helper function to update non-recurring events
+			const updateNonRecurringEvent = async (payload) => {
+				if (!payload.actionType) {
+					await updateSingleEvent(payload);
+				} else {
+					await updateDivergedEvent(payload);
+				}
+			};
+	
+			// Internal helper function to update recurring events
+			const updateRecurringEvent = async (payload) => {
 				switch (payload.actionType.description) {
-					case 'updateAll': {
-						const index = getters.getIndexEvent(payload);
-						if (index !== -1) {
-							const docRef = doc(db, "events", payload.id);
-							await updateDoc(docRef, payload);
-							commit('UPDATE_SHIFT', { index, updatedShift: { ...payload } });
-							console.log(`${logPrefix} Updated all instances of a recurring event.`);
-						}
+					case 'updateAll':
+						await updateAllInstances(payload);
 						break;
-					}
-					case 'updateInstance': {
-						payload.actionType.description = 'updateInstance';
-						payload.isRecurring = false;
-						payload.rruleString = '';
-						const collectionRef = collection(db, 'exceptions');
-						const docRef = await addDoc(collectionRef, payload);
-						payload.eventRefId=payload.id
-						payload.id = docRef.id;
-						const originalDocRef = doc(db, "exceptions", docRef.id);
-						await updateDoc(originalDocRef, payload);
-						commit('ADD_EXCEPTION', payload);
-						console.log(`${logPrefix} Updated a single instance of a recurring event.`);
+					case 'updateInstance':
+						await updateSingleInstance(payload);
 						break;
-					}
-					case 'updateForward': {
-						const forwardIndex = getters.getIndexEvent(payload);
-						if (forwardIndex !== -1) {
-							const updatedShift = changeRecurringEnd({ ...state.events[forwardIndex] }, payload.start);
-							const originalDocRef = doc(db, "events", state.events[forwardIndex].id);
-							await updateDoc(originalDocRef, updatedShift);
-							commit('UPDATE_SHIFT', { index: forwardIndex, updatedShift });
-							let recurringObjGoingForward = { ...payload, id: undefined };
-							const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
-							commit('ADD_SHIFT', { ...recurringObjGoingForward, id: newEventDocRef.id });
-							console.log(`${logPrefix} Updated recurring event going forward.`);
-						}
+					case 'updateForward':
+						await updateForwardInstances(payload);
 						break;
-					}
 					default:
 						console.warn(`${logPrefix} Unknown actionType: ${payload.actionType.description}`);
 						dispatch('updateSnackMessage', `Unknown actionType in updateEvent`, { root: true });
 				}
 			};
+	
+			// Main logic to decide which helper function to call
 			try {
 				if (!payload.isRecurring) {
-					// Logic for non-recurring events
-					if (!payload.actionType) {
-						// Update one-time event
-						const exceptionIndex = getters.getIndexException(payload);
-						if (exceptionIndex !== -1) {
-							const docRef = doc(db, "exceptions", payload.id);
-							await updateDoc(docRef, payload);
-							commit('UPDATE_EXCEPTION', { exceptionIndex, payload });
-							console.log(`${logPrefix} Updated one-time event.`);
-						}
-					} else {
-						// Logic for updating a recurring event to a one-time event
-						const divergedIndex = getters.getIndexExceptionDiverged(payload);
-						if (divergedIndex !== -1) {
-							const docRef = doc(db, "exceptions", payload.id);
-							await updateDoc(docRef, payload);
-							commit('UPDATE_EXCEPTION', { divergedIndex, payload });
-							console.log(`${logPrefix} Updated recurring event to one-time event.`);
-						}
-					}
+					await updateNonRecurringEvent(payload);
 				} else {
-					// Handle recurring events by calling the inner function
-					await handleRecurringEventUpdate(payload);
+					await updateRecurringEvent(payload);
 				}
 			} catch (e) {
 				console.error(`${logPrefix} Error updating event: ${e}`);
@@ -194,57 +221,78 @@ const storeCalendar = {
 
 		async deleteEvent({ commit, state, getters, dispatch }, payload) {
 			const logPrefix = "[storeCalendar.js/deleteEvent]";
+	
+			// Helper to delete a single, non-recurring event
+			const deleteSingleEvent = async (payload) => {
+				const exceptionIndex = getters.getIndexException(payload);
+				if (exceptionIndex !== -1) {
+					await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
+					commit('DELETE_EXCEPTION', exceptionIndex);
+					console.log(`${logPrefix} Deleted one-time event.`);
+				}
+			};
+	
+			// Helper to update exception for a diverged instance
+			const updateDivergedException = async (payload) => {
+				const index = getters.getIndexExceptionDiverged(payload);
+				if (index !== -1) {
+					payload.actionType.description = 'deleteInstance';
+					const docRef = doc(db, "exceptions", state.exceptions[index].id);
+					await updateDoc(docRef, payload);
+					commit('UPDATE_EXCEPTION', { index, payload });
+					console.log(`${logPrefix} Updated exception for a diverged instance.`);
+				}
+			};
+	
+			// Helper to delete all instances of a recurring event
+			const deleteAllInstances = async (payload) => {
+				const shiftsFound = state.events.filter(element => element.id === payload.id);
+				for (let shift of shiftsFound) {
+					await deleteDoc(doc(db, "events", shift.id));
+				}
+				commit('DELETE_EVENTS_MULTIPLE', shiftsFound);
+				console.log(`${logPrefix} Deleted all instances of a recurring event.`);
+			};
+	
+			// Helper to update recurring event going forward
+			const updateRecurringEventForward = async (payload) => {
+				const index = getters.getIndexEvent(payload);
+				if (index !== -1) {
+					const updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
+					await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
+					commit('UPDATE_SHIFT', { index, updatedShift });
+					console.log(`${logPrefix} Updated recurring event going forward.`);
+				}
+			};
+	
+			// Helper to add exception for deleting a single instance
+			const addExceptionForDeletion = async (payload) => {
+				const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
+				payload.id = exceptionDocRef.id;
+				payload.actionType.description = 'deleteInstance';
+				commit('ADD_EXCEPTION', payload);
+				console.log(`${logPrefix} Added exception for deleting a single instance.`);
+			};
+	
+			// Main logic to decide which helper function to call
 			try {
 				if (!payload.isRecurring) {
 					if (!payload.actionType) {
-						// Delete one-time event
-						const exceptionIndex = getters.getIndexException(payload);
-						if (exceptionIndex !== -1) {
-							await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
-							commit('DELETE_EXCEPTION', exceptionIndex);
-							console.log(`${logPrefix} Deleted one-time event.`);
-						}
+						await deleteSingleEvent(payload);
 					} else {
-						// Handle specific non-recurring event cases
-						const index = getters.getIndexExceptionDiverged(payload);
-						if (index !== -1) {
-							payload.actionType.description = 'deleteInstance';
-							const docRef = doc(db, "exceptions", state.exceptions[index].id);
-							await updateDoc(docRef, payload);
-							commit('UPDATE_EXCEPTION', { index, payload });
-							console.log(`${logPrefix} Updated exception for a diverged instance.`);
-						}
+						await updateDivergedException(payload);
 					}
 				} else {
-					// Handle recurring events
 					switch (payload.actionType.description) {
-						case 'deleteAll': {
-							const shiftsFound = state.events.filter(element => element.id === payload.id);
-							for (let shift of shiftsFound) {
-								await deleteDoc(doc(db, "events", shift.id));
-							}
-							commit('DELETE_EVENTS_MULTIPLE', shiftsFound);
-							console.log(`${logPrefix} Deleted all instances of a recurring event.`);
+						case 'deleteAll':
+							await deleteAllInstances(payload);
 							break;
-						}
-						case 'deleteForward': {
-							const index = getters.getIndexEvent(payload);
-							if (index !== -1) {
-								const updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
-								await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
-								commit('UPDATE_SHIFT', { index, updatedShift });
-								console.log(`${logPrefix} Updated recurring event going forward.`);
-							}
+						case 'deleteForward':
+							await updateRecurringEventForward(payload);
 							break;
-						}
-						case 'deleteInstance': {
-							const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
-							payload.id = exceptionDocRef.id;
-							payload.actionType.description = 'deleteInstance';
-							commit('ADD_EXCEPTION', payload);
-							console.log(`${logPrefix} Added exception for deleting a single instance.`);
+						case 'deleteInstance':
+							await addExceptionForDeletion(payload);
 							break;
-						}
 						default:
 							console.warn(`${logPrefix} Unknown actionType for recurring shift.`);
 							dispatch('updateSnackMessage', 'Unknown actionType for recurring shift', { root: true });
