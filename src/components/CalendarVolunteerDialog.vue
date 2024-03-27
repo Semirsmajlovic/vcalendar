@@ -209,9 +209,7 @@ export default {
                 } else {
                     docRef = doc(db, "exceptions", shift.id);
                 }
-
-
-
+                
                 // Prepare the combined name and email in the desired format
                 const combinedNameEmail = this.selectedRole === 'Volunteer' ? `${this.volunteerName} (${this.volunteerEmail})` : `${this.driverHelperName} (${this.driverHelperEmail})`;
 
@@ -227,9 +225,6 @@ export default {
                     this.close();
                     return;
                 }
-
-
-
                 let updatePayload = {};
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
