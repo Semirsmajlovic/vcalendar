@@ -30,6 +30,7 @@
                     label="Number of People (Max: 8)" 
                     type="number" 
                     :max="8"
+                    v-model="numberOfPeople"
                     :rules="rules.numberPeople"
                     ></v-text-field>
                     <v-menu
@@ -70,6 +71,7 @@
                             multiple
                             no-title
                             scrollable
+                            :min="minDate"
                         >
                             <v-spacer></v-spacer>
                             <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
@@ -81,14 +83,18 @@
             <v-card-actions>
                 <v-btn color="grey darken-1" text @click="dialog = false">Close</v-btn>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" :disabled="!formValid">Send</v-btn>
+                <v-btn color="primary" :disabled="!formValid" @click="sendForm">Send</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import UseEmail from '../plugins/UseEmail.js';
+import { mapActions } from 'vuex';
+
 export default {
+    mixins: [UseEmail],
     props: ['value'], // Accepts the value prop
     data() {
         return {
@@ -99,7 +105,9 @@ export default {
             email: '',
             dates: [],
             menu: false,
+            numberOfPeople: '',
             formValid: false,
+            minDate: new Date().toISOString().substr(0, 10), // Get today's date in YYYY-MM-DD format
             rules: { // Define validation rules
                 required: [v => !!v || 'Field is required'],
                 email: [
@@ -129,6 +137,56 @@ export default {
         },
     },
     methods: {
+        ...mapActions(["updateSnackMessage"]),
+        sendForm() {
+            if (this.formValid) {
+                const endpointUrl = 'https://public.herotofu.com/v1/9b846ad0-eb7d-11ee-a139-63688650e2a2'; // Set your endpoint URL here
+                const formattedDates = this.dates.map(date => this.formatDate(date)).join('; ');
+                const formData = {
+                    organizationName: this.organizationName,
+                    contactName: this.contactName,
+                    phoneNumber: this.phoneNumber,
+                    email: this.email,
+                    numberPeople: this.numberOfPeople,
+                    dates: formattedDates,
+                };
+                this.sendEmail(endpointUrl, formData);
+            }
+        },
+        sendEmail(endpointUrl, data) {
+            this.loading = true;
+            this.submitted = false;
+            this.error = null;
+
+            fetch(endpointUrl, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            })
+            .then((response) => {
+                if (response.status === 422) {
+                    throw new Error("Are you robot?");
+                }
+                if (response.status !== 200) {
+                    throw new Error(`${response.statusText} (${response.status})`);
+                }
+                return response.json();
+            })
+            .then(() => {
+                this.submitted = true;
+                this.loading = false;
+                this.dialog = false;
+                this.updateSnackMessage("Email sent successfully.");
+            })
+            .catch((err) => {
+                this.error = err.toString();
+                this.loading = false;
+                this.updateSnackMessage(`Error sending email: ${err.message}`);
+            });
+        },
         formatDate(date) {
             const dt = new Date(date);
             const day = dt.getDate();

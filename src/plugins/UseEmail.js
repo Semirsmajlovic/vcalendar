@@ -3,7 +3,7 @@ import Vue from 'vue';
 export default Vue.extend({
   data() {
     return {
-      sumbmitted: false,
+      submitted: false,
       loading: false,
       error: null,
     };
@@ -11,7 +11,7 @@ export default Vue.extend({
   methods: {
     sendEmail(endpointUrl, data) {
       this.loading = true;
-      this.sumbmitted = false;
+      this.submitted = false;
       this.error = null;
 
       fetch(endpointUrl, {
@@ -35,7 +35,7 @@ export default Vue.extend({
           return response.json();
         })
         .then(() => {
-          this.sumbmitted = true;
+          this.submitted = true;
           this.loading = false;
         })
         .catch((err) => {
