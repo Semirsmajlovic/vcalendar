@@ -4,7 +4,7 @@
             <v-row align="center" justify="space-between" no-gutters>
 
                 <!-- Left Column for Buttons -->
-                <v-col cols="4">
+                <v-col cols="3">
                     <!-- Month Button -->
                     <v-menu bottom left>
                         <template v-slot:activator="{ on, attrs }">
@@ -55,7 +55,7 @@
                 </v-col>
 
                 <!-- Center Column for Toolbar Title -->
-                <v-col cols="4" class="d-flex justify-center align-center">
+                <v-col cols="5" class="d-flex justify-center align-center">
                     <v-toolbar-title v-if="reference" class="d-flex align-center justify-center">
                         <span>{{ reference.title }}</span>
                         <span v-if="isLoggedIn" class="ml-2">
