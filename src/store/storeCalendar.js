@@ -239,8 +239,11 @@ const storeCalendar = {
 						}
 						case 'deleteInstance': {
 							const exceptionDocRef = await addDoc(collection(db, "exceptions"), payload);
+							payload.eventRefId=payload.id
 							payload.id = exceptionDocRef.id;
 							payload.actionType.description = 'deleteInstance';
+							const originalDocRef = doc(db, "exceptions",  exceptionDocRef.id);
+							await updateDoc(originalDocRef, payload);
 							commit('ADD_EXCEPTION', payload);
 							console.log(`${logPrefix} Added exception for deleting a single instance.`);
 							break;
