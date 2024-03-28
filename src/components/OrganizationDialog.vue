@@ -123,7 +123,8 @@ export default {
                     v => (v > 0 && v <= 8) || 'Number of people must be between 1 and 8'
                 ],
                 dateRequired: [
-                    v => (v && v.length > 0) || 'At least one date must be selected'
+                    v => (v && v.length > 0) || 'At least one date must be selected',
+                    v => (v && v.length <= 5) || 'You can select up to 5 dates only' // New rule
                 ],
             },
         };
@@ -138,75 +139,108 @@ export default {
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
-        sendForm() {
-            if (this.formValid) {
-                const endpointUrl = 'https://public.herotofu.com/v1/9b846ad0-eb7d-11ee-a139-63688650e2a2'; // Set your endpoint URL here
-                const formattedDates = this.dates.map(date => this.formatDate(date)).join('; ');
-                const formData = {
-                    "Organization Name": this.organizationName,
-                    "Contact Name": this.contactName,
-                    "Phone Number": this.phoneNumber,
-                    "Email": this.email,
-                    "Number of Participants": this.numberOfPeople,
-                    "Volunteering Dates": formattedDates,
-                };
-                this.sendEmail(endpointUrl, formData);
-            }
-        },
-        sendEmail(endpointUrl, data) {
-            this.loading = true;
-            this.submitted = false;
-            this.error = null;
 
-            fetch(endpointUrl, {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            })
-            .then((response) => {
-                if (response.status === 422) {
-                    throw new Error("Are you robot?");
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        sendForm() {
+            if (!this.formValid) {
+                console.error("Form is not valid.");
+                return;
+            }
+            const endpointUrl = 'https://public.herotofu.com/v1/9b846ad0-eb7d-11ee-a139-63688650e2a2';
+            const sortedDates = this.dates.sort((a, b) => new Date(a) - new Date(b));
+            const groupedByMonth = sortedDates.reduce((acc, date) => {
+                const dt = new Date(date);
+                const monthYearKey = dt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                if (!acc[monthYearKey]) {
+                    acc[monthYearKey] = [];
                 }
-                if (response.status !== 200) {
-                    throw new Error(`${response.statusText} (${response.status})`);
-                }
-                return response.json();
-            })
-            .then(() => {
-                this.submitted = true;
-                this.loading = false;
-                this.dialog = false;
-                this.updateSnackMessage("Email sent successfully.");
-            })
-            .catch((err) => {
-                this.error = err.toString();
-                this.loading = false;
-                this.updateSnackMessage(`Error sending email: ${err.message}`);
+                acc[monthYearKey].push(this.formatDate(date));
+                return acc;
+            }, {});
+            const formattedDates = Object.entries(groupedByMonth).map(([monthYear, dates]) => {
+                const days = dates.map(date => {
+                    const dayWithSuffix = date.replace(/^[^ ]+ /, '').replace(/, \d{4}$/, '');
+                    return dayWithSuffix;
+                }).join(', ');
+                return `${monthYear}: ${days}`;
+            }).join(' | ');
+            const formData = {
+                "Organization Name": this.organizationName,
+                "Contact Name": this.contactName,
+                "Phone Number": this.phoneNumber,
+                "Email": this.email,
+                "Number of Participants": this.numberOfPeople,
+                "Volunteering Dates": formattedDates,
+            };
+            this.sendEmail(endpointUrl, formData).then(() => {
+                console.log("Form submitted successfully.");
+            }).catch((error) => {
+                console.error("Error submitting form:", error.message);
             });
         },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        async sendEmail(endpointUrl, data) {
+            try {
+                this.loading = true;
+                const response = await fetch(endpointUrl, {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+                if (response.status === 422) {
+                    throw new Error("Validation failed: Are you a robot?");
+                }
+                if (response.status !== 200) {
+                    throw new Error(`Error: ${response.statusText} (${response.status})`);
+                }
+                await response.json(); // Assuming the response needs to be processed
+                this.submitted = true;
+                this.updateSnackMessage("Email sent successfully.");
+            } catch (error) {
+                this.error = error.toString();
+                this.updateSnackMessage(`Error sending email: ${error.message}`);
+            } finally {
+                this.loading = false;
+                this.dialog = false; // Consider moving this to a more appropriate place depending on UX requirements
+            }
+        },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
         formatDate(date) {
             const dt = new Date(date);
             const day = dt.getDate();
-            const month = dt.toLocaleString('en-US', { month: 'long' });
-            const year = dt.getFullYear();
-            const suffix = this.getDaySuffix(day);
-
+            const [month, , year] = dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).split(' ');
+            const suffix = ((day) => {
+                if (day > 3 && day < 21) return 'th';
+                switch (day % 10) {
+                    case 1:  return "st";
+                    case 2:  return "nd";
+                    case 3:  return "rd";
+                    default: return "th";
+                }
+            })(day);
             return `${month} ${day}${suffix}, ${year}`;
         },
-        getDaySuffix(day) {
-            if (day > 3 && day < 21) return 'th';
-            switch (day % 10) {
-                case 1:  return "st";
-                case 2:  return "nd";
-                case 3:  return "rd";
-                default: return "th";
-            }
-        },
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
         removeDate(index) {
-            this.dates.splice(index, 1);
+            if (index >= 0 && index < this.dates.length) {
+                this.dates.splice(index, 1);
+            } else {
+                console.warn("Attempted to remove a date with an invalid index:", index);
+            }
         },
     }
 }
