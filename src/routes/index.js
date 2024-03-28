@@ -13,7 +13,26 @@ const router = new Router({
     base: process.env.BASE_URL,
     routes: [
         { path: '/', component: Home },
-        { path: '/register', component: Register },
+        {
+            path: '/register',
+            component: Register,
+            beforeEnter: (to, from, next) => {
+                // Trigger the password prompt
+                const password = prompt("Please enter the password to access this page:");
+                if (password === "testtestTest") { // Replace 'yourPassword' with the actual password
+                    next();
+                } else {
+                    alert("Incorrect password");
+                    // Redirect user back to the previous page and refresh
+                    if (from.fullPath) {
+                        window.location.href = from.fullPath;
+                    } else {
+                        // Fallback if there's no previous page, redirect to home and refresh
+                        window.location.href = '/';
+                    }
+                }
+            }
+        },
         { path: '/login', component: Login },
     ]
 });
