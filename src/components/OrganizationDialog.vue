@@ -143,12 +143,12 @@ export default {
                 const endpointUrl = 'https://public.herotofu.com/v1/9b846ad0-eb7d-11ee-a139-63688650e2a2'; // Set your endpoint URL here
                 const formattedDates = this.dates.map(date => this.formatDate(date)).join('; ');
                 const formData = {
-                    organizationName: this.organizationName,
-                    contactName: this.contactName,
-                    phoneNumber: this.phoneNumber,
-                    email: this.email,
-                    numberPeople: this.numberOfPeople,
-                    dates: formattedDates,
+                    "Organization Name": this.organizationName,
+                    "Contact Name": this.contactName,
+                    "Phone Number": this.phoneNumber,
+                    "Email": this.email,
+                    "Number of Participants": this.numberOfPeople,
+                    "Volunteering Dates": formattedDates,
                 };
                 this.sendEmail(endpointUrl, formData);
             }

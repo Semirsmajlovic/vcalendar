@@ -12,7 +12,6 @@
                         label="Choose a role"
                         outlined
                     ></v-select>
-
                     <!-- Start: Volunteer Section -->
                     <div v-if="selectedRole === 'Volunteer' && !isVolunteerLimitReached">
                         <h3>General Volunteer Signup</h3>
@@ -51,7 +50,6 @@
                         We have reached the maximum number of volunteers for this shift. Thank you for your interest!
                     </v-alert>
                     <!-- End: Volunteer Section -->
-
                     <div v-if="selectedRole === 'Driver / Driver Helper' && !isDriverHelperLimitReached">
                         <h3>Driver / Helper Volunteer</h3>
                         <p>As a driver or helper, you play a crucial role in logistics and transportation, ensuring resources and people reach where they are needed most.</p>
@@ -98,8 +96,6 @@
                     >
                         We have reached the maximum number of drivers/helpers for this shift. Thank you for your interest!
                     </v-alert>
-
-
                 </v-card-text>
                 <v-card-actions>
                     <v-btn color="grey darken-1" text @click="close">Close</v-btn>
@@ -107,7 +103,7 @@
                     <v-btn
                         :disabled="!canParticipate || !formValid"
                         color="primary"
-                        @click="updateEvent"
+                        @click="updateShiftAndSendEmail"
                     >
                         Participate
                     </v-btn>
@@ -121,7 +117,7 @@
 import { db } from '../main.js';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { mapActions } from "vuex";
-import { v4 as uuidv4 } from 'uuid';
+import UseEmail from '../plugins/UseEmail.js';
 
 export default {
     name: 'CalendarVolunteerDialog',
@@ -200,6 +196,107 @@ export default {
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
+        sendForm() {
+            if (this.formValid) {
+                const endpointUrl = 'https://public.herotofu.com/v1/25116e10-eb7e-11ee-a139-63688650e2a2';
+                const formData = this.prepareFormData();
+                this.sendEmail(endpointUrl, formData);
+            }
+        },
+        sendEmail(endpointUrl, data) {
+            this.loading = true;
+            this.submitted = false;
+            this.error = null;
+            fetch(endpointUrl, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            })
+            .then((response) => {
+                if (response.status === 422) {
+                    throw new Error("Are you robot?");
+                }
+                if (response.status !== 200) {
+                    throw new Error(`${response.statusText} (${response.status})`);
+                }
+                return response.json();
+            })
+            .then(() => {
+                this.submitted = true;
+                this.loading = false;
+                this.dialog = false;
+            })
+            .catch((err) => {
+                this.error = err.toString();
+                this.loading = false;
+            });
+        },
+        prepareFormData() {
+            let formData = {
+                "Selected Role": this.selectedRole === 'Volunteer' ? 'Volunteer' : 'Driver / Driver Helper',
+            };
+            if (this.selectedRole === 'Volunteer') {
+                formData = {
+                    ...formData,
+                    "Volunteer Name:": this.volunteerName,
+                    "Volunteer Email:": this.volunteerEmail,
+                    "Volunteer Phone:": this.volunteerPhone,
+                };
+            } else if (this.selectedRole === 'Driver / Driver Helper') {
+                formData = {
+                    ...formData,
+                    "Driver / Helper Name": this.driverHelperName,
+                    "Driver / Email": this.driverHelperEmail,
+                    "Driver / Phone": this.driverHelperPhone,
+                };
+            }
+
+            // Add "Shift Selected" before "Notes"
+            if (this.selectedShift && this.selectedShift.start) {
+                const formattedDate = this.formatDateWithOrdinal(new Date(this.selectedShift.start));
+                formData["Shift Selected"] = formattedDate;
+            }
+
+            // Now, add "Notes" for the 'Driver / Driver Helper' role, ensuring it comes after "Shift Selected"
+            if (this.selectedRole === 'Driver / Driver Helper') {
+                formData["Notes"] = "Please contact the driver or driver helper at your earliest convenience to request a copy of their current driver's license and proof of insurance using the email or phone number provided.";
+            }
+            return formData;
+        },
+        formatDateWithOrdinal(date) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            const parts = formatter.formatToParts(date);
+            let day;
+            let ordinalSuffix;
+            parts.forEach(part => {
+                if (part.type === 'day') {
+                    day = parseInt(part.value, 10);
+                }
+            });
+            if (day) {
+                if (day % 10 === 1 && day !== 11) {
+                    ordinalSuffix = 'st';
+                } else if (day % 10 === 2 && day !== 12) {
+                    ordinalSuffix = 'nd';
+                } else if (day % 10 === 3 && day !== 13) {
+                    ordinalSuffix = 'rd';
+                } else {
+                    ordinalSuffix = 'th';
+                }
+            }
+            const formattedDate = parts.map(part => {
+                if (part.type === 'day') {
+                    return `${part.value}${ordinalSuffix}`;
+                }
+                return part.value;
+            }).join('');
+
+            return formattedDate;
+        },
         async updateEvent() {
             try {
                 const shift = this.selectedShift;
@@ -209,27 +306,20 @@ export default {
                 } else {
                     docRef = doc(db, "exceptions", shift.id);
                 }
-                
-                // Prepare the combined name and email in the desired format
                 const combinedNameEmail = this.selectedRole === 'Volunteer' ? `${this.volunteerName} (${this.volunteerEmail})` : `${this.driverHelperName} (${this.driverHelperEmail})`;
-
-                // Check if the combined name and email already exists in either role
                 const nameEmailCombinationExistsInVolunteers = shift.volunteerNames?.some(v => v.name.toLowerCase() === combinedNameEmail.toLowerCase());
                 const nameEmailCombinationExistsInDriverHelpers = shift.driverHelperNames?.some(d => d.name.toLowerCase() === combinedNameEmail.toLowerCase());
-
-                // Does the combined name and email already exist in any role? Return.
                 if (nameEmailCombinationExistsInVolunteers || nameEmailCombinationExistsInDriverHelpers) {
                     this.updateSnackMessage(`You have already registered to participate in one of the roles.`);
                     console.log("User already registered for this shift in one of the roles.");
                     this.$emit('dialogs-completed');
                     this.close();
-                    return;
+                    return false; // Indicate early exit
                 }
                 let updatePayload = {};
                 if (this.selectedRole === 'Volunteer') {
                     updatePayload = {
                         volunteerNames: arrayUnion({
-                            id: uuidv4(), // Generate a unique ID for the volunteer
                             name: `${this.volunteerName} (${this.volunteerEmail})`, // Combine name and email
                             email: this.volunteerEmail,
                             phone: this.volunteerPhone
@@ -238,7 +328,6 @@ export default {
                 } else if (this.selectedRole === 'Driver / Driver Helper') {
                     updatePayload = {
                         driverHelperNames: arrayUnion({
-                            id: uuidv4(), // Generate a unique ID for the driver/helper
                             name: `${this.driverHelperName} (${this.driverHelperEmail})`, // Combine name and email
                             email: this.driverHelperEmail,
                             phone: this.driverHelperPhone
@@ -248,8 +337,16 @@ export default {
                 await updateDoc(docRef, updatePayload);
                 this.$emit('dialogs-completed');
                 this.close();
+                return true; // Indicate successful completion
             } catch (error) {
                 console.error("Failed to update event: ", error);
+                return false; // Indicate failure
+            }
+        },
+        async updateShiftAndSendEmail() {
+            const updateSuccessful = this.updateEvent();
+            if (updateSuccessful) {
+                this.sendForm();
             }
         },
         close() {
