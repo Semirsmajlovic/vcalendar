@@ -2,7 +2,16 @@
     <v-container fluid class="event__inner pt-1" :class="event.isRecurring ? '' : 'nonRecurringEvent'">
         <v-row no-gutters>
             <v-col>
-                <span class="text-caption font-weight-bold">{{ event.shiftTitle || (event.isRecurring ? "Recurring Shift" : "Single Occurrence Shift") }}</span>
+                <div class="text-caption font-weight-medium">
+                    <!-- Recurring Shift Icon -->
+                    <v-icon small v-if="event.isRecurring">mdi-repeat</v-icon>
+                    <!-- Single Occurrence Shift Icon -->
+                    <v-icon small v-else>mdi-calendar</v-icon>
+                    {{ event.shiftTitle || (event.isRecurring ? "Recurring Shift" : "Single Occurrence Shift") }}
+                </div>
+                <div class="font-weight-medium">
+                    <v-icon small>mdi-clock</v-icon> {{ formatTimeslot(event.start) }} - {{ formatTimeslot(event.end) }}
+                </div>
             </v-col>
         </v-row>
         <v-divider class="grey darken-1 mb-1 mt-1"></v-divider>
@@ -19,7 +28,7 @@
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                         <!-- Show this button if the user is logged in -->
-                        <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Update</v-btn>
+                        <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Manage</v-btn>
                         <!-- Show this button if the user is not logged in -->
                         <v-btn v-else class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Volunteer</v-btn>
                     </template>
@@ -74,6 +83,14 @@ export default {
         },
         displayTime(time) {
             return time.slice(11);
+        },
+        formatTimeslot(dateTimeStr) {
+            // Extract the time part from the dateTime string
+            const timePart = dateTimeStr.split(' ')[1];
+            // Convert to Date object to make use of toLocaleTimeString for formatting
+            const time = new Date(`1970-01-01 ${timePart}`);
+            // Format the time in AM/PM format and remove the space before AM/PM
+            return time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/ /g, '');
         },
     },
 };
