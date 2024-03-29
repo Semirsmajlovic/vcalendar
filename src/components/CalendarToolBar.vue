@@ -177,13 +177,12 @@ export default {
             newContent.style.paddingBottom = "1rem";
 
             let personName = name === undefined ? "All" : name;
-            let date = !focus || focus === ""
-                ? `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
-                : focus.substr(0, 7);
-
-            // Convert 'date' to a more readable format "Month, Year"
-            let readableDate = new Date(date);
+            let year = new Date().getFullYear();
+            let month = new Date().getMonth() + 1; // Get the current month (1-12)
             let options = { year: 'numeric', month: 'long' };
+
+            // Create a date for the first day of the given month to avoid any end-of-month confusion
+            let readableDate = new Date(year, month - 1, 1); // Adjust month -1 because JavaScript months are 0-based
             let formattedDate = readableDate.toLocaleDateString('en-US', options);
 
             // Update the innerHTML to use the new format
@@ -208,7 +207,7 @@ export default {
                 format: "a4",
             });
 
-            html2canvas(clone, { scale: 1, useCORS: true }).then((canvas) => {
+            html2canvas(clone, { scale: 2, useCORS: true }).then((canvas) => {
                 const contentWidth = canvas.width;
                 const contentHeight = canvas.height;
 
@@ -224,7 +223,7 @@ export default {
 
                 let image = canvas.toDataURL("image/png");
                 pdf.addImage(image, "PNG", 0, 0, imageWidth, imageHeight);
-                pdf.save(`${personName}-${date}.pdf`);
+                pdf.save(`${personName}-${formattedDate}.pdf`);
             }).catch(function (e) {
                 console.error(`Error at html2canvas: ${e}`);
             }).finally(() => {
