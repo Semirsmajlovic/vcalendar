@@ -1,16 +1,12 @@
 <template>
     <v-row>
         <v-col cols="4">
-            <v-menu
-                ref="menu"
+            <v-dialog
+                ref="dialog"
                 v-model="menu_start"
-                :close-on-content-click="false"
-                :nudge-right="40"
                 :return-value.sync="compuStart"
-                transition="scale-transition"
-                offset-y
-                max-width="290px"
-                min-width="290px"
+                persistent
+                width="290px"
             >
                 <template v-slot:activator="{ on, attrs }">
                     <v-text-field
@@ -25,13 +21,28 @@
                     :allowed-minutes="allowedStep"
                     v-if="menu_start"
                     v-model="compuStart"
-                    ampm-in-title
                     format="ampm"
                     @click:minute="$refs.menu.save(compuStart)"
                     use-ampm
                     full-width
-                ></v-time-picker>
-            </v-menu>
+                >
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        text
+                        color="primary"
+                        @click="menu_start = false"
+                    >
+                        Cancel
+                    </v-btn>
+                    <v-btn
+                        text
+                        color="primary"
+                        @click="$refs.dialog.save(compuStart); menu_start = false"
+                    >
+                        OK
+                    </v-btn>
+                </v-time-picker>
+            </v-dialog>
         </v-col>
         <v-col cols="4">
             <v-text-field

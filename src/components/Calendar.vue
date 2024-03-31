@@ -166,8 +166,10 @@ export default {
                 } else {
                     this.openVolunteerDialog(event);
                 }
+            } else if (!this.isLoggedIn) {
+                this.updateSnackMessage(`Participation is not permitted for past dates or the current day.`);
             }
-            // If the event's date is before today, do nothing.
+            // If the event's date is before today and user is logged in, do nothing.
         },
 
         // ========================================================================================== //

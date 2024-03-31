@@ -27,12 +27,12 @@
             <v-col cols="12">
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <!-- Show this button if the user is logged in -->
-                        <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Manage</v-btn>
-                        <!-- Show this button if the user is not logged in -->
-                        <v-btn v-else class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on">Volunteer</v-btn>
+                        <!-- Disable the button and change the tooltip if the event is in the past -->
+                        <v-btn v-if="isLoggedIn" class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on" :disabled="isEventInPast">Manage</v-btn>
+                        <v-btn v-else class="d-inline-block" color="primary" x-small v-bind="attrs" v-on="on" :disabled="isEventInPast">Volunteer</v-btn>
                     </template>
-                    <span v-if="isLoggedIn">View participants for this shift.</span>
+                    <span v-if="isEventInPast">Events are not accessible on past dates.</span>
+                    <span v-else-if="isLoggedIn">View participants for this shift.</span>
                     <span v-else>Sign up to help with the shift.</span>
                 </v-tooltip>
             </v-col>
@@ -41,7 +41,8 @@
 </template>
 
 <script>
-import { parseISO, differenceInMinutes } from "date-fns";
+import { parseISO, differenceInMinutes, isPast } from "date-fns";
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 export default {
     name: "CalendarDay",
@@ -73,6 +74,15 @@ export default {
                 return this.event.driverHelperLimit - this.event.driverHelperNames.length;
             }
             return 0;
+        },
+        isEventInPast() {
+            const timeZone = 'America/Chicago';
+            // Convert event.start to the UTC equivalent of the given time in the America/Chicago timezone
+            const eventStartTime = zonedTimeToUtc(this.event.start, timeZone);
+            // Get the current date in the America/Chicago timezone
+            const nowInChicago = utcToZonedTime(new Date(), timeZone);
+            // Check if the event start time is in the past
+            return isPast(eventStartTime, nowInChicago);
         },
     },
     methods: {
