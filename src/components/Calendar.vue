@@ -87,6 +87,7 @@
         <calendar-volunteer-dialog
             v-model="showVolunteerDialog"
             :selectedShift="selectedShift"
+            :originalData="originalData"
             @dialogs-completed="fetchUpdatedShifts"
         ></calendar-volunteer-dialog>
     </v-container>

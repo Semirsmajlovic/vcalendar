@@ -119,7 +119,7 @@
   
 <script>
 import { db } from '../main.js';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion,collection,addDoc,getDoc } from 'firebase/firestore';
 import { mapActions } from "vuex";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -128,6 +128,12 @@ export default {
     props: {
         value: Boolean,
         selectedShift: {
+            type: Object,
+            default() {
+                return {};
+            },
+        },
+        originalData: {
             type: Object,
             default() {
                 return {};
@@ -232,7 +238,7 @@ export default {
                     updatePayload = {
                         volunteerNames: arrayUnion({
                             id: uuidv4(), // Generate a unique ID for the volunteer
-                            name: this.volunteerName,
+                            name: `${this.volunteerName} (${this.volunteerEmail})` ,
                             email: this.volunteerEmail,
                             phone: this.volunteerPhone
                         })
@@ -247,7 +253,33 @@ export default {
                         })
                     };
                 }
+                if(shift.isRecurring){
+                    console.log("selected shif",this.selectedShift)
+                    //let payloadref= doc(db, "events", shift.id);
+                    //const docSnap = await getDoc(payloadref);
+                    let payload= Object.assign({}, this.selectedShift);//docSnap.data();
+                    payload.id=shift.id;
+                    if (this.selectedRole === 'Volunteer') {
+                        payload.volunteerNames=updatePayload.volunteerNames;
+                    }
+                    else if (this.selectedRole === 'Driver / Driver Helper') {
+                        payload.driverHelperNames=updatePayload.driverHelperNames;
+                    }
+                    
+                   payload.actionType={description: "updateInstance",originalData: this.selectedShift};
+                    
+                    payload.isRecurring = false;
+                    payload.rruleString = '';
+                    const collectionRef = collection(db, 'exceptions');
+						const createdDoc = await addDoc(collectionRef, payload);
+						payload.eventRefId=payload.id
+						payload.id = createdDoc.id;
+						const originalDocRef = doc(db, "exceptions", createdDoc.id);
+						await updateDoc(originalDocRef, payload);
+                }
+                else{
                 await updateDoc(docRef, updatePayload);
+                }
                 this.$emit('dialogs-completed');
                 this.close();
             } catch (error) {
