@@ -36,5 +36,7 @@ getAuth().onAuthStateChanged(user => {
       router, // Includes Vue Router for navigation
       render: h => h(App, { props: { isLoggedIn: !!user } }), // Renders the App component and passes isLoggedIn prop based on user's authentication status
     }).$mount('#app'); // Mounts the Vue instance to the DOM element with id 'app'
+  } else {
+    window.location.reload(); // Refresh the page when the authentication state changes
   }
 });
