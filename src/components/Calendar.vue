@@ -36,7 +36,7 @@
                 ></calendar-tool-bar>
                 <!-- End: Calendar Toolbar -->
                 <v-row>
-                    <v-col :cols="isLoggedIn ? '12' : '10'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
+                    <v-col :cols="isLoggedIn ? '12' : '10'" :md="isLoggedIn ? '10' : '12'" :lg="isLoggedIn ? '10' : '12'" id="calendarContent">
                         <v-overlay
                             :value="isBusy"
                             :opacity="0.6"
@@ -66,11 +66,11 @@
                             @change="loadAndUpdateShifts"
                         >
                         <template v-slot:event="{ event }">
-                        <calendar-day :event="event" :is-logged-in="isLoggedIn"></calendar-day>
+                            <calendar-day :event="event" :is-logged-in="isLoggedIn"></calendar-day>
                         </template>
-                    </v-calendar>
+                        </v-calendar>
                     </v-col>
-                    <v-col v-if="isLoggedIn" cols="12" lg="2">
+                    <v-col v-if="isLoggedIn" cols="12" md="2" lg="2">
                     <calendar-side-bar @selectedParticipant="loadAndUpdateShifts()" :focus="focus"></calendar-side-bar>
                     </v-col>
                 </v-row>
@@ -87,6 +87,7 @@
         <calendar-volunteer-dialog
             v-model="showVolunteerDialog"
             :selectedShift="selectedShift"
+            :originalData="originalData"
             @dialogs-completed="fetchUpdatedShifts"
         ></calendar-volunteer-dialog>
     </v-container>

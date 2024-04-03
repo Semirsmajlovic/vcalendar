@@ -29,10 +29,10 @@
                 <v-icon left dark>mdi-login</v-icon>
                 Login
             </v-btn>
-            <v-btn color="error" class="ma-2 white--text" @click="deleteCollections" v-if="isLoggedIn">
+            <!-- <v-btn color="error" class="ma-2 white--text" @click="deleteCollections" v-if="isLoggedIn">
                 <v-icon left dark>mdi-delete</v-icon>
                 Delete DB
-            </v-btn>
+            </v-btn> -->
             <!-- <v-btn 
                 color="secondary" 
                 class="ma-2 white--text" 
