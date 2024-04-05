@@ -247,16 +247,16 @@ export default {
             if (this.selectedRole === 'Volunteer') {
                 formData = {
                     ...formData,
-                    "Volunteer Name:": this.volunteerName,
-                    "Volunteer Email:": this.volunteerEmail,
-                    "Volunteer Phone:": this.volunteerPhone,
+                    "Name": this.volunteerName,
+                    "Email": this.volunteerEmail,
+                    "Phone": this.volunteerPhone,
                 };
             } else if (this.selectedRole === 'Driver / Driver Helper') {
                 formData = {
                     ...formData,
-                    "Driver / Helper Name": this.driverHelperName,
-                    "Driver / Email": this.driverHelperEmail,
-                    "Driver / Phone": this.driverHelperPhone,
+                    "Name": this.driverHelperName,
+                    "Email": this.driverHelperEmail,
+                    "Phone": this.driverHelperPhone,
                 };
             }
 

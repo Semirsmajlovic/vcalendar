@@ -41,7 +41,11 @@
                                 hint="Provide number of allowed volunteers."
                                 label="Volunteer Limit"
                                 type="number"
-                                :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
+                                :rules="[
+                                    v => !!v || 'Volunteer limit is required',
+                                    v => (!isNaN(parseFloat(v)) && v >= 0 && v <= 10) || 'The number must be between 0 and 10.'
+                                ]"
+                                @keydown.native="preventNonNumeric($event)"
                             ></v-text-field>
                         </v-col>
                         <v-col cols="12" sm="6">
@@ -50,7 +54,11 @@
                                 hint="Provide number of allowed drivers and/or helpers."
                                 label="Driver / Helper Limit"
                                 type="number"
-                                :rules="[value => (!isNaN(value) && value >= 0 && value <= 10) || 'The number must be between 0 and 10.']"
+                                :rules="[
+                                    v => !!v || 'Driver/Helper limit is required',
+                                    v => (!isNaN(parseFloat(v)) && v >= 0 && v <= 10) || 'The number must be between 0 and 10.'
+                                ]"
+                                @keydown.native="preventNonNumeric($event)"
                             ></v-text-field>
                         </v-col>
                     </v-row>
@@ -511,6 +519,15 @@ export default {
             "deleteEvent",
         ]),
         ...mapMutations("storeCalendar", ["SET_NEW_EVENT_SIGNAL"]),
+
+        // ===================================================================================== //
+        // Method - Accessible from the component's template.
+
+        preventNonNumeric(event) {
+            if (['e', '+', '-', '.'].includes(event.key)) {
+                event.preventDefault();
+            }
+        },
 
         // ===================================================================================== //
         // Method - Accessible from the component's template.
