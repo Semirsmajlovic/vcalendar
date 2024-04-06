@@ -256,7 +256,7 @@ export default {
                     ...formData,
                     "Name": this.driverHelperName,
                     "Email": this.driverHelperEmail,
-                    "Phone": this.driverHelperPhone,
+                    "Driver / Phone": this.driverHelperPhone,
                 };
             }
 
@@ -367,6 +367,7 @@ export default {
                 } else {
                     await updateDoc(docRef, updatePayload);
                 }
+                this.sendForm();
                 this.$emit('dialogs-completed');
                 this.close();
                 return true; // Indicate successful completion
@@ -376,10 +377,7 @@ export default {
             }
         },
         async updateShiftAndSendEmail() {
-            const updateSuccessful = await this.updateEvent(); // Use await to wait for the promise to resolve
-            if (updateSuccessful) {
-                this.sendForm();
-            }
+            this.updateEvent();
         },
         close() {
             this.volunteerName = '';
