@@ -376,7 +376,7 @@ export default {
             }
         },
         async updateShiftAndSendEmail() {
-            const updateSuccessful = this.updateEvent();
+            const updateSuccessful = await this.updateEvent(); // Use await to wait for the promise to resolve
             if (updateSuccessful) {
                 this.sendForm();
             }
