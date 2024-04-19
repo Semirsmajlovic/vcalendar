@@ -55,7 +55,7 @@
                 </v-col>
 
                 <!-- Center Column for Toolbar Title -->
-                <v-col cols="5" class="d-flex justify-center align-center">
+                <v-col cols="4" class="d-flex justify-center align-center">
                     <v-toolbar-title v-if="reference" class="d-flex align-center justify-center">
                         <span>{{ reference.title }}</span>
                         <span v-if="isLoggedIn" class="ml-2">
@@ -65,7 +65,7 @@
                 </v-col>
 
                 <!-- Right Column for Chips -->
-                <v-col cols="4" md="4" class="text-right">
+                <v-col cols="5" md="5" class="text-right">
                     <v-chip color="blue darken-1" label text-color="white">
                         <v-icon left>mdi-clock-outline</v-icon>
                         Total Hours: {{ totalHours }}
@@ -74,9 +74,21 @@
                         <v-icon left>mdi-calendar-range</v-icon>
                         Total Shifts: {{ shifts.length }}
                     </v-chip>
-                    <v-chip class="mr-0" color="blue darken-1" label text-color="white" @click="PDFCalendar(getSelectedParticipant.name, focus)">
+                    <v-chip v-if="isLoggedIn" class="mr-2" color="blue darken-1" label text-color="white" @click="PDFCalendar(getSelectedParticipant.name, focus)">
                         <v-icon left>mdi-download</v-icon>
-                        Download PDF
+                        Download Calendar
+                    </v-chip>
+                    <v-chip v-if="isLoggedIn" class="mr-0" color="blue darken-1" label text-color="white">
+                        <a href="https://firebasestorage.googleapis.com/v0/b/volunteer-portal-hstl-3ef78.appspot.com/o/admin-tutorial.pdf?alt=media&token=e841efca-1bdf-46ed-9bd8-685c8b2e1315" download="LoggedInUserGuide.pdf" target="_blank" style="color: white; text-decoration: none;">
+                            <v-icon left>mdi-download</v-icon>
+                            Admin Guide
+                        </a>
+                    </v-chip>
+                    <v-chip v-else class="mr-0" color="blue darken-1" label text-color="white">
+                        <a href="https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf" download="DefaultUserGuide.pdf" target="_blank" style="color: white; text-decoration: none;">
+                            <v-icon left>mdi-download</v-icon>
+                            User Guide
+                        </a>
                     </v-chip>
                 </v-col>
 

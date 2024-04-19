@@ -18,8 +18,8 @@
         <v-row no-gutters>
             <v-col cols="12">
                 <div class="text-caption font-weight-bold">Available Spots:</div>
-                <div :class="{ 'strikethrough': availableVolunteerSpots === 0 }" class="text-caption mb-n1">Volunteers: <strong>{{ availableVolunteerSpots }}</strong></div>
-                <div :class="{ 'strikethrough': availableDriverSpots === 0 }" class="text-caption mb-1">Drivers / Helpers: <strong>{{ availableDriverSpots }}</strong></div>
+                <div :class="{ 'strikethrough': availableVolunteerSpots === 0 }" class="text-caption mb-n1">Volunteers: <strong>{{ availableVolunteerSpots }}</strong>/<strong>{{ event.volunteerLimit }}</strong></div>
+                <div :class="{ 'strikethrough': availableDriverSpots === 0 }" class="text-caption mb-1">Drivers / Helpers: <strong>{{ availableDriverSpots }}</strong>/<strong>{{ event.driverHelperLimit }}</strong></div>
             </v-col>
         </v-row>
         <v-divider class="grey darken-1 mb-2"></v-divider>

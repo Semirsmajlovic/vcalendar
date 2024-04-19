@@ -80,11 +80,11 @@
                         <v-alert
                             class="mt-6"
                             border="top"
-                            color="info"
+                            color="error"
                             colored-border
                             elevation="2"
                         >
-                            We kindly request that individuals registering as drivers or driver helpers submit a copy of their valid driver's license and proof of insurance via email. This documentation is essential for ensuring compliance and safety standards. Thank you for your cooperation and commitment.
+                            URGENT: To secure your position as a driver or driver helper, it is important that you submit proof of your license and insurance to <a href="mailto:pam@helpstlouis.org">pam@helpstlouis.org</a> immediately after registration. This step is crucial and your prompt action is essential. Thank you for your immediate attention to this matter!
                         </v-alert>
                     </div>
                     <v-alert 
@@ -268,7 +268,7 @@ export default {
 
             // Now, add "Notes" for the 'Driver / Driver Helper' role, ensuring it comes after "Shift Selected"
             if (this.selectedRole === 'Driver / Driver Helper') {
-                formData["Notes"] = "Please contact the driver or driver helper at your earliest convenience to request a copy of their current driver's license and proof of insurance using the email or phone number provided.";
+                formData["Notes"] = "URGENT: To secure your position as a driver or driver helper, it is important that you submit proof of your license and insurance to pam@helpstlouis.org immediately after registration. This step is crucial and your prompt action is essential. Thank you for your immediate attention to this matter!";
             }
             return formData;
         },
