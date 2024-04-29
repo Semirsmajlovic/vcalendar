@@ -317,7 +317,6 @@ export default {
                 const nameEmailCombinationExistsInDriverHelpers = shift.driverHelperNames?.some(d => d.name.toLowerCase() === combinedNameEmail.toLowerCase());
                 if (nameEmailCombinationExistsInVolunteers || nameEmailCombinationExistsInDriverHelpers) {
                     this.updateSnackMessage(`You have already registered to participate in one of the roles.`);
-                    console.log("User already registered for this shift in one of the roles.");
                     this.$emit('dialogs-completed');
                     this.close();
                     return false; // Indicate early exit
@@ -341,7 +340,6 @@ export default {
                     };
                 }
                 if (shift.isRecurring) {
-                    console.log("selected shif",this.selectedShift)
                     //let payloadref= doc(db, "events", shift.id);
                     //const docSnap = await getDoc(payloadref);
                     let payload= Object.assign({}, this.selectedShift);//docSnap.data();

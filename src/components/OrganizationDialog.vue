@@ -175,7 +175,6 @@ export default {
                 "Volunteering Dates": formattedDates,
             };
             this.sendEmail(endpointUrl, formData).then(() => {
-                console.log("Form submitted successfully.");
             }).catch((error) => {
                 console.error("Error submitting form:", error.message);
             });

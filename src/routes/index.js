@@ -43,20 +43,20 @@ const router = new Router({
  */
 const getCurrentUser = () => {
     return new Promise((resolve, reject) => {
-        const auth = getAuth(); // Initialize Firebase Auth
+        const auth = getAuth();
         const removeListener = onAuthStateChanged(
             auth,
             (user) => {
-                removeListener(); // Unsubscribe from the auth state listener once the user state is known
+                removeListener();
                 if (user) {
-                    resolve(user); // Resolve the promise with the user object if a user is logged in
+                    resolve(user);
                 } else {
-                    reject("No user logged in"); // Reject the promise if no user is logged in
+                    reject("No user logged in");
                 }
             },
             (error) => {
-                removeListener(); // Ensure to unsubscribe from the listener in case of an error
-                reject(error); // Reject the promise with the error encountered during the auth state check
+                removeListener();
+                reject(error);
             }
         );
     });

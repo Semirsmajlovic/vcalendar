@@ -94,12 +94,10 @@ const storeCalendar = {
 			const logPrefix = "[storeCalendar.js/actionCreateNewEvent]:";
 			try {
 				const collectionName = payload.isRecurring ? "events" : "exceptions";
-				console.log(`${logPrefix} Processing new event for collection: ${collectionName}`);
 				const collectionRef = collection(db, collectionName);
 				const docRef = await addDoc(collectionRef, payload);
 				payload.id = docRef.id;
 				const mutationName = payload.isRecurring ? 'ADD_SHIFT' : 'ADD_EXCEPTION';
-				console.log(`${logPrefix} Committing mutation: ${mutationName}`);
 				commit(mutationName, payload);
 			} catch (e) {
 				console.error(`${logPrefix} Error adding document: ${e}`);
@@ -120,7 +118,6 @@ const storeCalendar = {
 					const docRef = doc(db, "exceptions", payload.id);
 					await updateDoc(docRef, payload);
 					commit('UPDATE_EXCEPTION', { exceptionIndex, payload });
-					console.log(`${logPrefix} Updated one-time event.`);
 				}
 			};
 	
@@ -131,7 +128,6 @@ const storeCalendar = {
 					const docRef = doc(db, "exceptions", payload.id);
 					await updateDoc(docRef, payload);
 					commit('UPDATE_EXCEPTION', { divergedIndex, payload });
-					console.log(`${logPrefix} Updated recurring event to one-time event.`);
 				}
 			};
 	
@@ -142,7 +138,6 @@ const storeCalendar = {
 					const docRef = doc(db, "events", payload.id);
 					await updateDoc(docRef, payload);
 					commit('UPDATE_SHIFT', { index, updatedShift: { ...payload } });
-					console.log(`${logPrefix} Updated all instances of a recurring event.`);
 				}
 			};
 	
@@ -158,7 +153,6 @@ const storeCalendar = {
 				const originalDocRef = doc(db, "exceptions", docRef.id);
 				await updateDoc(originalDocRef, payload);
 				commit('ADD_EXCEPTION', payload);
-				console.log(`${logPrefix} Updated a single instance of a recurring event.`);
 			};
 	
 			// Helper to update instances of a recurring event going forward
@@ -172,7 +166,6 @@ const storeCalendar = {
 					let recurringObjGoingForward = { ...payload, id: undefined };
 					const newEventDocRef = await addDoc(collection(db, "events"), recurringObjGoingForward);
 					commit('ADD_SHIFT', { ...recurringObjGoingForward, id: newEventDocRef.id });
-					console.log(`${logPrefix} Updated recurring event going forward.`);
 				}
 			};
 	
@@ -228,7 +221,6 @@ const storeCalendar = {
 				if (exceptionIndex !== -1) {
 					await deleteDoc(doc(db, "exceptions", state.exceptions[exceptionIndex].id));
 					commit('DELETE_EXCEPTION', exceptionIndex);
-					console.log(`${logPrefix} Deleted one-time event.`);
 				}
 			};
 	
@@ -240,7 +232,6 @@ const storeCalendar = {
 					const docRef = doc(db, "exceptions", state.exceptions[index].id);
 					await updateDoc(docRef, payload);
 					commit('UPDATE_EXCEPTION', { index, payload });
-					console.log(`${logPrefix} Updated exception for a diverged instance.`);
 				}
 			};
 	
@@ -251,7 +242,6 @@ const storeCalendar = {
 					await deleteDoc(doc(db, "events", shift.id));
 				}
 				commit('DELETE_EVENTS_MULTIPLE', shiftsFound);
-				console.log(`${logPrefix} Deleted all instances of a recurring event.`);
 			};
 	
 			// Helper to update recurring event going forward
@@ -261,7 +251,6 @@ const storeCalendar = {
 					const updatedShift = changeRecurringEnd({ ...state.events[index] }, payload.start);
 					await updateDoc(doc(db, "events", state.events[index].id), updatedShift);
 					commit('UPDATE_SHIFT', { index, updatedShift });
-					console.log(`${logPrefix} Updated recurring event going forward.`);
 				}
 			};
 	
@@ -274,7 +263,6 @@ const storeCalendar = {
 				const originalDocRef = doc(db, "exceptions",  exceptionDocRef.id);
 				await updateDoc(originalDocRef, payload);
 				commit('ADD_EXCEPTION', payload);
-				console.log(`${logPrefix} Added exception for deleting a single instance.`);
 			};
 	
 			// Main logic to decide which helper function to call
@@ -315,9 +303,7 @@ const storeCalendar = {
 		updateSelectedParticipant({ commit }, participant) {
 			const logPrefix = "[storeCalendar.js/updateSelectedParticipant]:";
 			try {
-				console.log(participant);
 				commit('SET_PARTICIPANT', participant);
-				console.log(`${logPrefix} Participant updated successfully.`, participant);
 			} catch (error) {
 				console.error(`${logPrefix} Error updating participant:`, error);
 			}
@@ -332,7 +318,6 @@ const storeCalendar = {
 			const logPrefix = "[storeCalendar.js/adminShiftDialogOpen]:";
 			try {
 				commit('SET_DIALOG', dialogStatus);
-				console.log(`${logPrefix} Dialog status updated successfully. Status:`, dialogStatus);
 			} catch (error) {
 				console.error(`${logPrefix} Error updating dialog status:`, error);
 			}

@@ -85,7 +85,7 @@
                         </a>
                     </v-chip>
                     <v-chip v-else class="mr-0" color="blue darken-1" label text-color="white">
-                        <a href="https://s2.q4cdn.com/175719177/files/doc_presentations/Placeholder-PDF.pdf" download="DefaultUserGuide.pdf" target="_blank" style="color: white; text-decoration: none;">
+                        <a href="https://firebasestorage.googleapis.com/v0/b/volunteer-portal-hstl-3ef78.appspot.com/o/user-guide.pdf?alt=media&token=9c7946a2-7e99-42a5-a528-29521315b99f" download="DefaultUserGuide.pdf" target="_blank" style="color: white; text-decoration: none;">
                             <v-icon left>mdi-download</v-icon>
                             User Guide
                         </a>

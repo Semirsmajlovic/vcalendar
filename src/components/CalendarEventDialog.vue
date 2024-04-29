@@ -450,7 +450,6 @@ export default {
         dateForNewShift(val) {
             if (this.isObjectNotEmpty(val)) {
                 this.openAdminShiftDialogAndPopulateDefaultData(val);
-                console.log("[CalendarEventDialog.vue/dateForNewShift]: Watch has triggered.");
             }
         },
 
@@ -468,7 +467,6 @@ export default {
             this.localBYDAY = this.getBYDAYFromRRULE(this.localSelectedEvent.rruleString);
             this.localUNTIL = this.getUNTILFromDateRRULE(this.localSelectedEvent.rruleString);
             this.localINTERVAL = this.getINTERVALFromRRULE(this.localSelectedEvent.rruleString);
-            console.log("[CalendarEventDialog.vue/updateLocalStateOnShiftSelectionChange]: Watch has triggered.", val);
         },
 
         // ===================================================================================== //
@@ -486,10 +484,8 @@ export default {
                             this.localSelectedEvent.rruleString = this.createRRULEStringDuringShiftCreation(this.localSelectedEvent);
                             this.localINTERVAL = this.getINTERVALFromRRULE(this.localSelectedEvent.rruleString);
                             this.localUNTIL = this.getUNTILFromDateRRULE(this.localSelectedEvent.rruleString);
-                            console.log("[CalendarEventDialog.vue/updateRRULEForShift]: RRULE for shift updated as the shift is recurring.");
                         } else {
                             this.localSelectedEvent.rruleString = "";
-                            console.log("[CalendarEventDialog.vue/updateRRULEForShift]: RRULE for shift cleared as the shift is not recurring.");
                         }
                     }
                 } catch (error) {
@@ -534,7 +530,6 @@ export default {
 
         isObjectNotEmpty(obj) {
             const hasProperties = Object.keys(obj).length > 0;
-            console.log(`[CalendarEventDialog.vue/isObjectNotEmpty]: Object has properties: ${hasProperties}`);
             return hasProperties;
         },
 
@@ -543,12 +538,10 @@ export default {
 
         convertDateToISOFormat(date) {
             if (!date) {
-                console.log("[CalendarEventDialog.vue/convertDateToISOFormat]: No date provided.");
                 return "";
             }
             try {
                 const formattedDate = format(parseISO(date), "yyyy-MM-dd"); // Converts the date to "YYYY-MM-DD" format
-                console.log("[CalendarEventDialog.vue/convertDateToISOFormat]: Date converted to ISO format successfully.");
                 return formattedDate;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/convertDateToISOFormat]: Error converting date to ISO format: ${error}`);
@@ -578,7 +571,6 @@ export default {
                     rruleString: "" // Initializes an empty string for recurrence rule, used if event becomes recurring
                 };
                 this.adminShiftDialogOpen(true); // Opens the event dialog to show the event details form
-                console.log("[CalendarEventDialog.vue/openAdminShiftDialogAndPopulateDefaultData]: Admin shift dialog opened successfully with default data populated.");
             } catch (error) {
                 console.error("[CalendarEventDialog.vue/openAdminShiftDialogAndPopulateDefaultData]: Error opening admin shift dialog and populating default data:", error);
             }
@@ -605,7 +597,6 @@ export default {
             try {
                 await this.updateEvent(payload);
                 this.updateSnackMessage("Shift updated successfully.");
-                console.log("[CalendarEventDialog.vue/updateShiftAfterSaveButtonClicked]: Shift updated successfully:", payload);
             } catch (e) {
                 console.error("[CalendarEventDialog.vue/updateShiftAfterSaveButtonClicked]: Error updating shift:", e);
                 this.updateSnackMessage(`Error updating shift: ${e.message}`);
@@ -623,7 +614,6 @@ export default {
             try {
                 await this.actionCreateNewEvent(payload);
                 this.updateSnackMessage("New shift created");
-                console.log("[CalendarEventDialog.vue/createAndSaveNewShift]: New shift created successfully.");
             } catch (e) {
                 console.error(`[CalendarEventDialog.vue/createAndSaveNewShift]: Error creating new shift: ${e}`);
                 this.updateSnackMessage(`Error creating new shift: ${e.message}`);
@@ -663,7 +653,6 @@ export default {
             try {
                 await this.deleteEvent(payload);
                 this.updateSnackMessage("Shift deleted.");
-                console.log("[CalendarEventDialog.vue/removeShiftAfterDeleteButtonClicked]: Shift successfully deleted:", payload);
             } catch (e) {
                 console.error(`[CalendarEventDialog.vue/removeShiftAfterDeleteButtonClicked]: Error deleting shift: ${e}`);
                 this.updateSnackMessage(`Error deleting shift: ${e.message}`);
@@ -698,7 +687,6 @@ export default {
                     dtstart: new Date(Date.UTC(year, monthUTC, day, hour, minutes)),
                     until: this.convertUNTILStringToDate(this.localUNTIL) || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 });
-                console.log("[CalendarEventDialog.vue/createRRULEStringDuringShiftCreation]: Created RRule string: ", rule.toString());
                 return rule.toString();
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/createRRULEStringDuringShiftCreation]: Error creating RRULE string: ${error}`);
@@ -739,7 +727,6 @@ export default {
         // Click "Create/Update Shift" -> Change "Start Time".
         updateRecurringEventStartTime(start_time) {
             if (!this.localSelectedEvent.isRecurring) {
-                console.log("[CalendarEventDialog.vue/updateRecurringEventStartTime]: The shift is not recurring. Exiting method.");
                 return;
             }
             try {
@@ -755,7 +742,6 @@ export default {
                 }
                 let replaceText = rruleString.substring(dtStartIndex + 17, zuluIndex);
                 this.localSelectedEvent.rruleString = this.replaceSubstringAtIndex(rruleString, replaceText, formatStart, 0);
-                console.log("[CalendarEventDialog.vue/updateRecurringEventStartTime]: Successfully updated RRULE string.");
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/updateRecurringEventStartTime]: Error updating RRULE string: ${error.message}`);
             }
@@ -768,7 +754,6 @@ export default {
         // - Open "Recurring Event" -> Change RRule -> Click "Save -> Update forward" -> Method is triggered.
         updateRecurringEventStartDate(dateUpdated) {
             if (!this.localSelectedEvent.isRecurring) {
-                console.log("[CalendarEventDialog.vue/updateRecurringEventStartDate]: The shift is not recurring. Exiting method.");
                 return;
             }
             try {
@@ -785,7 +770,6 @@ export default {
                 }
                 let currentDtstartDate = rruleString.substring(dateStartIndex, dateEndIndex);
                 this.localSelectedEvent.rruleString = this.replaceSubstringAtIndex(rruleString, currentDtstartDate, dateForward, 0);
-                console.log("[CalendarEventDialog.vue/updateRecurringEventStartDate]: Successfully updated DTSTART date in RRULE string.");
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/updateRecurringEventStartDate]: Error updating DTSTART date in RRULE string: ${error.message}`);
             }
@@ -798,7 +782,6 @@ export default {
         // - Open "Shift" Dialog.
         getINTERVALFromRRULE(rruleString) {
             if (!rruleString) {
-                console.log("[CalendarEventDialog.vue/getINTERVALFromRRULE]: No RRULE string provided.");
                 return;
             }
             try {
@@ -807,7 +790,6 @@ export default {
                 if (index === 8 || endIndex === -1) { // If 'INTERVAL=' not found, or ';' not found after 'INTERVAL='
                     throw new Error("INTERVAL not found or malformed in RRULE string.");
                 }
-                console.log("[CalendarEventDialog.vue/getINTERVALFromRRULE]: Successfully extracted INTERVAL from RRULE string.");
                 return rruleString.substring(index, endIndex);
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/getINTERVALFromRRULE]: Error extracting INTERVAL number: ${error.message}`);
@@ -821,7 +803,6 @@ export default {
         // - Open "Recurring" Shift -> Update "Internal" field.
         updateRRULEInterval(interval) {
             if (!this.localSelectedEvent.rruleString) {
-                console.log("[CalendarEventDialog.vue/updateRRULEInterval]: No RRULE string available in the selected event.");
                 return;
             }
             try {
@@ -840,7 +821,6 @@ export default {
                     intervalTextNew,
                     0
                 );
-                console.log("[CalendarEventDialog.vue/updateRRULEInterval]: Successfully updated INTERVAL in RRULE string.");
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/updateRRULEInterval]: Error updating INTERVAL in RRULE string: ${error.message}`);
             }
@@ -853,7 +833,6 @@ export default {
         // - Open "Shift" Dialog.
         getBYDAYFromRRULE(rruleString) {
             if (!rruleString) {
-                console.log("[CalendarEventDialog.vue/getBYDAYFromRRULE]: No RRULE string provided. Using selected weekday number.");
                 return [this.getWeekdayAbbreviationByIndex(this.selectedWeekdayNum)];
             }
             try {
@@ -867,7 +846,6 @@ export default {
                     throw new Error("Semicolon not found after BYDAY in RRULE string.");
                 }
                 const byDayList = rruleString.substring(startIndex, endIndex).split(",");
-                console.log("[CalendarEventDialog.vue/getBYDAYFromRRULE]: Successfully extracted BYDAY from RRULE string.");
                 return byDayList;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/getBYDAYFromRRULE]: Error extracting BYDAY from RRULE string: ${error.message}`);
@@ -882,11 +860,9 @@ export default {
         // - Open "Recurring" Shift -> Update "Days" field.
         updateRRULEWeekdays(byDay) {
             if (!this.localSelectedEvent.rruleString) {
-                console.log("[CalendarEventDialog.vue/updateRRULEWeekdays]: No RRULE string available in the selected event.");
                 return;
             }
             if (byDay.length === 0) {
-                console.log("[CalendarEventDialog.vue/updateRRULEWeekdays]: Empty BYDAY array provided. No update performed.");
                 return;
             }
             try {
@@ -907,7 +883,6 @@ export default {
                     byDayNew,
                     0
                 );
-                console.log("[CalendarEventDialog.vue/updateRRULEWeekdays]: Successfully updated BYDAY in RRULE string.");
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/updateRRULEWeekdays]: Error updating BYDAY in RRULE string: ${error.message}`);
             }
@@ -920,7 +895,6 @@ export default {
         // - Open "Shift" Dialog.
         getUNTILFromDateRRULE(rruleString) {
             if (!rruleString) {
-                console.log("[CalendarEventDialog.vue/getUNTILFromDateRRULE]: No RRULE string provided.");
                 return "";
             }
             try {
@@ -929,7 +903,6 @@ export default {
                     throw new Error("UNTIL part not found in RRULE string.");
                 }
                 const untilString = rruleString.slice(-16);
-                console.log("[CalendarEventDialog.vue/getUNTILFromDateRRULE]: Successfully extracted UNTIL date from RRULE string.");
                 return untilString;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/getUNTILFromDateRRULE]: Error extracting UNTIL date from RRULE string: ${error.message}`);
@@ -944,7 +917,6 @@ export default {
         // - Open "Shift" Dialog -> Click "Recurring" Checkbox.
         convertUNTILStringToDate(untilLocal) {
             if (!untilLocal) {
-                console.log("[CalendarEventDialog.vue/convertUNTILStringToDate]: No UNTIL string provided.");
                 return "";
             }
             try {
@@ -955,7 +927,6 @@ export default {
                 if (isNaN(date.getTime())) {
                     throw new Error("Invalid date format.");
                 }
-                console.log("[CalendarEventDialog.vue/convertUNTILStringToDate]: Successfully converted UNTIL string to Date.");
                 return date;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/convertUNTILStringToDate]: Error converting UNTIL string to Date: ${error.message}`);
@@ -970,7 +941,6 @@ export default {
         // - Open "Shift" Dialog -> Click "Recurring" Checkbox.
         convertUNTILStringToFormattedDate(untilLocal, separator, type) {
             if (!untilLocal) {
-                console.log("[CalendarEventDialog.vue/convertUNTILStringToFormattedDate]: No UNTIL string provided.");
                 return "";
             }
             try {
@@ -985,7 +955,6 @@ export default {
                     // Default format: yyyy-mm-dd or a variation based on the separator
                     formattedDate = `${year}${separator}${month}${separator}${day}`;
                 }
-                console.log(`[CalendarEventDialog.vue/convertUNTILStringToFormattedDate]: Successfully converted UNTIL string to ${type} format.`);
                 return formattedDate;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/convertUNTILStringToFormattedDate]: Error converting UNTIL string to formatted date: ${error.message}`);
@@ -1000,7 +969,6 @@ export default {
         // - Open "Shift" Dialog -> Click "Recurring" Checkbox -> Update "Select Until Date".
         updateRRULEUntilDateTime(startTime, untilDate) {
             if (!untilDate) {
-                console.log("[CalendarEventDialog.vue/updateRRULEUntilDateTime]: No untilDate provided.");
                 return;
             }
             try {
@@ -1015,7 +983,6 @@ export default {
                     newUNTILString,
                     0
                 );
-                console.log("[CalendarEventDialog.vue/updateRRULEUntilDateTime]: Successfully updated UNTIL in RRULE string.");
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/updateRRULEUntilDateTime]: Error updating UNTIL in RRULE string: ${error.message}`);
             }
@@ -1043,7 +1010,6 @@ export default {
                     description: actionDescription,
                     originalData: originalData,
                 };
-                console.log("[CalendarEventDialog.vue/generateActionTypeObject]: Action type object created successfully.");
                 return actionTypeObject;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/generateActionTypeObject]: Error creating action type object: ${error.message}`);
@@ -1056,17 +1022,14 @@ export default {
 
         generateReadableRRULEDescription(ruleString) {
             if (!ruleString) {
-                console.log("[CalendarEventDialog.vue/generateReadableRRULEDescription]: No RRULE string provided.");
                 return "";
             }
             if (this.rruleDescriptionCache[ruleString]) {
-                console.log("[CalendarEventDialog.vue/generateReadableRRULEDescription]: Returning cached description.");
                 return this.rruleDescriptionCache[ruleString];
             }
             try {
                 const description = RRule.fromString(ruleString).toText();
                 this.rruleDescriptionCache[ruleString] = description;
-                console.log("[CalendarEventDialog.vue/generateReadableRRULEDescription]: RRULE description generated successfully.");
                 return description;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/generateReadableRRULEDescription]: Error parsing RRULE string: ${error}`);
@@ -1079,7 +1042,6 @@ export default {
 
         formatDTSTARTDateWithSuffix(rruleString) {
             if (!rruleString) {
-                console.log("[CalendarEventDialog.vue/formatDTSTARTDateWithSuffix]: No RRULE string provided.");
                 return '';
             }
             try {
@@ -1101,7 +1063,6 @@ export default {
                 })(day);
                 const formattedDateWithoutDay = format(dtstart, `MMMM , yyyy`);
                 const formattedDate = formattedDateWithoutDay.replace(', ', `${day}${suffix}, `);
-                console.log("[CalendarEventDialog.vue/formatDTSTARTDateWithSuffix]: DTSTART date formatted successfully.");
                 return formattedDate;
             } catch (error) {
                 console.error(`[CalendarEventDialog.vue/formatDTSTARTDateWithSuffix]: Error formatting DTSTART date: ${error}`);

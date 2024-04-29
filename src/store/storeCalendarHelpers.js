@@ -28,11 +28,9 @@ export function getFocus(focus) {
 export function getNamesInView(allEvents, current, type) {
 	try {
 		const focusedMonth = getFocus(current);
-		console.warn("[getNamesInView/focusedMonth]: ", focusedMonth);
         const filteredEvents = allEvents.filter((event) => {
             return event.start.includes(focusedMonth);
         });
-		console.warn("[getNamesInView/filteredEvents]: ", filteredEvents);
         const names = filteredEvents.flatMap((event) => {
             if (Array.isArray(event[type])) {
 				console.warn("[getNamesInView/event]: ", event[type]);
@@ -41,13 +39,10 @@ export function getNamesInView(allEvents, current, type) {
                 return [];
             }
         });
-		console.log("[getNamesInView}: ", names);
         const sortedNames = names.sort((a, b) => {
             return a.split(' ')[1].localeCompare(b.split(' ')[1]);
         });
-		console.log("[getNamesInView}: ", sortedNames);
         const uniqueNames = [...new Set(sortedNames)];
-		console.log("[getNamesInView}: ", uniqueNames);
         return uniqueNames;
 	}  catch (error) {
 		console.error(`Error in getNamesInView: ${error}`);
