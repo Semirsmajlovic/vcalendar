@@ -187,8 +187,9 @@ export default {
         },
         tooltipContentVolunteerDialog() {
             return `
-                <div>Contact support</div>
-                <div>Another entry</div>
+                <div><b>Choose Role</b>: Click "Choose a role," select your desired role. If fully booked, a message will appear on the bottom.</div>
+                <div><b>Registration</b>: Enter your name and email. Phone is optional. Click "Participate" to submit.</div>
+                <div><b>Confirmation</b>: After signing up, a confirmation email will be sent to you.</div>
             `;
         }
     },

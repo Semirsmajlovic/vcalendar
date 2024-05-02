@@ -146,8 +146,11 @@ export default {
     computed: {
         tooltipContentOrganizationDialog() {
             return `
-                <div>Contact support</div>
-                <div>Another entry</div>
+                <div><b>Volunteer Registration</b>: Fill in organization name, contact name, phone, email, and a max up to 8 people.</div>
+                <div><b>Select Dates</b>: Choose multiple dates that fit your schedule to aid pantry scheduling.</div>
+                <div><b>Submit</b>: After filling out the form, click "Send" at the bottom.</div>
+                <div><b>Confirmation</b>: You'll receive a confirmation email upon registration.</div>
+                <div><b>Follow-Up</b>: The pantry will contact you to confirm a date.</div>
             `;
         }
     },

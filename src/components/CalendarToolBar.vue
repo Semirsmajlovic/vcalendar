@@ -179,15 +179,16 @@ export default {
         tooltipToolbarContent() {
             if (this.isLoggedIn) {
                 return `
-                    <div>Admin side</div>
-                    <div>Contact support</div>
-                    <div>Another entry</div>
+                    <div><b>Create Event</b>: Click on any future date to create an event</div>
+                    <div><b>Manage Event</b>: To edit or delete, click "Manage" on the event (future dates only).</div>
+                    <div><b>Volunteer List</b>: Located on the right, split between Volunteers and Driver/Helpers. Click a name to view their volunteer day; click “All” to return to the full list.</div>
+                    <div><b>Admin Guide</b>: For a visual guide, click "Admin Guide" on the right for admin operations visuals.</div>
+                    <div><b>Download Calendar</b>: Click “Download Calendar” on the right to get a PDF of the calendar</div>
                 `;
             } else {
                 return `
-                    <div>Volunteer side</div>
-                    <div>Contact support</div>
-                    <div>Another entry</div>
+                    <div><b>Volunteer</b>: To sign up, select a day with an event and a blue "Volunteer" button. Click it. Fully booked shifts are crossed out.</div>
+                    <div><b>User Guide</b>: For a visual guide, click "User Guide" on the right side of the screen for step-by-step visuals on volunteering.</div>
                 `;
             }
         }

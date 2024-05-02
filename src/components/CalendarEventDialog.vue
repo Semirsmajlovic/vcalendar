@@ -410,9 +410,9 @@ export default {
         ]),
         tooltipEventDialogContent() {
             return `
-                <div>Event Section</div>
-                <div>Contact support</div>
-                <div>Another entry</div>
+                <div><b>Delete Single Event</b>: Click the "Delete" button at the bottom for a one-time event.</div>
+                <div><b>Delete Recurring Event</b>: Click "Delete," then choose to remove just that event or all future occurrences.</div>
+                <div><b>Edit Event</b>: Adjust volunteer slots, start time, or duration by clicking the respective boxes.</div>
             `;
         },
         processedVolunteerNames() {
