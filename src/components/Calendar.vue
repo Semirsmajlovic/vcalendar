@@ -179,7 +179,6 @@ export default {
             // Check if the selected day is before today and exit if true
             if (this.isDateBeforeToday(day.date)) {
                 this.updateSnackMessage(`Shift creation is not permitted for past dates or the current day.`);
-                console.warn('[Calendar.vue/prepareAndOpenShiftCreationDialog]: Attempted to create or edit a shift for a past date.');
                 return; // Exit the method to prevent opening the dialog for past dates
             }
 

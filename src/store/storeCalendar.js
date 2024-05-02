@@ -52,10 +52,8 @@ const storeCalendar = {
 				// Get all unique names for caregivers and clients to show in CalendarSideBar.vue
 				// Return: ['Semir Smajlovic']
 				let cgNames = getNamesInView(allEvents, payload.focus, 'volunteerNames'); // Previous: caregiver
-				console.warn("[storeCalendar.js/cgNames]: ", cgNames);
 
 				let clNames = getNamesInView(allEvents, payload.focus, 'driverHelperNames'); // Previous: client
-				console.warn("[storeCalendar.js/clNames]: ", clNames);
 
 				// Set the names.
 				commit('SET_NAMES', [
@@ -191,7 +189,6 @@ const storeCalendar = {
 						await updateForwardInstances(payload);
 						break;
 					default:
-						console.warn(`${logPrefix} Unknown actionType: ${payload.actionType.description}`);
 						dispatch('updateSnackMessage', `Unknown actionType in updateEvent`, { root: true });
 				}
 			};
@@ -285,7 +282,6 @@ const storeCalendar = {
 							await addExceptionForDeletion(payload);
 							break;
 						default:
-							console.warn(`${logPrefix} Unknown actionType for recurring shift.`);
 							dispatch('updateSnackMessage', 'Unknown actionType for recurring shift', { root: true });
 					}
 				}

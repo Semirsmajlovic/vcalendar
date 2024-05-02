@@ -52,6 +52,14 @@
                     >
                         <v-icon small>mdi-chevron-right</v-icon>
                     </v-btn>
+
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon v-bind="attrs" v-on="on" class="ml-2" color="red">mdi-help-circle</v-icon>
+                        </template>
+                        <span v-html="tooltipToolbarContent"></span>
+                    </v-tooltip>
+
                 </v-col>
 
                 <!-- Center Column for Toolbar Title -->
@@ -168,6 +176,21 @@ export default {
             }[this.$vuetify.breakpoint.name];
             return size ? { [size]: true } : {};
         },
+        tooltipToolbarContent() {
+            if (this.isLoggedIn) {
+                return `
+                    <div>Admin side</div>
+                    <div>Contact support</div>
+                    <div>Another entry</div>
+                `;
+            } else {
+                return `
+                    <div>Volunteer side</div>
+                    <div>Contact support</div>
+                    <div>Another entry</div>
+                `;
+            }
+        }
     },
     methods: {
         prev() {

@@ -2,7 +2,13 @@
     <v-dialog v-model="dialog" persistent max-width="600px" @click:outside="dialog = false">
         <v-card>
             <v-card-title>
-            Organization Details
+                Organization Details
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" color="red" style="margin: 0 auto; margin-right: 0">mdi-help-circle</v-icon>
+                    </template>
+                    <span v-html="tooltipContentOrganizationDialog"></span>
+                </v-tooltip>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" v-model="formValid">
@@ -112,7 +118,7 @@ export default {
                 required: [v => !!v || 'Field is required'],
                 email: [
                     v => !!v || 'E-mail is required',
-                    v => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(v) || 'E-mail must be valid'
+                    v => /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid'
                 ],
                 phone: [
                     v => !!v || 'Phone number is required',
@@ -136,6 +142,14 @@ export default {
         dialog(newVal) {
             this.$emit('input', newVal); // Emit changes to keep the parent in sync
         },
+    },
+    computed: {
+        tooltipContentOrganizationDialog() {
+            return `
+                <div>Contact support</div>
+                <div>Another entry</div>
+            `;
+        }
     },
     methods: {
         ...mapActions(["updateSnackMessage"]),
@@ -237,8 +251,6 @@ export default {
         removeDate(index) {
             if (index >= 0 && index < this.dates.length) {
                 this.dates.splice(index, 1);
-            } else {
-                console.warn("Attempted to remove a date with an invalid index:", index);
             }
         },
     }

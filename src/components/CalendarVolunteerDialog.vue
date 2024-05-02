@@ -4,6 +4,12 @@
             <v-card>
                 <v-card-title>
                     Role Selection
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon v-bind="attrs" v-on="on" color="red" style="margin: 0 auto; margin-right: 0">mdi-help-circle</v-icon>
+                        </template>
+                        <span v-html="tooltipContentVolunteerDialog"></span>
+                    </v-tooltip>
                 </v-card-title>
                 <v-card-text>
                     <v-select
@@ -155,7 +161,7 @@ export default {
                 ],
                 email: [
                     v => !!v || 'E-mail is required.',
-                    v => /^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid.',
+                    v => /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'E-mail must be valid.',
                 ],
                 phone: [
                     v => !v || /^\d{3}-\d{3}-\d{4}$/.test(v) || 'Phone must be in the format 123-456-7890',
@@ -178,6 +184,12 @@ export default {
                 return !this.isDriverHelperLimitReached;
             }
             return true; // Default to true if none of the above conditions are met
+        },
+        tooltipContentVolunteerDialog() {
+            return `
+                <div>Contact support</div>
+                <div>Another entry</div>
+            `;
         }
     },
     watch: {

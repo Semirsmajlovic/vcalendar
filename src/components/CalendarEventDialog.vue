@@ -14,6 +14,12 @@
                         {{ newEvent ? 'Create Event' : 'Update Event' }}
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon v-bind="attrs" v-on="on" class="mr-2" color="red">mdi-help-circle</v-icon>
+                        </template>
+                        <span v-html="tooltipEventDialogContent"></span>
+                    </v-tooltip>
                     <v-btn depressed @click="adminShiftDialogOpen(false)">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
@@ -402,7 +408,13 @@ export default {
             "getSelectedParticipant",
             "emitRefreshAndResetNewEventState",
         ]),
-
+        tooltipEventDialogContent() {
+            return `
+                <div>Event Section</div>
+                <div>Contact support</div>
+                <div>Another entry</div>
+            `;
+        },
         processedVolunteerNames() {
             return this.safeVolunteerNames.map(volunteer => {
                 // Use a regular expression to remove the email and parentheses
